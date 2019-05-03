@@ -1,0 +1,15 @@
+{
+  "name": "smartpensdk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://gitlab.neolab.kr:8080/SDK/smartpensdk.js.git"
+  },
+  "author": "aram",
+  "license": "MIT"
+}
