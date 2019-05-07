@@ -1,7 +1,8 @@
-// import PenClientParserV2 from './sdk/pen_client_parser_v2'
-const PenClientParserV2 = require("./pen_client_parser_v2");
-
-class PenController {
+import PenClientParserV2 from "./PenClientParserV2";
+import * as Error from '../Model/SDKError'
+import OfflineDataInfo from '../Model/OfflineDataInfo'
+ 
+export default class PenController {
   constructor() {
     this._triggers = {};
     this.mClientV2 = new PenClientParserV2(this);
@@ -116,14 +117,14 @@ class PenController {
   Request(requestV1, requestV2) {
     // if ( PenClient === null || !PenClient.Alive || Protocol === -1 ) {
     if (this.Protocol === -1) {
-      throw "RequestIsUnreached";
+      throw Error.SDKError("RequestIsUnreached");
     }
 
     if (this.Protocol === 1) {
-      if (!requestV1) throw "UnaavailableRequest";
+      if (!requestV1) throw Error.SDKError("UnaavailableRequest");
       return requestV1();
     } else {
-      if (!requestV2) throw "UnaavailableRequest";
+      if (!requestV2) throw Error.SDKError("UnaavailableRequest");
       return requestV2();
     }
   }
@@ -199,7 +200,8 @@ class PenController {
       () => this.mClientV2.ReqAddUsingNote()
     );
   }
-  AddAvailableNote(section, owner, notes = null) {
+
+  AddAvailableNoteSectionOwnerNotes(section, owner, notes = null) {
     if (arguments.length === 0) {
       this.Request(
         () => this.mClientV1.ReqAddUsingNote(),
@@ -212,13 +214,13 @@ class PenController {
       );
     }
   }
-  AddAvailableNotes(section, owner) {
-    if (section == null) throw new ArgumentNullException("section");
-    if (owner == null) throw new ArgumentNullException("onwer");
-    if (section.Length != owner.Length)
-      throw new ArgumentOutOfRangeException(
-        "section, owner",
-        "The number of section and owner does not match"
+
+  AddAvailableNotesSectionOwner(section, owner) {
+    if (section == null) throw new Error.ArgumentNullException("section");
+    if (owner == null) throw new Error.ArgumentNullException("onwer");
+    if (section.Length !== owner.Length)
+      throw new Error.ArgumentOutOfRangeException(
+        "section, owner"
       );
 
     this.Request(
@@ -226,12 +228,14 @@ class PenController {
       () => this.mClientV2.ReqAddUsingNotes(section, owner)
     );
   }
+
   RequestOfflineDataList() {
     this.Request(
       () => this.mClientV1.ReqOfflineDataList(),
       () => this.mClientV2.ReqOfflineDataList()
     );
   }
+
   RequestOfflineData(
     section,
     owner,
@@ -256,7 +260,7 @@ class PenController {
       }
     );
   }
-  RequestOfflineData(section, owner, notes) {
+  RequestOfflineDataSectionOwnerNotes(section, owner, notes) {
     return this.Request(
       () => {
         return this.mClientV1.ReqOfflineData(
@@ -268,7 +272,7 @@ class PenController {
       }
     );
   }
-  RequestOfflineData(section, owner) {
+  RequestOfflineDataSectionOwner(section, owner) {
     this.Request(
       () => this.mClientV1.ReqPenStatus(),
       () => this.mClientV2.ReqPenStatus()
@@ -302,5 +306,3 @@ class PenController {
     this.onDisconnected();
   }
 }
-
-module.exports = PenController;

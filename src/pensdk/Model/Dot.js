@@ -5,9 +5,8 @@ const DotTypes = Object.freeze({
     "PEN_HOVER": 4,
     "PEN_ERROR": 5,
 })
-class Dot {
-    constructor() { }
 
+class Dot {
     Clone() {
         let newDot = new Dot()
         newDot.Section = this.Section
@@ -99,7 +98,7 @@ class DotBuilder {
     }
 
     force(force) {
-        if (this.maxForce == -1)
+        if (this.maxForce === -1)
             this.mDot.Force = force;
         else {
             this.mDot.Force = Math.round(force * this.scale); // 반올림
@@ -130,8 +129,8 @@ DotBuilder.prototype.RefindMaxForce = 1023
 DotBuilder.prototype.maxForce = -1
 DotBuilder.prototype.scale = -1
 
-module.exports = {
-    Dot: Dot,
-    DotBuilder: DotBuilder,
-    DotTypes: DotTypes
+export default Dot
+
+export {
+    DotBuilder, DotTypes
 }

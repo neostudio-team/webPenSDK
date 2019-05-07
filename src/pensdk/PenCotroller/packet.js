@@ -1,6 +1,6 @@
-const Converter = require('./converter')
+import Converter from '../Util/Converter'
+
 class Packet {
-    constructor() { }
     GetChecksum() {
         if (!this.Data)
             return 0;
@@ -35,7 +35,7 @@ class Packet {
         let result = this.Data.slice(this.mIndex, this.mIndex + size);
         if ( result.length === 0)
         {
-            log("zero data");
+            console.log("zero data");
         }
         this.Move(size);
         return result;
@@ -55,7 +55,9 @@ class Packet {
     GetString(length) {
         let bytes = this.GetBytes(length);
         // return String.fromCharCode(null, bytes).trim();
-        return (new Buffer(bytes.filter(byte=>byte!=0x00)).toString('utf8')).trim();
+        return new Buffer(bytes.filter(byte => byte !== 0x00))
+          .toString("utf8")
+          .trim();
     }
 }
 Packet.prototype.Cmd = 0;
@@ -88,7 +90,4 @@ class PacketBuilder {
     }
 }
 
-module.exports = {
-    Packet: Packet,
-    PacketBuilder: PacketBuilder
-}
+export {Packet, PacketBuilder}

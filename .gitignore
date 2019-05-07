@@ -11,9 +11,6 @@
 # production
 /build
 
-# Sample
-/sample/node_modules
-
 # misc
 .DS_Store
 .env.local
