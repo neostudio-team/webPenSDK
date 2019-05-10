@@ -84,6 +84,7 @@ export default class ByteUtil {
   }
   PutLong(input) {
     let arr = Converter.longToByteArray(input);
+    // console.log("put long", arr)
     return this.PutArray(arr, arr.length);
   }
   PutShort(input) {
@@ -142,6 +143,14 @@ export default class ByteUtil {
   ToArray() {
     return this.mBuffer.slice(0, this.mPosWrite);
   }
+}
+
+export function toHexString(bytes) {
+  return bytes
+    .map(function(byte) {
+      return ("00" + (byte & 0xff).toString(16)).slice(-2);
+    })
+    .join("");
 }
 
 // Defines

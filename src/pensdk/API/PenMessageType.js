@@ -142,7 +142,41 @@ const PenMessageType = {
    Pens Log Data(for touch and play)
    - data: LogInfoDataStruct
    */
-  RES_LOG_DATA: 0xf5
+  RES_LOG_DATA: 0xf5,
 };
 
 export default PenMessageType;
+
+export const SettingType = {
+  Timestamp: 1,
+  AutoPowerOffTime: 2,
+  PenCapOff: 3,
+  AutoPowerOn: 4,
+  Beep: 5,
+  Hover: 6,
+  OfflineData: 7,
+  LedColor: 8,
+  Sensitivity: 9,
+  UsbMode: 10,
+  DownSampling: 11,
+  BtLocalName: 12,
+  FscSensitivity: 13,
+  DataTransmissionType: 14,
+  BeepAndLight: 16
+}
+
+export const  PenTipType = {
+  Normal: 0,
+  Eraser: 1
+}
+
+export const  ErrorType = {
+  MissingPenUp: 1,
+  MissingPenDown: 2,
+  InvalidTime: 3,
+  MissingPenDownPenMove: 4,
+  ImageProcessingError: 5,
+  InvalidEventCount: 6,
+  MissingPageChange: 7,
+  MissingPenMove: 8
+}

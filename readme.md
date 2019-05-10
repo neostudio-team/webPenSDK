@@ -14,4 +14,10 @@ module로만 만들어서 작업함
 * TODO
   * webpack으로 라이브러리만 하나의 javascript 파일로 빌드하는 방법
   * npm에 업로드 하는 방법, 이작업을 할때는 프로젝트를 다시 정리할 필요가 있을 것도 같다
-  
+
+# Unit Testing도 필요하다
+* 참고링크: https://geekflare.com/javascript-unit-testing/
+* MochaJS : https://github.com/mochajs/mocha
+* Jasmine: https://github.com/jasmine/jasmine
+* avajs: https://github.com/avajs/ava
+* jest: https://github.com/facebook/jest

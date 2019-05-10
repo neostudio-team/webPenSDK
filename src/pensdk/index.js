@@ -1,6 +1,6 @@
 import pen_controller from './PenCotroller/PenController'
-import Dot from './Model/Dot'
-
+import Dot from './API/Dot'
+import PenMessageType, {SettingType} from './API/PenMessageType'
 export default pen_controller
 
-export {Dot}
+export {Dot, PenMessageType, SettingType}

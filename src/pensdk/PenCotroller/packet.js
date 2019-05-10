@@ -1,6 +1,13 @@
 import Converter from '../Util/Converter'
 
 class Packet {
+    constructor() {
+        this.Cmd = 0;
+        this.Result = 0;
+        this.mIndex = 0;
+        this.Data = null;
+    }
+    
     GetChecksum() {
         if (!this.Data)
             return 0;
@@ -60,10 +67,7 @@ class Packet {
           .trim();
     }
 }
-Packet.prototype.Cmd = 0;
-Packet.prototype.Result = 0;
-Packet.prototype.mIndex = 0;
-Packet.prototype.Data = null;
+
 
 class PacketBuilder {
     constructor() {
@@ -82,6 +86,11 @@ class PacketBuilder {
 
     data(data) {
         this.mPacket.Data = data
+        return this
+    }
+
+    length(length){
+        this.mPacket.length = length
         return this
     }
 

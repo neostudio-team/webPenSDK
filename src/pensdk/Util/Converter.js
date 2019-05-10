@@ -58,30 +58,23 @@ export default class Converter {
     return Array.from(arr);
   }
 
+  /**
+  * Returns the sum of a and b
+  * @param {array} bytes
+  * @returns {number} bicInt64
+  */
   static byteArrayToLong(bytes) {
-    return (
-      (bytes[0] & 0xff) |
-      ((bytes[1] & 0xff) << 8) |
-      ((bytes[2] & 0xff) << 16) |
-      ((bytes[3] & 0xff) << 24) |
-      ((bytes[4] & 0xff) << 32) |
-      ((bytes[5] & 0xff) << 40) |
-      ((bytes[6] & 0xff) << 48) |
-      ((bytes[7] & 0xff) << 56)
-    );
+    let arr = new Uint8Array(bytes);
+    let dv = new DataView(arr.buffer);
+    let result = dv.getBigUint64(0, true)
+    return parseInt(result)
   }
 
   static longToByteArray(input) {
-    let arr = new Uint8Array([
-      input & 0xff,
-      (input >> 8) & 0xff,
-      (input >> 16) & 0xff,
-      (input >> 24) & 0xff,
-      (input >> 32) & 0xff,
-      (input >> 40) & 0xff,
-      (input >> 48) & 0xff,
-      (input >> 56) & 0xff
-    ]);
+    let bigint = window.BigInt(input)
+    let arr = new Uint8Array(8);
+    let dv = new DataView(arr.buffer);
+    dv.setBigUint64(0, bigint, true);
     return Array.from(arr);
   }
 }

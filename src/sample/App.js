@@ -1,69 +1,67 @@
 import React from "react";
-import pen_controller, { Dot } from "../pensdk";
-
-const serviceUuid = parseInt("0x19F1");
-const characteristicUuidNoti = parseInt("0x2BA1");
-const characteristicUuidWrite = parseInt("0x2BA0");
+import PenHelper from './PenHelper'
+import {Dot} from '../pensdk'
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.initPen();
+    this.pen = new PenHelper()
+    this.pen.dotCallback = this.onDot
+  }
+  peninfo = () => {
+    this.pen.controller.RequestPenStatus()
   }
 
+  setTime = () => {
+    let now = Date.now()
+    console.log("set Pen time", now, new Date(now))
+    this.pen.controller.SetRtcTime(now)
+  }
+
+  usingnotes = () => {
+    this.pen.controller.RequestAvailableNotes()
+  }
   render() {
     return (
       <div className="App">
         <header>NeoSmartPen Sample App</header>
         <button onClick={this.scanPen}>Scan Pen</button>
+        <button onClick={this.disconnect}>DisConnect</button>
+        <button onClick={this.setTime}>SetPenTime</button>
+
+        <button onClick={this.peninfo}>PenSettingInfo</button>
+        <button onClick={this.usingnotes}>Using Note Set</button>
+
         <div></div>
         <canvas id="myCanvas" className="myCanvas" style={{width: 1000, height:800, backgroundColor: 'gray'}} />
       </div>
     );
   }
 
-  initPen = () => {
-    this.controller = new pen_controller();
-    this.controller.on("Write", this.writeData);
-    this.controller.on("Connect", (sender, args) => {
-      console.log("connected", sender, args);
-    });
-    this.controller.on("Authenticated", (sender, args) => {
-      console.log("Authenticated", sender, args);
-      this.controller.RequestPenStatus();
-      setTimeout(() => this.controller.AddAvailableNote(), 700);
-      // this.controller.AddAvailableNote()
-      // controller.RequestOfflineDataList()
-    });
-    this.controller.on("PenStatusReceived", (sender, args) => {
-      console.log("PenStatusReceived", sender, args);
-    });
-    this.controller.on("PasswordRequested", (sender, args) => {
-      console.log("Request Password");
-      this.controller.InputPassword("0000");
-    });
-    this.controller.on("DotReceived", (sender, args) => {
-      // console.log(args);
-      let dot = args.Dot;
-      if (dot.DotType === Dot.DotTypes.PEN_DOWN) {
-        if (this.currentPage !== dot.Page) {
-          this.canvasInit();
-          this.currentPage = dot.Page;
-        }
-        this.dots = [];
-        this.predot = dot;
-        this.dots.push(dot);
-      } else if (dot.DotType === Dot.DotTypes.PEN_MOVE) {
-        this.dots.push(dot);
-        this.drawlineOne(this.predot, dot);
-        this.predot = dot;
-      } else {
-        this.drawlineOne(this.predot, dot);
-        this.dots.push(dot);
-        this.predot = dot;
+  componentDidMount() {
+
+  }
+
+  onDot = (dot) => {
+    if (dot.DotType === Dot.DotTypes.PEN_DOWN) {
+      if (this.currentPage !== dot.Page) {
+        this.canvasInit();
+        this.currentPage = dot.Page;
       }
-    });
-  };
+      this.dots = [];
+      this.predot = dot;
+      this.dots.push(dot);
+      console.log("dot", dot)
+    } else if (dot.DotType === Dot.DotTypes.PEN_MOVE) {
+      this.dots.push(dot);
+      this.drawlineOne(this.predot, dot);
+      this.predot = dot;
+    } else {
+      this.drawlineOne(this.predot, dot);
+      this.dots.push(dot);
+      this.predot = dot;
+    }
+  }
 
   canvasInit = () => {
     var c = document.getElementById("myCanvas");
@@ -72,87 +70,18 @@ class App extends React.Component {
     });
     ctx.clearRect(0, 0, c.width, c.clientHeight);
     ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, c.width, c.clientHeight);
-  };
-
+    ctx.fillRect(0, 0, c.width, c.clientHeight);  
+  }
+  
   scanPen = () => {
-    navigator.bluetooth
-      .requestDevice({
-        filters: [
-          {
-            services: [serviceUuid]
-          }
-        ]
-      })
-      .then(device => {
-        console.log("> Name:             " + device.name);
-        console.log("> Id:               " + device.id);
-        console.log("> Connected:        " + device.gatt.connected);
-
-        return device.gatt.connect();
-      })
-      .then(service => {
-        console.log("Get Service");
-        return service.getPrimaryService(serviceUuid);
-      })
-      .then(service => {
-        console.log("Get Service");
-        service
-          .getCharacteristic(characteristicUuidNoti)
-          .then(characteristic => {
-            characteristic.startNotifications();
-            characteristic.addEventListener(
-              "characteristicvaluechanged",
-              this.handleNotifications
-            );
-            console.log("Get characteristic for notification", characteristic);
-
-            this.controller.OnConnected();
-          })
-          .catch(err => console.log(err));
-
-        service
-          .getCharacteristic(characteristicUuidWrite)
-          .then(writecharacteristic => {
-            console.log("Get characteristic for write", writecharacteristic);
-            this.writecharacteristic = writecharacteristic;
-          })
-          .catch(err => console.log(err));
-      })
-
-      .then()
-      .catch(err => console.log(err));
+    this.pen.scanPen()
   };
 
-  handleNotifications = event => {
-    let value = event.target.value;
-    let a = [];
-    for (let i = 0; i < value.byteLength; i++) {
-      a.push(value.getUint8(i));
-    }
-    // console.log("> " + a.join(" "));
-    this.controller.OnDataReceived(a);
-  };
+  disconnect = () => {
+    this.pen.disconnect()
+  }
 
-  writeData = (sender, data) => {
-    if (!this.writecharacteristic) {
-      console.log("writecharacteristic is null");
-      return;
-    }
-    console.log("send data----------------");
-    console.log(data);
-    this.writecharacteristic
-      .writeValue(data)
-      .then(res => console.log("write success res", res))
-      .catch(err => console.log(err));
-    // this.writecharacteristic.write(data, false, function (error) {
-    //     if (error) {
-    //         console.log(error);
-    //     } else {
-    //         console.log("write complete");
-    //     }
-    // })
-  };
+ 
 
   drawlineOne = (d1, d2) => {
     var c = document.getElementById("myCanvas");
