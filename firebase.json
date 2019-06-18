@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "target": "paint",
+    "public": "build",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

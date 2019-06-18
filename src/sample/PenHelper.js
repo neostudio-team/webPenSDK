@@ -5,44 +5,52 @@ const characteristicUuidNoti = parseInt("0x2BA1");
 const characteristicUuidWrite = parseInt("0x2BA0");
 
 export default class PenHelper {
-  constructor(){
-    this.initPen()
+  constructor() {
+    this.initPen();
+    this.device = null;
   }
 
   initPen = () => {
     this.controller = new pen_controller();
-    this.controller.addCallback(this.handleDot, this.handleMessage)
-    this.controller.addWrite(this.handelwrite)
+    this.controller.addCallback(this.handleDot, this.handleMessage);
+    this.controller.addWrite(this.handelwrite);
   };
 
-  handleDot = (args) => {
+  handleDot = args => {
     let dot = args.Dot;
-    this.dotCallback(dot)
-  }
+    this.dotCallback(dot);
+  };
 
-  handleMessage = (type, args) =>{
+  handleMessage = (type, args) => {
     switch (type) {
       case PenMessageType.PEN_AUTHORIZED:
-      console.log("PenHelper PEN_AUTHORIZED")
-      this.controller.RequestAvailableNotes()
-      break;
+        console.log("PenHelper PEN_AUTHORIZED");
+        this.controller.RequestAvailableNotes();
+        break;
       case PenMessageType.PEN_PASSWORD_REQUEST:
-        console.log("request password", args)
+        console.log("request password", args);
         this.controller.InputPassword("1234");
-        break
+        break;
       case PenMessageType.PEN_SETTING_INFO:
-        console.log("PenHelper Setting Info", args)
-        break
+        console.log("PenHelper Setting Info", args);
+        break;
       case PenMessageType.PEN_SETUP_SUCCESS:
-        let settingtype = Object.keys(SettingType).filter(key => SettingType[key] === args.SettingType)
-        console.log("PenHelper Setting success", settingtype, args, typeof(args.SettingType))
-        break
+        let settingtype = Object.keys(SettingType).filter(
+          key => SettingType[key] === args.SettingType
+        );
+        console.log(
+          "PenHelper Setting success",
+          settingtype,
+          args,
+          typeof args.SettingType
+        );
+        break;
       default:
-        console.log("PenHelper TODO", type, args)
+        console.log("PenHelper TODO", type, args);
     }
-  }
+  };
 
- scanPen = () => {
+  scanPen = () => {
     navigator.bluetooth
       .requestDevice({
         filters: [
@@ -55,45 +63,61 @@ export default class PenHelper {
         console.log("> Name:             " + device.name);
         console.log("> Id:               " + device.id);
         console.log("> Connected:        " + device.gatt.connected);
-        this.device = device
-        return device.gatt.connect();
+        this.device = device;
+        this.connectDevice(this.device);
       })
-      .then(service => {
-        console.log("Get Service", service);
-        return service.getPrimaryService(serviceUuid);
-      })
-      .then(service => {
-        console.log("Get Service");
-        service
-          .getCharacteristic(characteristicUuidNoti)
-          .then(characteristic => {
-            characteristic.startNotifications();
-            characteristic.addEventListener(
-              "characteristicvaluechanged",
-              this.handleNotifications
-            );
-            console.log("Get characteristic for notification", characteristic);
-
-            this.controller.OnConnected();
-          })
-          .catch(err => console.log(err));
-
-        service
-          .getCharacteristic(characteristicUuidWrite)
-          .then(writecharacteristic => {
-            console.log("Get characteristic for write", writecharacteristic);
-            this.writecharacteristic = writecharacteristic;
-          })
-          .catch(err => console.log(err));
-      })
-
-      .then()
       .catch(err => console.log(err));
   };
 
+  connectDevice = device => {
+    if (device)
+      device.gatt
+        .connect()
+        .then(service => {
+          console.log("Get Service", service);
+          return service.getPrimaryService(serviceUuid);
+        })
+        .then(service => {
+          console.log("Get Service");
+          service
+            .getCharacteristic(characteristicUuidNoti)
+            .then(characteristic => {
+              characteristic.startNotifications();
+              characteristic.addEventListener(
+                "characteristicvaluechanged",
+                this.handleNotifications
+              );
+              console.log(
+                "Get characteristic for notification",
+                characteristic
+              );
+
+              this.controller.OnConnected();
+            })
+            .catch(err => console.log(err));
+
+          service
+            .getCharacteristic(characteristicUuidWrite)
+            .then(writecharacteristic => {
+              console.log("Get characteristic for write", writecharacteristic);
+              this.writecharacteristic = writecharacteristic;
+            })
+            .catch(err => console.log(err));
+        })
+
+        .then()
+        .catch(err => console.log(err));
+  };
+
+  connect = () => {
+    console.log("Requesting any Bluetooth Device...", this.device);
+    if (this.device) this.connectDevice(this.device)
+
+  };
+
   disconnect = () => {
-    this.device.gatt.disconnect();
-  }
+    if (this.device) this.device.gatt.disconnect();
+  };
 
   // from Pen to SDK
   handleNotifications = event => {
@@ -106,9 +130,8 @@ export default class PenHelper {
     this.controller.putData(a);
   };
 
-
   // to Pen
-  handelwrite = (data) => {
+  handelwrite = data => {
     if (!this.writecharacteristic) {
       console.log("writecharacteristic is null");
       return;
@@ -117,11 +140,8 @@ export default class PenHelper {
     this.writecharacteristic
       .writeValue(data)
       .then(() => {
-        console.log("write success", data[1])
+        console.log("write success", data[1]);
       })
-      .catch(err => console.log("write Error",err));
+      .catch(err => console.log("write Error", err));
   };
-
-
-  
 }

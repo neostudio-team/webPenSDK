@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "neonotes2-d0880"
+  },
+  "targets": {
+    "neonotes2-d0880": {
+      "hosting": {
+        "paint": [
+          "neopaint"
+        ]
+      }
+    }
+  }
+}
