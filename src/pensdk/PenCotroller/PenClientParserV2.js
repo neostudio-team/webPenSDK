@@ -143,7 +143,7 @@ export default class PenClientParserV2 {
             this.PenController.onMessage(
               PenMessageType.PEN_SETTING_INFO,
               password
-            )();
+            )
             this.state.reCheckPassword = false;
             break;
           }
@@ -325,7 +325,7 @@ export default class PenClientParserV2 {
   }
 
   ParseDotPacket(cmd, pk) {
-    console.log("ParseDotPacket", cmd, pk);
+    // console.log("ParseDotPacket", cmd, pk);
 
     switch (cmd) {
       case CMD.ONLINE_NEW_PEN_DOWN_EVENT:
@@ -372,7 +372,8 @@ export default class PenClientParserV2 {
           this.CheckEventCount(ecount);
 
           let timestamp = pk.GetLong();
-          console.log("ONLINE_NEW_PEN_UP_EVENT timestamp", timestamp);
+          new Date(timestamp)
+          // console.log("ONLINE_NEW_PEN_UP_EVENT timestamp", new Date(timestamp));
           let dotCount = pk.GetShort();
           let totalImageCount = pk.GetShort();
           let procImageCount = pk.GetShort();
@@ -757,7 +758,7 @@ export default class PenClientParserV2 {
   }
 
   SendDotReceiveEvent(dot, obj) {
-    console.log(dot);
+    // console.log(dot);
     this.PenController.onDot({ Dot: dot, ImageProcessingInfo: obj });
   }
 
@@ -897,7 +898,8 @@ export default class PenClientParserV2 {
   //
   ReqSetUpPassword(oldPassword, newPassword = "") {
     if (!oldPassword || !newPassword) return false;
-    if (oldPassword === this.const.DEFAULT_PASSWORD) return false;
+    console.log("ReqSetUpPassword", oldPassword, newPassword)
+    // if (oldPassword === this.const.DEFAULT_PASSWORD) return false;
     if (newPassword === this.const.DEFAULT_PASSWORD) return false;
 
     this.state.newPassword = newPassword;

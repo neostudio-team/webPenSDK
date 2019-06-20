@@ -38,7 +38,7 @@ export default class PenController {
 
   // Error process
   onErrorDetected(args) {
-    this.onMessage(PenMessageType.ERR, args);
+    this.onMessage(PenMessageType.EVENT_DOT_ERROR, args);
   }
 
   //SDK Local logic

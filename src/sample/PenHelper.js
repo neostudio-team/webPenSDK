@@ -1,4 +1,4 @@
-import pen_controller, { PenMessageType, SettingType } from "../pensdk";
+import pen_controller from "../pensdk";
 
 const serviceUuid = parseInt("0x19F1");
 const characteristicUuidNoti = parseInt("0x2BA1");
@@ -8,6 +8,8 @@ export default class PenHelper {
   constructor() {
     this.initPen();
     this.device = null;
+    this.dotCallback = null;
+    this.messageCallback = null;
   }
 
   initPen = () => {
@@ -18,36 +20,11 @@ export default class PenHelper {
 
   handleDot = args => {
     let dot = args.Dot;
-    this.dotCallback(dot);
+    if (this.dotCallback) this.dotCallback(dot);
   };
 
   handleMessage = (type, args) => {
-    switch (type) {
-      case PenMessageType.PEN_AUTHORIZED:
-        console.log("PenHelper PEN_AUTHORIZED");
-        this.controller.RequestAvailableNotes();
-        break;
-      case PenMessageType.PEN_PASSWORD_REQUEST:
-        console.log("request password", args);
-        this.controller.InputPassword("1234");
-        break;
-      case PenMessageType.PEN_SETTING_INFO:
-        console.log("PenHelper Setting Info", args);
-        break;
-      case PenMessageType.PEN_SETUP_SUCCESS:
-        let settingtype = Object.keys(SettingType).filter(
-          key => SettingType[key] === args.SettingType
-        );
-        console.log(
-          "PenHelper Setting success",
-          settingtype,
-          args,
-          typeof args.SettingType
-        );
-        break;
-      default:
-        console.log("PenHelper TODO", type, args);
-    }
+    if (this.messageCallback) this.messageCallback(type, args);
   };
 
   scanPen = () => {
@@ -111,8 +88,7 @@ export default class PenHelper {
 
   connect = () => {
     console.log("Requesting any Bluetooth Device...", this.device);
-    if (this.device) this.connectDevice(this.device)
-
+    if (this.device) this.connectDevice(this.device);
   };
 
   disconnect = () => {
@@ -126,7 +102,7 @@ export default class PenHelper {
     for (let i = 0; i < value.byteLength; i++) {
       a.push(value.getUint8(i));
     }
-    console.log("APP -----> ", a);
+    // console.log("APP -----> ", a);
     this.controller.putData(a);
   };
 
@@ -136,7 +112,7 @@ export default class PenHelper {
       console.log("writecharacteristic is null");
       return;
     }
-    console.log("Pen ----->", data);
+    // console.log("Pen ----->", data);
     this.writecharacteristic
       .writeValue(data)
       .then(() => {
