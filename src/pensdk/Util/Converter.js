@@ -35,7 +35,7 @@ export default class Converter {
   static byteArrayToInt = bytes => {
     let arr = new Uint8Array(bytes);
     let dv = new DataView(arr.buffer);
-    return dv.getInt32(0, true);
+    return dv.getUint32(0, true);
   };
 
   static intToByteArray(input) {
@@ -48,7 +48,7 @@ export default class Converter {
   static byteArrayToShort(bytes) {
     let arr = new Uint8Array(bytes);
     let dv = new DataView(arr.buffer);
-    return dv.getInt16(0, true);
+    return dv.getUint16(0, true);
   }
 
   static shortToByteArray(input) {
@@ -64,19 +64,22 @@ export default class Converter {
   * @returns {number} bicInt64
   */
   static byteArrayToLong(bytes) {
-    let arr = new Uint8Array(bytes);
-    let dv = new DataView(arr.buffer);
-    let result = dv.getBigUint64(0, true)
-    return parseInt(result)
+    var byte = new Uint8Array(bytes)
+    var view = new DataView(byte.buffer)
+    var hi = view.getUint32(0, true)
+    let low = view.getUint32(4,true)
+    var intValue = hi + (low * 4294967296) // 2 ^ 32
+    return intValue
   }
 
   static longToByteArray(input) {
-    let bigint = window.BigInt(input)
-    let arr = new Uint8Array(8);
-    let dv = new DataView(arr.buffer);
-    dv.setBigUint64(0, bigint, true);
-    return Array.from(arr);
+    let long = input
+    var byteArray = [0, 0, 0, 0, 0, 0, 0, 0];
+    for ( var index = 0; index < byteArray.length; index ++ ) {
+        var byte = long & 0xff;
+        byteArray[index] = byte;
+        long = (long - byte) / 256 ;
+    }
+    return Array.from(byteArray)
   }
 }
-
-export {}

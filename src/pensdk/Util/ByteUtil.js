@@ -60,10 +60,7 @@ export default class ByteUtil {
   }
 
   PutArray(inputs, length) {
-    // let alength = inputs.length < length ? inputs.length : length
     let result = inputs.slice();
-    result.length = length;
-
     for (let i = 0; i < length; ++i) {
       this.Put(result[i]);
     }
@@ -82,11 +79,13 @@ export default class ByteUtil {
     let arr = Converter.intToByteArray(input);
     return this.PutArray(arr, arr.length);
   }
+
   PutLong(input) {
     let arr = Converter.longToByteArray(input);
-    // console.log("put long", arr)
+    // NLog.log("put long", arr)
     return this.PutArray(arr, arr.length);
   }
+  
   PutShort(input) {
     let arr = Converter.shortToByteArray(input);
     return this.PutArray(arr, arr.length);
@@ -107,10 +106,6 @@ export default class ByteUtil {
 
   GetByte() {
     return this.GetBytes(1)[0];
-  }
-
-  GetByteToInt() {
-    return this.GetByte() & 0xff;
   }
 
   GetInt() {
@@ -151,6 +146,19 @@ export function toHexString(bytes) {
       return ("00" + (byte & 0xff).toString(16)).slice(-2);
     })
     .join("");
+}
+
+export function  GetSectionOwnerByte(section, owner) {
+  let ownerByte = Converter.intToByteArray(owner);
+  ownerByte[3] = section & 0xff;
+  return ownerByte;
+}
+
+// 4 byte array
+export function  GetSectionOwner(bytes) {
+  let section = parseInt(bytes[3] & 0xff);
+  let owner = bytes[0] + bytes[1] * 256 + bytes[2] * 65536;
+  return [section, owner];
 }
 
 // Defines

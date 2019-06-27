@@ -21,3 +21,46 @@ module로만 만들어서 작업함
 * Jasmine: https://github.com/jasmine/jasmine
 * avajs: https://github.com/avajs/ava
 * jest: https://github.com/facebook/jest
+
+
+## Dot 
+{
+  Color: 4278190080
+  DotType: 1
+  Force: 0.915
+  Note: 617
+  Owner: 27
+  Page: 189
+  Section: 3
+  Timestamp: 1561509766109
+  X: 52.3
+  Y: 49.01
+}
+
+## Offline Data
+{ 
+  dotArray: [Dot]
+  dotCount: 7
+  downTime: 1561509695867
+  pageId: 189
+  penTipColor: 4278190080
+  penTipType: 0
+  upTime: 1561509696045
+}
+## Offline Dot
+{
+  force: 751
+  fx: 10
+  fy: 93
+  nCheckSum: 32
+  nTimeDelta: 0
+  reserved: 63312
+  twist: 143
+  x: 64
+  xtilt: 90
+  y: 23
+  ytilt: 65
+}
+
+## Document this(자동 주석) 
+* https://marketplace.visualstudio.com/items?itemName=joelday.docthis

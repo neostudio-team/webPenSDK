@@ -1,4 +1,5 @@
 import Converter from '../Util/Converter'
+import NLog from '../Util/NLog'
 
 class Packet {
     constructor() {
@@ -42,7 +43,7 @@ class Packet {
         let result = this.Data.slice(this.mIndex, this.mIndex + size);
         if ( result.length === 0)
         {
-            console.log("zero data");
+            NLog.log("zero data");
         }
         this.Move(size);
         return result;
@@ -55,9 +56,6 @@ class Packet {
     }
     GetLong() {
         return Converter.byteArrayToLong(this.GetBytes(8))
-    }
-    GetByteToInt() {
-        return (this.GetByte() & 0xFF);
     }
     GetString(length) {
         let bytes = this.GetBytes(length);

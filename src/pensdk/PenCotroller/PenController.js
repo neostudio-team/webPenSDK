@@ -1,25 +1,31 @@
 import PenClientParserV2 from "./PenClientParserV2";
 import * as Error from "../Model/SDKError";
-import OfflineDataInfo from "../Model/OfflineDataInfo";
 import PenMessageType from "../API/PenMessageType";
+import PenRequestV2 from "./PenRequestV2"
 
 export default class PenController {
   constructor() {
-    // this._triggers = {};
-    this.mClientV2 = new PenClientParserV2(this);
+    this.mParserV2 = new PenClientParserV2(this);
+    this.mClientV2 = new PenRequestV2(this)
     this.onDot = null;
     this.onMessage = null;
     this.Protocol = 2;
     this.handleWrite = null;
   }
 
-  //Step1 Add callback
+  /**
+   *
+   *
+   * @param {callback} handledot
+   * @param {callback} handlemessage
+   * @memberof PenController
+   */
   addCallback(handledot, handlemessage) {
     this.onDot = handledot;
     this.onMessage = handlemessage;
   }
 
-  //Step2 Add Write Pipe
+  // MARK: Step2 Add Write Pipe
   addWrite(handlewrite) {
     this.handleWrite = handlewrite;
   }
@@ -32,7 +38,7 @@ export default class PenController {
     if (this.Protocol === 1) {
       // this.mClientV1.ProtocolParse(buff, buff.Length);
     } else {
-      this.mClientV2.ProtocolParse(buff);
+      this.mParserV2.ProtocolParse(buff);
     }
   }
 
@@ -67,7 +73,18 @@ export default class PenController {
     }
   }
 
+  // MARK: Request
+  //Request Version Info
+  RequestVersionInfo = () => {
+    return this.mParserV2.penVersionInfo
+  }
+
   // Request
+  /**
+   * @param {*} oldone
+   * @param {string} [newone=""]
+   * @memberof PenController
+   */
   SetPassword(oldone, newone = "") {
     this.Request(
       () => {},
@@ -152,26 +169,26 @@ export default class PenController {
     );
   }
 
-  RequestOfflineDataList() {
+  // Offline List
+  // setion or owner  = null : All Note
+  RequestOfflineNoteList(section, owner) {
     this.Request(
       () => this.mClientV1.ReqOfflineDataList(),
-      () => this.mClientV2.ReqOfflineDataList()
+      () => this.mClientV2.ReqOfflineNoteList(section, owner)
     );
   }
 
-  RequestOfflineData(
-    section,
-    owner,
-    note,
-    deleteOnFinished = true,
-    pages = null
-  ) {
+  RequestOfflinePageList(section, owner, note) {
+    this.Request(
+      () => this.mClientV1.ReqOfflineDataList(),
+      () => this.mClientV2.ReqOfflinePageList(section, owner, note)
+    );
+  }
+
+  // Offline Data
+  RequestOfflineData(section, owner, note, deleteOnFinished = true, pages = [] ) {
     return this.Request(
-      () => {
-        return this.mClientV1.ReqOfflineData(
-          new OfflineDataInfo(section, owner, note, pages)
-        );
-      },
+      () => this.mClientV1.ReqOfflineData(),
       () => {
         return this.mClientV2.ReqOfflineData(
           section,
@@ -183,24 +200,22 @@ export default class PenController {
       }
     );
   }
-  RequestOfflineDataSectionOwnerNotes(section, owner, notes) {
-    return this.Request(
+
+  /** Offline Data Delete
+  * @param {number} section
+  * @param {number} owner
+  * @param {array} notes
+  */
+  RequestOfflineDelete(section, owner, notes) {
+    this.Request(
+      () => this.mClientV1.ReqOfflineDelete( ),
       () => {
-        return this.mClientV1.ReqOfflineData(
-          new OfflineDataInfo(section, owner, notes[0])
-        );
-      },
-      () => {
-        return this.mClientV2.ReqOfflineData(section, owner, notes[0]);
+        this.mClientV2.ReqOfflineDelete(section, owner, notes);
       }
     );
   }
-  RequestOfflineDataSectionOwner(section, owner) {
-    this.Request(
-      () => this.mClientV1.ReqPenStatus(),
-      () => this.mClientV2.ReqPenStatus()
-    );
-  }
+
+  // Firmware Update
   RequestFirmwareInstallation(file, version = null) {
     this.Request(
       () => this.mClientV1.ReqPenSwUpgrade(file),
@@ -219,6 +234,7 @@ export default class PenController {
 
   OnConnected() {
     if (this.Protocol !== 1) {
+      this.mParserV2.state.first = true
       this.mClientV2.ReqVersionTask();
     }
   }

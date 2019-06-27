@@ -1,4 +1,4 @@
-import pen_controller from "../pensdk";
+import PenController from "../pensdk";
 
 const serviceUuid = parseInt("0x19F1");
 const characteristicUuidNoti = parseInt("0x2BA1");
@@ -6,26 +6,29 @@ const characteristicUuidWrite = parseInt("0x2BA0");
 
 export default class PenHelper {
   constructor() {
-    this.initPen();
+    this.controller = new PenController();
+    this.controller.addCallback(this.handleDot, this.handleMessage);
+    this.controller.addWrite(this.handelwrite);
     this.device = null;
     this.dotCallback = null;
     this.messageCallback = null;
   }
 
-  initPen = () => {
-    this.controller = new pen_controller();
-    this.controller.addCallback(this.handleDot, this.handleMessage);
-    this.controller.addWrite(this.handelwrite);
-  };
+  isConnected = () => {
+    return this.writecharacteristic ? true : false
+  }
 
+  // MARK: Dot Event Callback
   handleDot = args => {
     let dot = args.Dot;
     if (this.dotCallback) this.dotCallback(dot);
   };
 
+  // MARK: Pen Event Callback
   handleMessage = (type, args) => {
     if (this.messageCallback) this.messageCallback(type, args);
   };
+
 
   scanPen = () => {
     navigator.bluetooth
@@ -95,7 +98,7 @@ export default class PenHelper {
     if (this.device) this.device.gatt.disconnect();
   };
 
-  // from Pen to SDK
+  // MARK: from Pen to SDK
   handleNotifications = event => {
     let value = event.target.value;
     let a = [];
@@ -106,7 +109,7 @@ export default class PenHelper {
     this.controller.putData(a);
   };
 
-  // to Pen
+  // MARK: to Pen
   handelwrite = data => {
     if (!this.writecharacteristic) {
       console.log("writecharacteristic is null");
@@ -116,7 +119,7 @@ export default class PenHelper {
     this.writecharacteristic
       .writeValue(data)
       .then(() => {
-        console.log("write success", data[1]);
+        console.log("write success CMD: ", "0x" + data[1].toString(16), data[1]);
       })
       .catch(err => console.log("write Error", err));
   };

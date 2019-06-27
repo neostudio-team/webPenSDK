@@ -8,7 +8,7 @@ import Thickness from "./Thickness";
 
 const canvasBackgroundColor = "white";
 
-export default class Painter extends React.Component {
+export default class StrokeView extends React.Component {
   constructor(props) {
     super(props);
     this.props.pen.dotCallback = this.onDot;
@@ -93,12 +93,51 @@ export default class Painter extends React.Component {
     canvas.selection = false;
 
     this.canvas = canvas;
-    console.log("canvas info", canvas);
+    // console.log("canvas info", canvas);
 
     // free drawing Setting
     canvas.freeDrawingBrush.color = "rgba(0,0,0,1)";
     canvas.freeDrawingBrush.width = Global.getThickness();
   }
+
+  componentDidUpdate(preProp, preState) {
+    let st = this.props.stroke
+    this.drawWtroke(st)
+  }
+
+  drawWtroke = (st) => {
+    console.log("draw stroke", st.length);
+    this.canvas.clear();
+    const pathOption = {
+      fill: "transparent",
+      stroke: "black",
+      strokeWidth: 1,
+      selectable: false,
+      evented: false
+    };
+
+    st.forEach(st => {
+      let line = this.darwLines(st.Dots);
+      var path = new fabric.Path(line, pathOption);
+      this.canvas.add(path);
+    });
+  }
+  
+  darwLines = ps => {
+    const scale = 5
+    let lines = "M";
+    ps.forEach((p, index) => {
+      const x = p.X * scale
+      const y = p.Y * scale
+      if (index === 0) {
+        lines += x + "," + y;
+      } else {
+        lines += "L" + x + "," + y;
+      }
+    });
+    // lines += "Z";
+    return lines;
+  };
 
   // App Event
   peninfo = () => {
@@ -115,18 +154,6 @@ export default class Painter extends React.Component {
     this.props.pen.controller.RequestAvailableNotes();
   };
 
-  darwLines = ps => {
-    let lines = "M";
-    ps.forEach((p, index) => {
-      if (index === 0) {
-        lines += p.x + "," + p.y;
-      } else {
-        lines += "L" + p.x + "," + p.y;
-      }
-    });
-    lines += "Z";
-    return lines;
-  };
 
   drawline = (p1, p2) => {
     var line = "M" + p1.x + "," + p1.y + "L" + p2.x + "," + p2.y;
@@ -143,34 +170,6 @@ export default class Painter extends React.Component {
     this.canvas.add(path);
   };
 
-  drawSimplePath = point => {
-    var simplePath = "M" + point[0].x + "," + point[0].y;
-    var controlPoints = [];
-    point.forEach(p => {
-      if (controlPoints.length < 5) {
-        controlPoints.push(p);
-        return;
-      }
-      let endPoint = {
-        x: (controlPoints[2].x + p.x) / 2,
-        y: (controlPoints[2].y + p.y) / 2
-      };
-
-      simplePath += this.point3Curve(
-        controlPoints[1],
-        controlPoints[2],
-        endPoint
-      );
-      controlPoints = [endPoint, p];
-    });
-
-    if (controlPoints.length > 1) {
-      for (let i = 0; i < controlPoints.length; i++) {
-        simplePath += "L" + controlPoints[i].x + "," + controlPoints[i].y;
-      }
-    }
-    return simplePath;
-  };
 
   /// Pen Event and Controll
   onDot = d => {

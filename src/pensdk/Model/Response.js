@@ -1,14 +1,14 @@
-import {toHexString} from '../Util/ByteUtil'
+import {toHexString, GetSectionOwner} from '../Util/ByteUtil'
 
 export function VersionInfo(packet) {
-  let DeviceName = packet.GetString(16);
-  let FirmwareVersion = packet.GetString(16);
-  let ProtocolVersion = packet.GetString(8);
-  let SubName = packet.GetString(16);
-  let DeviceType = packet.GetShort();
-  let MacAddress = toHexString(packet.GetBytes(6));
+  const DeviceName = packet.GetString(16);
+  const FirmwareVersion = packet.GetString(16);
+  const ProtocolVersion = packet.GetString(8);
+  const SubName = packet.GetString(16);
+  const DeviceType = packet.GetShort();
+  const MacAddress = toHexString(packet.GetBytes(6));
 
-  var versionInfo = {
+  const versionInfo = {
     DeviceName,
     FirmwareVersion,
     ProtocolVersion,
@@ -21,46 +21,33 @@ export function VersionInfo(packet) {
 
 export function SettingInfo(packet) {
   // 비밀번호 사용 여부
-  let lockyn = packet.GetByteToInt() === 1;
-
+  let lockyn = packet.GetByte() === 1;
   // 비밀번호 입력 최대 시도 횟수
-  let pwdMaxRetryCount = packet.GetByteToInt();
-
+  let pwdMaxRetryCount = packet.GetByte();
   // 비밀번호 입력 시도 횟수
-  let pwdRetryCount = packet.GetByteToInt();
-
+  let pwdRetryCount = packet.GetByte();
   // 1970년 1월 1일부터 millisecond tick
   let time = packet.GetLong();
-  
   // 사용하지 않을때 자동으로 전원이 종료되는 시간 (단위:분)
   let autoPowerOffTime = packet.GetShort();
-
   // 최대 필압
   let maxForce = packet.GetShort();
-
   // 현재 메모리 사용량
-  let usedStorage = packet.GetByteToInt();
-
+  let usedStorage = packet.GetByte();
   // 펜의 뚜껑을 닫아서 펜의 전원을 차단하는 기능 사용 여부
-  let penCapOff = packet.GetByteToInt() === 1;
-
+  let penCapOff = packet.GetByte() === 1;
   // 전원이 꺼진 펜에 필기를 시작하면 자동으로 펜의 켜지는 옵션 사용 여부
-  let autoPowerON = packet.GetByteToInt() === 1;
-
+  let autoPowerON = packet.GetByte() === 1;
   // 사운드 사용여부
-  let beep = packet.GetByteToInt() === 1;
-
+  let beep = packet.GetByte() === 1;
   // 호버기능 사용여부
-  let hover = packet.GetByteToInt() === 1;
-
+  let hover = packet.GetByte() === 1;
   // 남은 배터리 수치
-  let batteryLeft = packet.GetByteToInt();
-
+  let batteryLeft = packet.GetByte();
   // 오프라인 데이터 저장 기능 사용 여부
-  let useOffline = packet.GetByteToInt() === 1;
-
+  let useOffline = packet.GetByte() === 1;
   // 필압 단계 설정 (0~4) 0이 가장 민감
-  let fsrStep = packet.GetByteToInt();
+  let fsrStep = packet.GetByte();
 
   let settingInfo = {
     Locked: lockyn,
@@ -84,21 +71,21 @@ export function SettingInfo(packet) {
 
 
 export function SettingChnage(packet) {
-  let SettingType = packet.GetByteToInt();
+  let SettingType = packet.GetByte();
   let result = packet.Result === 0x00;
   return {SettingType, result}
 }
 
 export function Password(packet) {
-  let status = packet.GetByteToInt();
-  let RetryCount = packet.GetByteToInt();
-  let ResetCount = packet.GetByteToInt();
+  let status = packet.GetByte();
+  let RetryCount = packet.GetByte();
+  let ResetCount = packet.GetByte();
   return {status, RetryCount, ResetCount}
 }
 
 export function PasswordChange(packet) {
-  let RetryCount = packet.GetByteToInt();
-  let ResetCount = packet.GetByteToInt();
+  let RetryCount = packet.GetByte();
+  let ResetCount = packet.GetByte();
   return {RetryCount, ResetCount}
 }
 
@@ -112,4 +99,37 @@ export function PDS(packet) {
   let fx = packet.GetShort();
   let fy = packet.GetShort();
   return {section, owner, note, page, x, y, fx, fy}
+}
+
+export function NoteList(packet) {
+  let length = packet.GetShort();
+  let result = [];
+  for (var i = 0; i < length; i++) {
+    let rb = packet.GetBytes(4);
+    let [section, owner] = GetSectionOwner(rb);
+    let note = packet.GetInt();
+
+    result.push({ Section: section, Owner: owner, Note: note });
+  }
+  return result
+}
+
+export function PageList(packet){
+  let rb = packet.GetBytes(4);
+  let [section, owner] = GetSectionOwner(rb);
+  let note = packet.GetInt();
+  let length = packet.GetShort();
+  let pages = [];
+
+  for (let i = 0; i < length; i++) {
+    pages.push(packet.GetInt());
+  }
+
+  let result = {
+    Section: section,
+    Owner: owner,
+    Note: note,
+    Pages: pages
+  };
+  return result
 }
