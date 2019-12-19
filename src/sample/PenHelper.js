@@ -4,6 +4,11 @@ const serviceUuid = parseInt("0x19F1");
 const characteristicUuidNoti = parseInt("0x2BA1");
 const characteristicUuidWrite = parseInt("0x2BA0");
 
+const PEN_SERVICE_UUID_128 = "4f99f138-9d53-5bfa-9e50-b147491afe68"
+const PEN_CHARACTERISTICS_NOTIFICATION_UUID_128 = "64cd86b1-2256-5aeb-9f04-2caf6c60ae57"
+const PEN_CHARACTERISTICS_WRITE_UUID_128 = "8bc8cc7d-88ca-56b0-af9a-9bf514d0d61a"
+
+
 export default class PenHelper {
   constructor() {
     this.controller = new PenController();
@@ -29,14 +34,12 @@ export default class PenHelper {
     if (this.messageCallback) this.messageCallback(type, args);
   };
 
-
   scanPen = () => {
     navigator.bluetooth
       .requestDevice({
         filters: [
-          {
-            services: [serviceUuid]
-          }
+          { services: [serviceUuid]  },
+          { services: [PEN_SERVICE_UUID_128] }
         ]
       })
       .then(device => {
@@ -50,44 +53,66 @@ export default class PenHelper {
   };
 
   connectDevice = device => {
-    if (device)
-      device.gatt
-        .connect()
-        .then(service => {
-          console.log("Get Service", service);
+    if (!device) return;
+    device.gatt
+      .connect()
+      .then(service => {
+        console.log("Get Service", service);
+        if (service.device.name.includes("dimo")){
+          return service.getPrimaryService(PEN_SERVICE_UUID_128)
+        } else {
           return service.getPrimaryService(serviceUuid);
-        })
-        .then(service => {
-          console.log("Get Service");
-          service
-            .getCharacteristic(characteristicUuidNoti)
-            .then(characteristic => {
-              characteristic.startNotifications();
-              characteristic.addEventListener(
-                "characteristicvaluechanged",
-                this.handleNotifications
-              );
-              console.log(
-                "Get characteristic for notification",
-                characteristic
-              );
-
-              this.controller.OnConnected();
-            })
-            .catch(err => console.log(err));
-
-          service
-            .getCharacteristic(characteristicUuidWrite)
-            .then(writecharacteristic => {
-              console.log("Get characteristic for write", writecharacteristic);
-              this.writecharacteristic = writecharacteristic;
-            })
-            .catch(err => console.log(err));
-        })
-
-        .then()
-        .catch(err => console.log(err));
+        }
+      })
+      .then(service => {
+        console.log("binding service", service)
+        this.serviceBinding(service)
+      })
+      .then()
+      .catch(err => console.log(err));
   };
+
+  serviceBinding = (service) => {
+    // 128bit service id
+    if (service.uuid === PEN_SERVICE_UUID_128){
+      service.getCharacteristic(PEN_CHARACTERISTICS_NOTIFICATION_UUID_128)
+      .then(characteristic => this.readCharacteristicBinding(characteristic))
+      .catch(e =>{  
+        console.log("readCharacteristicBinding error", e)
+      })
+
+      service.getCharacteristic(PEN_CHARACTERISTICS_WRITE_UUID_128)
+      .then(characteristic => this.writeCharacteristicBinding(characteristic))
+      .catch(e => {
+        console.log("writeCharacteristicBinding error", e)
+      })
+    
+      // 16bit service id
+    } else {
+      service.getCharacteristic(characteristicUuidNoti)
+      .then(characteristic => this.readCharacteristicBinding(characteristic))
+      .catch(e => {
+        console.log("readCharacteristicBinding error", e)
+      })
+
+      service.getCharacteristic(characteristicUuidWrite)
+      .then(characteristic => this.writeCharacteristicBinding(characteristic))
+      .catch(e => {
+        console.log("writeCharacteristicBinding error", e)
+      })
+    }
+
+  }
+
+  readCharacteristicBinding = (characteristic) => {
+    characteristic.startNotifications();
+    characteristic.addEventListener( "characteristicvaluechanged",  this.handleNotifications );
+    this.controller.OnConnected();
+  }
+
+  writeCharacteristicBinding = (characteristic) => {
+    this.writecharacteristic = characteristic;
+  }
 
   connect = () => {
     console.log("Requesting any Bluetooth Device...", this.device);
