@@ -17,6 +17,7 @@ export default class PenHelper {
     this.device = null;
     this.dotCallback = null;
     this.messageCallback = null;
+
   }
 
   isConnected = () => {
@@ -35,6 +36,14 @@ export default class PenHelper {
   };
 
   scanPen = () => {
+    this.checkAvailability()
+    if (navigator.bluetooth) {
+      console.log("bluetooth support")
+    } else {
+      alert("Bluetooth not support")
+      return
+    }
+    console.log("Scan start")
     navigator.bluetooth
       .requestDevice({
         filters: [
@@ -52,8 +61,20 @@ export default class PenHelper {
       .catch(err => console.log(err));
   };
 
+  checkAvailability = () => {
+    // const bluetoothUI = document.querySelector('#bluetoothUI');
+    navigator.bluetooth.getAvailability().then(isAvailable => {
+      console.log("isAvailable", isAvailable)
+      // bluetoothUI.hidden = !isAvailable;
+      if (!isAvailable) {
+        alert("Bluetooth not support")
+      }
+    });
+  }
+  
   connectDevice = device => {
     if (!device) return;
+    console.log("Connect start", device)
     device.gatt
       .connect()
       .then(service => {

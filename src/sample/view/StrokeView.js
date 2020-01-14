@@ -31,6 +31,15 @@ export default class StrokeView extends React.Component {
     this.canvas.backgroundColor = canvasBackgroundColor;
   };
 
+  colorPick = () => {
+    console.log("color selector click")
+    const colorSelector = document.createElement('input');
+    colorSelector.focus()
+    colorSelector.setAttribute('value', '#ffcc00');
+    // fileSelector.setAttribute('multiple', 'multiple');
+    colorSelector.click()
+  }
+
   handleColorChange = color => {
     const rgb = "rgba(" + Object.values(color.rgb) + ")"
     console.log(rgb)
@@ -59,6 +68,10 @@ export default class StrokeView extends React.Component {
 
         <Button variant="contained" color="secondary" onClick={this.clear}>
           clear
+        </Button>
+
+        <Button variant="contained" color="secondary" onClick={this.colorPick}>
+          ColorPick
         </Button>
 
         <Box display="flex" flexDirection="row">
