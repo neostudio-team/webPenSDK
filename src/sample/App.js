@@ -19,7 +19,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <Box display="flex">
-          <Box width="800px">
+          <Box width="100%">
             <StrokeView pen={this.state.pen} stroke={this.state.stroke}/>
           </Box>
           <Box width="50%">

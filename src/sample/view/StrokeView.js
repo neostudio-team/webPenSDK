@@ -94,7 +94,7 @@ export default class StrokeView extends React.Component {
   }
 
   componentDidMount() {
-    let size = { w: 500, h: 600 };
+    let size = { w: 1080, h: 720 };
     var canvas = new fabric.Canvas("c", {
       backgroundColor: canvasBackgroundColor,
       // selectionColor: 'blue',
@@ -137,7 +137,7 @@ export default class StrokeView extends React.Component {
   }
   
   darwLines = ps => {
-    const scale = 5
+    const scale = 20
     let lines = "M";
     ps.forEach((p, index) => {
       const x = p.X * scale
@@ -187,7 +187,7 @@ export default class StrokeView extends React.Component {
   /// Pen Event and Controll
   onDot = d => {
     // console.log("Ondot", d)
-    let scale = 5;
+    let scale = 10;
     let dot = d;
     if (dot.DotType === Dot.DotTypes.PEN_DOWN) {
       if (this.currentPage !== dot.Page) {
