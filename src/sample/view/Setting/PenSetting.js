@@ -1,11 +1,12 @@
 import React from "react";
 
-import { PenMessageType, SettingType } from "../../pensdk";
+import { PenMessageType, SettingType } from "../../../pensdk";
 import { Box, Button, Typography } from "@material-ui/core";
-import * as Global from "../Global";
+import * as Global from "../../Global";
 import PenSettingSub from "./PenSettingSub";
 import OfflineView from "./OfflineView";
 import FWView from "./FWView";
+import PenHelper from "../../PenHelper"
 
 const setting = [
   "Clear",
@@ -20,8 +21,10 @@ const setting = [
 export default class PenSetting extends React.Component {
   constructor(props) {
     super(props);
-    this.props.pen.messageCallback = this.onMessage;
+    let pen = new PenHelper()
+    pen.messageCallback = this.onMessage;
     this.state = {
+      pen: pen,
       log: [],
       pensetting: null,
       offlineNote: [],
@@ -42,7 +45,7 @@ export default class PenSetting extends React.Component {
   };
 
   handleButton = name => {
-    let { pen } = this.props;
+    let { pen } = this.state;
     if (name === "Clear") {
       this.setState({ log: [] });
       return;
@@ -93,17 +96,16 @@ export default class PenSetting extends React.Component {
   };
 
 
-
   selectNote = (note) => {
     console.log("selectnote", note)
-    let { pen } = this.props;
+    let { pen } = this.state;
     pen.controller.RequestOfflinePageList(note.Section, note.Owner, note.Note)
   }
 
   downloadNote = (note) => {
     console.log("downloadNote", note)
     this.setState({openOffView:false})
-    let { pen } = this.props;
+    let { pen } = this.state;
     pen.controller.RequestOfflineData(note.Section, note.Owner, note.Note)
   }
 
@@ -116,7 +118,7 @@ export default class PenSetting extends React.Component {
   selectPage =(note, page) => {
     console.log("download Page Data",note, page)
     this.setState({openOffView:false})
-    let { pen } = this.props;
+    let { pen } = this.state;
     pen.controller.RequestOfflineData(note.Section, note.Owner, note.Note, true, [page])
   }
 
@@ -128,7 +130,7 @@ export default class PenSetting extends React.Component {
   render() {
     let { log } = this.state;
     return (
-      <div className="SeetingView">
+      <div className="SeetingView" style={{marginTop: 50}}>
         <Box display="flex" flexDirection="column">
           <Box
             style={{
@@ -174,7 +176,7 @@ export default class PenSetting extends React.Component {
             >
               {this.state.pensetting && (
                 <PenSettingSub
-                  pen={this.props.pen}
+                  pen={this.state.pen}
                   pensetting={this.state.pensetting}
                 />
               )}
@@ -194,14 +196,15 @@ export default class PenSetting extends React.Component {
         <FWView
           openFWView={this.state.openFWView}
           handleFWClose={this.handleFWClose}
-          pen={this.props.pen}
+          pen={this.state.pen}
          />
       </div>
     );
   }
 
   onMessage = (type, args) => {
-    let { pen, handleOfflineStroke } = this.props;
+    let { handleOfflineStroke } = this.props;
+    let {pen} = this.state
     if (!pen) {
       this.log("pen is null");
       return;
@@ -209,7 +212,6 @@ export default class PenSetting extends React.Component {
     switch (type) {
       case PenMessageType.PEN_AUTHORIZED:
         this.log("PenHelper PEN_AUTHORIZED");
-        pen.controller.RequestAvailableNotes();
         break;
       case PenMessageType.PEN_PASSWORD_REQUEST:
         this.log("request password", args);

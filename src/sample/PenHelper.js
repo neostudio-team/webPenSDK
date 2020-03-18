@@ -1,4 +1,5 @@
 import PenController from "../pensdk";
+import { PenMessageType} from "../pensdk";
 
 const serviceUuid = parseInt("0x19F1");
 const characteristicUuidNoti = parseInt("0x2BA1");
@@ -8,16 +9,19 @@ const PEN_SERVICE_UUID_128 = "4f99f138-9d53-5bfa-9e50-b147491afe68"
 const PEN_CHARACTERISTICS_NOTIFICATION_UUID_128 = "64cd86b1-2256-5aeb-9f04-2caf6c60ae57"
 const PEN_CHARACTERISTICS_WRITE_UUID_128 = "8bc8cc7d-88ca-56b0-af9a-9bf514d0d61a"
 
+let penInstance;
 
 export default class PenHelper {
   constructor() {
+    if (penInstance) return penInstance;
+
     this.controller = new PenController();
     this.controller.addCallback(this.handleDot, this.handleMessage);
     this.controller.addWrite(this.handelwrite);
     this.device = null;
     this.dotCallback = null;
     this.messageCallback = null;
-
+    penInstance = this
   }
 
   isConnected = () => {
@@ -32,6 +36,14 @@ export default class PenHelper {
 
   // MARK: Pen Event Callback
   handleMessage = (type, args) => {
+    switch (type) {
+      case PenMessageType.PEN_AUTHORIZED:
+        console.log("PenHelper PEN_AUTHORIZED");
+        this.controller.RequestAvailableNotes();
+        break;
+      default:
+        break
+    }
     if (this.messageCallback) this.messageCallback(type, args);
   };
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Slider } from "@material-ui/lab";
+import { Slider } from "@material-ui/core";
 import { Typography } from "@material-ui/core";
 
 function valuetext(value) {
@@ -8,9 +8,9 @@ function valuetext(value) {
 
 export default class Thickness extends React.Component {
   handleThickness = (t, v) => {
-    // console.log(t, v)
-    this.props.handleThickness(v);
+    this.props.handleThickness(v)
   };
+
   render() {
     let markers = [];
     const max = 10;
@@ -38,3 +38,4 @@ export default class Thickness extends React.Component {
     );
   }
 }
+

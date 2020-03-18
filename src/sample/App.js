@@ -1,8 +1,7 @@
 import React from "react";
-import StrokeView from "./view/StrokeView";
-import PenSetting from "./view/PenSetting";
-import { Box } from "@material-ui/core";
 import PenHelper from "./PenHelper";
+import { BrowserRouter as Router, Switch } from "react-router-dom";
+import DefaultLayout from './container';
 
 class App extends React.Component {
   constructor(props) {
@@ -17,16 +16,13 @@ class App extends React.Component {
 
   render() {
     return (
-      <div className="App">
-        <Box display="flex">
-          <Box width="100%">
-            <StrokeView pen={this.state.pen} stroke={this.state.stroke}/>
-          </Box>
-          <Box width="50%">
-            <PenSetting pen={this.state.pen} handleOfflineStroke={this.handleOfflineStroke}/>
-          </Box>
-        </Box>
-      </div>
+      <Router>
+          <div className="App">
+            <Switch>
+             <DefaultLayout/> 
+            </Switch>
+          </div>
+      </Router>
     );
   }
 
