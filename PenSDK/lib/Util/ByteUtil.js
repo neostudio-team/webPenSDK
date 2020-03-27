@@ -1,4 +1,4 @@
-import Converter from "./Converter";
+import * as Converter from "./Converter";
 
 export default class ByteUtil {
   constructor() {

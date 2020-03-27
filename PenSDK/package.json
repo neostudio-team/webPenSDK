@@ -1,5 +1,5 @@
 {
-  "name": "webPenSDK",
+  "name": "webpensdk",
   "version": "1.0.0",
   "description": "Neosmartpen javascript library",
   "main": "lib/index.js",

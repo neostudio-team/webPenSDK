@@ -1,7 +1,6 @@
 import { fabric } from "fabric";
 import StrokeStudio from "../../Data/ShareStudioData";
-import PenHelper from "../../PenHelper";
-import { Dot } from "../../../../../lib";
+import PenHelper, {Dot} from "../../PenHelper";
 
 export default class FabricRender {
   constructor(canvasName) {

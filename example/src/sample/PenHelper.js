@@ -1,5 +1,4 @@
-import PenController from "../../../lib";
-import { PenMessageType} from "../../../lib";
+import PenController, { PenMessageType, Dot, SettingType} from "webpensdk"
 
 const serviceUuid = parseInt("0x19F1");
 const characteristicUuidNoti = parseInt("0x2BA1");
@@ -182,3 +181,5 @@ export default class PenHelper {
       .catch(err => console.log("write Error", err));
   };
 }
+
+export {PenMessageType, Dot, SettingType} 

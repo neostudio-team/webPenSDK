@@ -1,5 +1,5 @@
-import Converter from '../Util/Converter'
-import NLog from '../Util/NLog'
+import * as Converter from '../Util/Converter'
+import * as NLog from '../Util/NLog'
 
 class Packet {
     constructor() {

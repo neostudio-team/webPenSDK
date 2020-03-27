@@ -1,8 +1,8 @@
 import ByteUtil, {GetSectionOwnerByte} from "../Util/ByteUtil";
-import Converter from "../Util/Converter";
+import * as Converter from '../Util/Converter'
+import * as NLog from '../Util/NLog'
 import CMD from "./CMD";
 import CONST from "./Const";
-import NLog from "../Util/NLog"
 
 import { SettingType} from "../API/PenMessageType";
 

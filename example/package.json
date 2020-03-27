@@ -2,7 +2,6 @@
   "name": "sample",
   "version": "0.1.0",
   "private": true,
-  "main": "src/index.js",
   "dependencies": {
     "@material-ui/core": "^4.1.1",
     "@material-ui/icons": "^4.2.1",
@@ -17,12 +16,13 @@
     "react-route": "^1.0.3",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.0.0",
-    "redux": "^4.0.5"
+    "redux": "^4.0.5",
+    "webpensdk": "../PenSDK/"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "Nreact-scripts test",
     "eject": "react-scripts eject",
     "deploy": "react-scripts build && firebase deploy"
   },

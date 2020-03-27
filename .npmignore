@@ -1,0 +1,7 @@
+/lib
+/node_modules
+.gitignore
+.yarn.lock
+.DS_Store
+.git*
+.idea

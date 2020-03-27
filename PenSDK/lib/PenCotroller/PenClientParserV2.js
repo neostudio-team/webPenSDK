@@ -1,12 +1,13 @@
 import ByteUtil, { GetSectionOwner } from "../Util/ByteUtil";
 import * as Packet from "./Packet";
-import Converter from "../Util/Converter";
+import * as Converter from '../Util/Converter'
+import * as NLog from '../Util/NLog'
 import Dot from "../API/Dot";
 import CMD from "./CMD";
 import CONST from "./Const";
 import * as Res from "../Model/Response";
 import zlib from "zlib";
-import NLog from "../Util/NLog";
+
 
 import PenMessageType, { SettingType, PenTipType, ErrorType } from "../API/PenMessageType";
 

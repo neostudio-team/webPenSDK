@@ -1,5 +1,4 @@
-export default class Converter {
-  static toUTF8Array(str) {
+  function toUTF8Array(str) {
     var utf8 = [];
     for (var i = 0; i < str.length; i++) {
       var charcode = str.charCodeAt(i);
@@ -31,26 +30,26 @@ export default class Converter {
     return utf8;
   };
 
-  static byteArrayToInt = bytes => {
+  function byteArrayToInt(bytes) {
     let arr = new Uint8Array(bytes);
     let dv = new DataView(arr.buffer);
     return dv.getUint32(0, true);
   };
 
-  static intToByteArray(input) {
+  function intToByteArray(input) {
     let arr = new Uint8Array(4);
     let dv = new DataView(arr.buffer);
     dv.setUint32(0, input, true);
     return Array.from(arr);
   }
 
-  static byteArrayToShort(bytes) {
+  function byteArrayToShort(bytes) {
     let arr = new Uint8Array(bytes);
     let dv = new DataView(arr.buffer);
     return dv.getUint16(0, true);
   }
 
-  static shortToByteArray(input) {
+  function shortToByteArray(input) {
     let arr = new Uint8Array(2);
     let dv = new DataView(arr.buffer);
     dv.setUint16(0, input, true);
@@ -62,7 +61,7 @@ export default class Converter {
   * @param {array} bytes
   * @returns {number} bicInt64
   */
-  static byteArrayToLong(bytes) {
+ function byteArrayToLong(bytes) {
     var byte = new Uint8Array(bytes)
     var view = new DataView(byte.buffer)
     var hi = view.getUint32(0, true)
@@ -71,7 +70,7 @@ export default class Converter {
     return intValue
   }
 
-  static longToByteArray(input) {
+  function longToByteArray(input) {
     let long = input
     var byteArray = [0, 0, 0, 0, 0, 0, 0, 0];
     for ( var index = 0; index < byteArray.length; index ++ ) {
@@ -81,4 +80,6 @@ export default class Converter {
     }
     return Array.from(byteArray)
   }
-}
+
+
+export {toUTF8Array, byteArrayToInt, byteArrayToShort, intToByteArray, shortToByteArray, byteArrayToLong, longToByteArray}

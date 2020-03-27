@@ -1,6 +1,6 @@
 import React from "react";
 
-import { PenMessageType, SettingType } from "../../../../../lib";
+import { PenMessageType, SettingType } from "../../PenHelper";
 import { Box, Button, Typography } from "@material-ui/core";
 import * as Global from "../../Global";
 import PenSettingSub from "./PenSettingSub";
