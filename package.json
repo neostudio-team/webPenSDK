@@ -1,43 +1,41 @@
 {
-  "name": "sample",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@material-ui/core": "^4.1.1",
-    "@material-ui/icons": "^4.2.1",
-    "@material-ui/lab": "^4.0.0-alpha.16",
-    "babel-jest": "24.7.1",
-    "fabric": "^3.1.0",
-    "file-saver": "^2.0.2",
-    "react": "^16.8.6",
-    "react-color": "^2.18.0",
-    "react-dom": "^16.8.6",
-    "react-redux": "^7.2.0",
-    "react-route": "^1.0.3",
-    "react-router-dom": "^5.1.2",
-    "react-scripts": "3.0.0",
-    "redux": "^4.0.5"
+  "name": "webPenSDK",
+  "version": "1.0.0",
+  "description": "Neosmartpen javascript library",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "deploy": "react-scripts build && firebase deploy"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.config.js"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neostudio-io/webPenSDK.git"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
+  "keywords": [],
+  "author": "Moon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/neostudio-io/webPenSDK/issues"
+  },
+  "homepage": "https://github.com/neostudio-io/webPenSDK#readme",
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.9.0",
+    "babel-loader": "^8.1.0",
+    "webpack": "^4.42.1"
+  },
+  "dependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "terser-webpack-plugin": "^2.3.5",
+    "webpack-cli": "^3.3.11",
+    "webpack-merge": "^4.2.2"
+  },
+  "plugins": [
+    "@babel/plugin-proposal-class-properties"
+  ]
 }

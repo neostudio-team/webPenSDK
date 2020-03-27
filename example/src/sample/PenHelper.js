@@ -1,5 +1,5 @@
-import PenController from "../pensdk";
-import { PenMessageType} from "../pensdk";
+import PenController from "../../../lib";
+import { PenMessageType} from "../../../lib";
 
 const serviceUuid = parseInt("0x19F1");
 const characteristicUuidNoti = parseInt("0x2BA1");
