@@ -1,4 +1,5 @@
 import PenController, { PenMessageType, Dot, SettingType} from "webpensdk"
+// import usb from "usb"
 
 const serviceUuid = parseInt("0x19F1");
 const characteristicUuidNoti = parseInt("0x2BA1");
@@ -7,6 +8,9 @@ const characteristicUuidWrite = parseInt("0x2BA0");
 const PEN_SERVICE_UUID_128 = "4f99f138-9d53-5bfa-9e50-b147491afe68"
 const PEN_CHARACTERISTICS_NOTIFICATION_UUID_128 = "64cd86b1-2256-5aeb-9f04-2caf6c60ae57"
 const PEN_CHARACTERISTICS_WRITE_UUID_128 = "8bc8cc7d-88ca-56b0-af9a-9bf514d0d61a"
+
+const vid = 1155;
+const pid = 22336; 
 
 let penInstance;
 
@@ -21,6 +25,7 @@ export default class PenHelper {
     this.dotCallback = null;
     this.messageCallback = null;
     penInstance = this
+    // this.initUSB()
   }
 
   isConnected = () => {
@@ -180,6 +185,79 @@ export default class PenHelper {
       })
       .catch(err => console.log("write Error", err));
   };
+
+  // For USB Mode
+  // connectUSB = () => {
+  //   console.log("connect usb start");
+  //   this.usbpen = usb.findByIds(1155, 22336);
+  //   if (this.usbpen) {
+  //       this.usbpen.open();
+  //       this.usbpen.interfaces[1].claim();
+  //       this.openUsbPen()
+  //       let result = penparser._ndaclib_Init(1,1)
+  //       console.log("result", result)
+  //   }
+  // }
+
+  // openUsbPen = () => {
+  //   var v = new Int8Array(39);
+  //   v[0] = 0xc0;
+  //   v[1] = 0x01;
+  //   v[2] = 34;
+  //   v[19] = 0xf0;
+  //   v[20] = 0x01;
+  //   v[38] = 0xc1;
+  //   var data = new Buffer(v);
+  //   // pen.interfaces[1].endpoints[0].transfer(data, function(error){
+  //   //     console.log("error");
+  //   //     console.log(error);
+  //   // });
+  //   this.usbpen.interfaces[1].endpoints[0].transfer(data, (error) => {
+  //       console.log("error");
+  //       console.log(error);
+  //   });
+  //   this.usbpen.interfaces[1].endpoints[1].on("data", (data) => {
+  //       // console.log("data", data);
+  //       // console.log("usb data size", data.length);
+  //       let length = 0
+  //       let result = penparser._ndaclib_Decode(data, data.length, length)
+  //       let len = penparser.HEAPU8.subarray(length, 1)
+  //       console.log("ndac length", len[0])
+  //       let v = penparser.HEAPU8.subarray(result, result + len[0]);
+  //       console.log("ndac result", v)
+  //       this.controller.putData(v);
+  //   });
+
+  //   this.usbpen.interfaces[1].endpoints[1].on("error", (error) => {
+  //       console.log("error");
+  //       console.log(error);
+  //   });
+
+  //   this.usbpen.interfaces[1].endpoints[1].on("end", () => {
+  //       console.log("end");
+  //       penparser._ndaclib_Finalize()
+  //   });
+
+  //   this.usbpen.interfaces[1].endpoints[1].startPoll();
+  // }
+
+  // initUSB = () => {
+  //   usb.on('attach', (device) => {
+  //     console.log("attach");
+  //     console.log(device);
+  //     if (device.deviceDescriptor.idVendor === vid && device.deviceDescriptor.idProduct === pid) {
+  //         console.log("neolab device");
+  //         device.open();
+  //         device.interfaces[1].claim();
+  //         this.usbpen = device;
+  //     }
+  //   })
+  
+  //   usb.on('detach', (device) => {
+  //     console.log("detach");
+  //     console.log(device);
+  //   })
+  // }
 }
 
 export {PenMessageType, Dot, SettingType} 

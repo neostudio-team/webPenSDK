@@ -17,6 +17,7 @@
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.0.0",
     "redux": "^4.0.5",
+    "usb": "^1.6.2",
     "webpensdk": "../PenSDK/"
   },
   "scripts": {
