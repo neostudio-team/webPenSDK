@@ -43,15 +43,15 @@ export default class FabricRender {
   onDot = dot => {
     // console.log("Ondot", d)
     // let scale = 10;
-    if (dot.Owner === 1013 && dot.Note === 1){
+    if (dot.owner === 1013 && dot.note === 1){
       this.symbolAction(dot)
       return
     }
     if (dot.DotType === Dot.DotTypes.PEN_DOWN) {
-      if (this.currentPage !== dot.Page) {
+      if (this.currentPage !== dot.page) {
         console.log("Page change");
         this.canvas.clear();
-        this.currentPage = dot.Page;
+        this.currentPage = dot.page;
       }
       this.dotArray = [];
       this.dotArray.push(dot);
@@ -69,39 +69,39 @@ export default class FabricRender {
     let m = 1.8
     if (dot.DotType === Dot.DotTypes.PEN_DOWN) {
       console.log("dot", dot)
-      if (dot.Y > 14 && dot.Y < 18){
-        if (dot.X >14 && dot.X < 18){
+      if (dot.y > 14 && dot.y < 18){
+        if (dot.x >14 && dot.x < 18){
           console.log("Record")
           this.canvas.clear();
           this.pathArray = [];
-        }else if ((dot.X >63.83-m && dot.X < 63.83+m)){
+        }else if ((dot.x >63.83-m && dot.x < 63.83+m)){
           console.log("color Red")
           this.color = "rgba(255,0,0,1)"
-        }else if ((dot.X >68.42-m && dot.X < 68.42+m)){
+        }else if ((dot.x >68.42-m && dot.x < 68.42+m)){
           console.log("color yello")
           this.color = "rgba(255,255,0,1)"
-        }else if ((dot.X >72.9-m && dot.X < 72.9+m)){
+        }else if ((dot.x >72.9-m && dot.x < 72.9+m)){
           console.log("color green")
           this.color = "rgba(0,255,0,1)"
-        }else if ((dot.X >77.7-m && dot.X < 77.7+m)){
+        }else if ((dot.x >77.7-m && dot.x < 77.7+m)){
           console.log("color cyan")
           this.color = "rgba(0,255,255,1)"
-        }else if ((dot.X >82.23-m && dot.X < 82.23+m)){
+        }else if ((dot.x >82.23-m && dot.x < 82.23+m)){
           console.log("color black")
           this.color = "rgba(0,0,0,1)"
-        }else if ((dot.X >87.02-m && dot.X < 87.02+m)){
+        }else if ((dot.x >87.02-m && dot.x < 87.02+m)){
           console.log("color white")
           this.color = "rgba(255,255,255,1)"
-        }else if ((dot.X >49.84-m && dot.X < 49.84+m)){
+        }else if ((dot.x >49.84-m && dot.x < 49.84+m)){
           console.log("thick 1")
           this.thickness = 1
-        }else if ((dot.X >54.66-m && dot.X < 54.66+m)){
+        }else if ((dot.x >54.66-m && dot.x < 54.66+m)){
           console.log("thick 2")
           this.thickness = 3
-        }else if ((dot.X >59.15-m && dot.X < 59.15+m)){
+        }else if ((dot.x >59.15-m && dot.x < 59.15+m)){
           console.log("thick 3")
           this.thickness = 5
-        }else if ((dot.X >96.17-m && dot.X < 96.17+m)){
+        }else if ((dot.x >96.17-m && dot.x < 96.17+m)){
           console.log("undo")
           let lastobj = this.canvas.getObjects().pop()
           if (lastobj){
@@ -109,7 +109,7 @@ export default class FabricRender {
             this.undoHistory.push(lastobj)
           }
         }
-        else if ((dot.X >101.28-m && dot.X < 101.28+m)){
+        else if ((dot.x >101.28-m && dot.x < 101.28+m)){
           console.log("redo")
           let lastobj = this.undoHistory.pop()
           if (lastobj){
@@ -129,9 +129,9 @@ export default class FabricRender {
     let scaleY = this.originSize.h / rect.height;
     let pointArray = [];
     dots.forEach(dot => {
-      let p = dot.Force;
-      let x = dot.X - rect.x;
-      let y = dot.Y - rect.y;
+      let p = dot.f;
+      let x = dot.x - rect.x;
+      let y = dot.y - rect.y;
       x *= scaleX;
       y *= scaleY;
 
@@ -175,9 +175,9 @@ export default class FabricRender {
     let scaleY = this.originSize.h / rect.height;
     let pointArray = [];
     dots.forEach(dot => {
-      let p = dot.Force;
-      let x = dot.X - rect.x;
-      let y = dot.Y - rect.y;
+      let p = dot.f;
+      let x = dot.x - rect.x;
+      let y = dot.y - rect.y;
       x *= scaleX;
       y *= scaleY;
 
@@ -299,7 +299,7 @@ export default class FabricRender {
       stroke.isJson = page.isJson;
       let st = new StrokeStudio(stroke, 1);
       st.getDots().forEach(dot => {
-        let p = dot.force;
+        let p = dot.f;
         let x = dot.x - rect.x;
         let y = dot.y - rect.y;
         x *= scaleX;

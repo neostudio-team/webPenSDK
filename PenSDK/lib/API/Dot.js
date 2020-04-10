@@ -8,20 +8,20 @@ const DotTypes = Object.freeze({
 
 class Dot {
   constructor(){
-    this.Section = 0;
-    this.Owner = 0;
-    this.Note = 0;
-    this.Page = 0;
-    this.X = 0;
-    this.Y = 0;
-    this.Angle = {
-      TiltX: 0,
-      TiltY: 0,
-      Twist: 0
+    this.section = 0;
+    this.owner = 0;
+    this.note = 0;
+    this.page = 0;
+    this.x = 0;
+    this.y = 0;
+    this.angle = {
+      tx: 0,
+      ty: 0,
+      twist: 0
     };
-    this.Force = 0;
-    this.Color = 0;
-    this.Timestamp = 0;
+    this.f = 0;
+    this.color = 0;
+    this.timestamp = 0;
     this.DotType = Dot.DotTypes.PEN_DOWN;
   }
 
@@ -46,16 +46,16 @@ class Dot {
 
   Clone() {
     let newDot = new Dot();
-    newDot.Section = this.Section;
-    newDot.Owner = this.Owner;
-    newDot.Note = this.Note;
-    newDot.Page = this.Page;
-    newDot.X = this.X;
-    newDot.Y = this.Y;
-    newDot.Force = this.Force;
-    newDot.Timestamp = this.Timestamp;
+    newDot.section = this.section;
+    newDot.owner = this.owner;
+    newDot.note = this.note;
+    newDot.page = this.page;
+    newDot.x = this.x;
+    newDot.y = this.y;
+    newDot.f = this.f;
+    newDot.timestamp = this.timestamp;
     newDot.DotType = this.DotType;
-    newDot.Color = this.Color;
+    newDot.color = this.color;
     newDot.TiltX = this.TiltX;
     newDot.TiltY = this.TiltY;
     newDot.Twist = this.Twist;
@@ -73,56 +73,56 @@ class DotBuilder {
     this.mDot = new Dot()
   }
   owner(owner) {
-    this.mDot.Owner = owner;
+    this.mDot.owner = owner;
     return this;
   }
 
   section(section) {
-    this.mDot.Section = section;
+    this.mDot.section = section;
     return this;
   }
 
   note(note) {
-    this.mDot.Note = note;
+    this.mDot.note = note;
     return this;
   }
 
   page(page) {
-    this.mDot.Page = page;
+    this.mDot.page = page;
     return this;
   }
 
   timestamp(timestamp) {
-    this.mDot.Timestamp = timestamp;
+    this.mDot.timestamp = timestamp;
     return this;
   }
 
   coord(x, y) {
-    this.mDot.X = x
-    this.mDot.Y = y
+    this.mDot.x = x
+    this.mDot.y = y
     return this;
   }
 
   angle(angle) {
-    this.mDot.Angle.TiltX = angle.x;
-    this.mDot.Angle.TiltY = angle.y;
-    this.mDot.Angle.Twist = angle.t;
+    this.mDot.angle.tx = angle.x;
+    this.mDot.angle.ty = angle.y;
+    this.mDot.angle.twist = angle.t;
     return this;
   }
 
   tilt(x, y) {
-    this.mDot.Angle.TiltX = x;
-    this.mDot.Angle.TiltY = y;
+    this.mDot.angle.tx = x;
+    this.mDot.angle.ty = y;
     return this;
   }
 
   twist(twist) {
-    this.mDot.Angle.Twist = twist;
+    this.mDot.angle.twist = twist;
     return this;
   }
 
   force(force) {
-    this.mDot.Force = force
+    this.mDot.f = force
     return this;
   }
 
@@ -132,7 +132,7 @@ class DotBuilder {
   }
 
   color(color) {
-    this.mDot.Color = color;
+    this.mDot.color = color;
     return this;
   }
 
