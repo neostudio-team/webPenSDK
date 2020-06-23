@@ -43,6 +43,7 @@ export default class FabricRender {
   onDot = dot => {
     // console.log("Ondot", d)
     // let scale = 10;
+    console.log(dot.timestamp)
     if (dot.owner === 1013 && dot.note === 1){
       this.symbolAction(dot)
       return

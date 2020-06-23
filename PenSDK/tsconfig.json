@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+
+    "target": "es5",
+    "module": "commonjs",         
+    "declaration": true,
+    "outDir": "./dists",
+    "sourceMap": true,
+    "strict": true
+  },
+  "include": [
+    "lib/**/*"
+  ]
+}

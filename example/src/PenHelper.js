@@ -1,4 +1,4 @@
-import PenController, { PenMessageType, Dot, SettingType} from "webpensdk"
+import { PenController, PenMessageType, Dot, SettingType} from "webpensdk"
 // import usb from "usb"
 
 const serviceUuid = parseInt("0x19F1");

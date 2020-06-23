@@ -6,6 +6,7 @@ module.exports = {
   output: {
     filename: 'pensdk.js',
     path: path.resolve(__dirname, 'dist'),
+    library:"PenSDK"
   },
   module: {
     rules: [
