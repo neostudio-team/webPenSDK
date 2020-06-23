@@ -8,8 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --config webpack.config.js",
-    "tsbuild": "tsc"
+    "build": "webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",
