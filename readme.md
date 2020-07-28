@@ -1,15 +1,21 @@
 ## Project 구조
 
-- example
-- PenSDK - lib -
+## 참고자료
+* http://blog.hyeyoonjung.com/2019/05/26/setting-webpack-for-javascript-library/
+
+## 필요한 패키지
+> yarn add --save-dev webpack webpack-cli
+> yarn add --save-dev mini-css-extract-plugin webpack-merge clean-webpack-plugin terser-webpack-plugin optimize-css-assets-webpack-plugin
 
 
+## ES2016 Support ES6
+* https://hyunseob.github.io/2017/03/21/webpack2-beginners-guide/
+> yarn add -D babel-loader @babel/core @babel/preset-env webpack
 
-## python -m SimpleHTTPServer 8000
+## classProperties
+> yarn add @babel/plugin-proposal-class-properties --dev
 
 
-## Test
-프로젝트에서
-> yarn add ../PenSDK
-
-## Check
+## npm 배포 하기
+> cd PenSDK/lib
+> npm 
