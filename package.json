@@ -1,6 +1,6 @@
 {
   "name": "webpensdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Neosmartpen javascript library",
   "main": "lib/index.js",
   "directories": {
