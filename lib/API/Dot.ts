@@ -1,12 +1,31 @@
 const DotTypes = Object.freeze({
-  PEN_DOWN: 1,
-  PEN_MOVE: 2,
-  PEN_UP: 3,
-  PEN_HOVER: 4,
-  PEN_ERROR: 5
+  PEN_DOWN: 0,
+  PEN_MOVE: 1,
+  PEN_UP: 2,
+  PEN_HOVER: 3,
+  PEN_ERROR: 4
 });
 
+type Angle = {
+  tx: number,
+  ty: number,
+  twist: number
+}
+
 class Dot {
+  section: number
+  owner: number
+  note: number
+  page: number
+  x: number
+  y: number
+  angle: Angle
+  f: number
+  color: number
+  timestamp: number
+  DotType: number
+  PenTipType: number
+
   constructor(){
     this.section = 0;
     this.owner = 0;
@@ -26,7 +45,7 @@ class Dot {
     this.PenTipType = 0; // 0: Normal, 1: Eraser
   }
 
-  static MakeDot(paper, x, y, force, type, penTipType, color, angel = {x:0, y: 0, t: 0}) {
+  static MakeDot(paper: any, x: number, y: number, force: number, type: number, penTipType: number, color: number, angel = {tx:0, ty: 0, twist: 0}) {
     let builder =  new DotBuilder()
 
     const xx = parseFloat(x.toFixed(2))
@@ -59,9 +78,7 @@ class Dot {
     newDot.DotType = this.DotType;
     newDot.PenTipType = this.PenTipType
     newDot.color = this.color;
-    newDot.TiltX = this.TiltX;
-    newDot.TiltY = this.TiltY;
-    newDot.Twist = this.Twist;
+    newDot.angle = this.angle;
     return newDot;
   }
 
@@ -72,74 +89,77 @@ class Dot {
 
 
 class DotBuilder {
+  mDot: Dot
+
   constructor(){
     this.mDot = new Dot()
   }
-  owner(owner) {
-    this.mDot.owner = owner;
-    return this;
-  }
 
-  section(section) {
+  section(section: number) {
     this.mDot.section = section;
     return this;
   }
 
-  note(note) {
+  owner(owner: number) {
+    this.mDot.owner = owner;
+    return this;
+  }
+
+  note(note: number) {
     this.mDot.note = note;
     return this;
   }
 
-  page(page) {
+  page(page: number) {
     this.mDot.page = page;
     return this;
   }
 
-  timestamp(timestamp) {
+  timestamp(timestamp: number) {
     this.mDot.timestamp = timestamp;
     return this;
   }
 
-  coord(x, y) {
+  coord(x: number, y: number) {
     this.mDot.x = x
     this.mDot.y = y
     return this;
   }
 
-  angle(angle) {
-    this.mDot.angle.tx = angle.x;
-    this.mDot.angle.ty = angle.y;
-    this.mDot.angle.twist = angle.t;
+  angle(angle: Angle) {
+    this.mDot.angle.tx = angle.tx;
+    this.mDot.angle.ty = angle.ty;
+    this.mDot.angle.twist = angle.twist;
     return this;
   }
 
-  tilt(x, y) {
-    this.mDot.angle.tx = x;
-    this.mDot.angle.ty = y;
+  tilt(tx: number, ty: number) {
+    this.mDot.angle.tx = tx;
+    this.mDot.angle.ty = ty;
     return this;
   }
 
-  twist(twist) {
+  twist(twist: number) {
     this.mDot.angle.twist = twist;
     return this;
   }
 
-  force(force) {
+  force(force: number) {
     this.mDot.f = force
     return this;
   }
 
-  dotType(dotType) {
+  dotType(dotType: number) {
     this.mDot.DotType = dotType;
     return this;
   }
 
-  penTipType(penTipType) {
+  penTipType(penTipType: number) {
     this.mDot.PenTipType = penTipType
     return this
   }
 
-  color(color) {
+  color(color: number) {
     this.mDot.color = color;
     return this;
   }

@@ -5,11 +5,23 @@ import CMD from "./CMD";
 import CONST from "./Const";
 
 import { SettingType} from "../API/PenMessageType";
+import { PenController } from "..";
+
+type DefaultConfig = {
+  SupportedProtocolVersion: string
+  PEN_PROFILE_SUPPORT_PROTOCOL_VERSION: number
+  DEFAULT_PASSWORD: string
+}
 
 export default class PenRequestV2 {
-  constructor(penController) {
-    this.PenController = penController;
-    this.const = Object.freeze({
+
+  penController: PenController
+  defaultConfig: DefaultConfig
+  state: any
+
+  constructor(penController: PenController) {
+    this.penController = penController;
+    this.defaultConfig = Object.freeze({
       SupportedProtocolVersion: "2.12",
       PEN_PROFILE_SUPPORT_PROTOCOL_VERSION: 2.1,
       DEFAULT_PASSWORD: "0000"
@@ -20,11 +32,11 @@ export default class PenRequestV2 {
   // Request
   //
   ReqVersion() {
-    let bf = new ByteUtil(this.Escape.bind(this));
+    let bf = new ByteUtil();
 
     // TODO 정상적으로 넘어오는지 확인이 필요하다.
     let StrAppVersion = Converter.toUTF8Array("0.0.0.0");
-    let StrProtocolVersion = Converter.toUTF8Array(this.const.SupportedProtocolVersion);
+    let StrProtocolVersion = Converter.toUTF8Array(this.defaultConfig.SupportedProtocolVersion);
 
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.VERSION_REQUEST)
@@ -49,18 +61,18 @@ export default class PenRequestV2 {
   //
   // Password
   //
-  ReqSetUpPassword(oldPassword, newPassword = "") {
+  ReqSetUpPassword(oldPassword: string, newPassword = "") {
     if (!oldPassword || !newPassword) return false;
     NLog.log("ReqSetUpPassword", oldPassword, newPassword);
-    // if (oldPassword === this.const.DEFAULT_PASSWORD) return false;
-    if (newPassword === this.const.DEFAULT_PASSWORD) return false;
+    // if (oldPassword === this.defaultConfig.DEFAULT_PASSWORD) return false;
+    if (newPassword === this.defaultConfig.DEFAULT_PASSWORD) return false;
 
     this.state.newPassword = newPassword;
 
     let oPassByte = Converter.toUTF8Array(oldPassword);
     let nPassByte = Converter.toUTF8Array(newPassword);
 
-    let bf = new ByteUtil(this.Escape.bind(this));
+    let bf = new ByteUtil();
 
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.PASSWORD_CHANGE_REQUEST)
@@ -73,13 +85,13 @@ export default class PenRequestV2 {
     return this.Send(bf);
   }
 
-  ReqInputPassword(password) {
+  ReqInputPassword(password: string) {
     if (!password) return false;
-    if (password === this.const.DEFAULT_PASSWORD) return false;
+    if (password === this.defaultConfig.DEFAULT_PASSWORD) return false;
 
     let bStrByte = Converter.toUTF8Array(password);
 
-    let bf = new ByteUtil(this.Escape.bind(this));
+    let bf = new ByteUtil();
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.PASSWORD_REQUEST)
       .PutShort(16)
@@ -90,7 +102,7 @@ export default class PenRequestV2 {
   }
 
   ReqPenStatus() {
-    let bf = new ByteUtil(this.Escape.bind(this));
+    let bf = new ByteUtil();
 
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.SETTING_INFO_REQUEST)
@@ -100,8 +112,8 @@ export default class PenRequestV2 {
     return this.Send(bf);
   }
 
-  RequestChangeSetting(stype, value) {
-    let bf = new ByteUtil(this.Escape.bind(this));
+  RequestChangeSetting(stype: number, value: any) {
+    let bf = new ByteUtil();
 
     bf.Put(CONST.PK_STX, false).Put(CMD.SETTING_CHANGE_REQUEST);
 
@@ -123,7 +135,7 @@ export default class PenRequestV2 {
         let nBytes = new Uint8Array([b[3], b[2], b[1], b[0]]);
         bf.PutShort(5)
           .Put(stype)
-          .PutArray(nBytes.buffer, 4);
+          .PutArray(nBytes, 4);
 
         //bf.PutShort(5).Put((byte)stype).PutInt((int)value);
         break;
@@ -185,60 +197,60 @@ export default class PenRequestV2 {
     return this.RequestChangeSetting(SettingType.Timestamp, timetick);
   }
 
-  ReqSetupPenAutoShutdownTime(minute) {
+  ReqSetupPenAutoShutdownTime(minute: number) {
     return this.RequestChangeSetting(SettingType.AutoPowerOffTime, minute);
   }
 
-  ReqSetupPenCapPower(enable) {
+  ReqSetupPenCapPower(enable: boolean) {
     return this.RequestChangeSetting(SettingType.PenCapOff, enable);
   }
 
-  ReqSetupPenAutoPowerOn(enable) {
+  ReqSetupPenAutoPowerOn(enable: boolean) {
     return this.RequestChangeSetting(SettingType.AutoPowerOn, enable);
   }
 
-  ReqSetupPenBeep(enable) {
+  ReqSetupPenBeep(enable: boolean) {
     return this.RequestChangeSetting(SettingType.Beep, enable);
   }
 
-  ReqSetupHoverMode(enable) {
+  ReqSetupHoverMode(enable: boolean) {
     return this.RequestChangeSetting(SettingType.Hover, enable);
   }
 
-  ReqSetupOfflineData(enable) {
+  ReqSetupOfflineData(enable: boolean) {
     return this.RequestChangeSetting(SettingType.OfflineData, enable);
   }
 
-  ReqSetupPenColor(enable) {
-    return this.RequestChangeSetting(SettingType.LedColor, enable);
+  ReqSetupPenColor(color: number) {
+    return this.RequestChangeSetting(SettingType.LedColor, color);
   }
 
-  ReqSetupPenSensitivity(step) {
+  ReqSetupPenSensitivity(step: number) {
     return this.RequestChangeSetting(SettingType.Sensitivity, step);
   }
 
-  ReqSetupUsbMode(mode) {
+  ReqSetupUsbMode(mode: number) {
     return this.RequestChangeSetting(SettingType.UsbMode, mode);
   }
 
-  ReqSetupDownSampling(enable) {
+  ReqSetupDownSampling(enable: boolean) {
     return this.RequestChangeSetting(SettingType.DownSampling, enable);
   }
 
-  ReqSetupBtLocalName(btLocalName) {
+  ReqSetupBtLocalName(btLocalName: string) {
     return this.RequestChangeSetting(SettingType.BtLocalName, btLocalName);
   }
 
-  ReqSetupPenFscSensitivity(step) {
+  ReqSetupPenFscSensitivity(step: number) {
     return this.RequestChangeSetting(SettingType.FscSensitivity, step);
   }
 
-  ReqSetupDataTransmissionType(type) {
+  ReqSetupDataTransmissionType(type: number) {
     return this.RequestChangeSetting(SettingType.DataTransmissionType, type);
   }
 
   ReqBeepAndLight() {
-    return this.RequestChangeSetting(SettingType.BeepAndLight);
+    return this.RequestChangeSetting(SettingType.BeepAndLight, null);
   }
 
   IsSupportPenProfile() {
@@ -249,7 +261,7 @@ export default class PenRequestV2 {
 
     let ver = parseFloat(tempVer);
 
-    return ver >= this.const.PEN_PROFILE_SUPPORT_PROTOCOL_VERSION;
+    return ver >= this.defaultConfig.PEN_PROFILE_SUPPORT_PROTOCOL_VERSION;
   }
 
   /**
@@ -259,8 +271,8 @@ export default class PenRequestV2 {
    * @param {array} noteIds
    * @returns {boolean}
    */
-  ReqAddUsingNotes(sectionIds, ownerIds, noteIds) {
-    let bf = new ByteUtil(this.Escape.bind(this));
+  ReqAddUsingNotes(sectionIds: number[] , ownerIds: number[] , noteIds: number[] | null) {
+    let bf = new ByteUtil();
     bf.Put(CONST.PK_STX, false).Put(CMD.ONLINE_DATA_REQUEST);
 
     if (noteIds) {
@@ -295,7 +307,7 @@ export default class PenRequestV2 {
       pInfo = GetSectionOwnerByte(section, owner);
     }
 
-    let bf = new ByteUtil(this.Escape.bind(this));
+    let bf = new ByteUtil();
 
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.OFFLINE_NOTE_LIST_REQUEST)
@@ -305,9 +317,9 @@ export default class PenRequestV2 {
     return this.Send(bf);
   }
 
-  ReqOfflinePageList(section, owner, note) {
+  ReqOfflinePageList(section: number, owner: number, note: number) {
     // NLog.log("ReqOfflinePageList", section, owner, note)
-    let bf = new ByteUtil(this.Escape.bind(this));
+    let bf = new ByteUtil();
 
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.OFFLINE_PAGE_LIST_REQUEST)
@@ -319,9 +331,9 @@ export default class PenRequestV2 {
     return this.Send(bf);
   }
 
-  ReqOfflineData(section, owner, note, deleteOnFinished = true, pages = []) {
+  ReqOfflineData(section: number, owner: number, note: number, deleteOnFinished = true, pages = []) {
     let length = 14 + pages.length * 4;
-    let bf = new ByteUtil(this.Escape.bind(this));
+    let bf = new ByteUtil();
     // NLog.log("ReqOfflineData", length)
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.OFFLINE_DATA_REQUEST)
@@ -343,8 +355,8 @@ export default class PenRequestV2 {
     return this.Send(bf);
   }
 
-  ReqOfflineDelete(section, owner, notes) {
-    let bf = new ByteUtil(this.Escape.bind(this));
+  ReqOfflineDelete(section: number, owner: number, notes: number[]) {
+    let bf = new ByteUtil();
 
     bf.Put(CONST.PK_STX, false).Put(CMD.OFFLINE_DATA_DELETE_REQUEST);
 
@@ -363,18 +375,24 @@ export default class PenRequestV2 {
     return this.Send(bf);
   }
 
-  // MARK: Util
-  Escape(input) {
-    if (input === CONST.PK_STX || input === CONST.PK_ETX || input === CONST.PK_DLE) {
-      return [CONST.PK_DLE, input ^ 0x20];
-    } else {
-      return [input];
-    }
+  //TODO: Firmware
+  ReqPenSwUpgrade(file: any, version: any) {
+    console.log("TODO: firmware Update")
   }
 
-  Send(bf) {
-    this.PenController.handleWrite(new Buffer(new Uint8Array(bf.ToArray())));
-    bf = {};
+  SuspendSwUpgrade() {
+    console.log("TODO: firmware SuspendSwUpgrade")
+  }
+
+  OnDisconnected(){
+    console.log("TODO: Disconnect ")
+
+  }
+
+  // MARK: Util
+  Send(bf: ByteUtil) {
+    const u8 = bf.ToU8Array()
+    this.penController.handleWrite!(u8);
     return true;
   }
   

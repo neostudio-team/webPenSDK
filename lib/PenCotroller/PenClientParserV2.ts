@@ -1,5 +1,5 @@
 import ByteUtil, { GetSectionOwner } from "../Util/ByteUtil";
-import * as Packet from "./Packet";
+import {Packet, PacketBuilder} from "./Packet";
 import * as Converter from '../Util/Converter'
 import * as NLog from '../Util/NLog'
 import Dot from "../API/Dot";
@@ -10,10 +10,21 @@ import zlib from "zlib";
 
 
 import PenMessageType, { SettingType, PenTipType, ErrorType } from "../API/PenMessageType";
+import PenController from "./PenController";
 
 export default class PenClientParserV2 {
-  constructor(penController) {
-    this.PenController = penController;
+  penController: PenController
+  penVersionInfo: any
+  penSettingInfo: any
+  current: any
+  state: any
+  mBuffer: any
+  IsEscape: boolean
+  offline: any
+  IsUploading: boolean
+
+  constructor(penController: PenController) {
+    this.penController = penController;
 
     this.penVersionInfo = {}; // ref) Response.VersionInfo
     this.penSettingInfo = {}; // ref) Response.SettingInfo
@@ -49,10 +60,12 @@ export default class PenClientParserV2 {
       mReceivedOfflineStroke: 0,
       mTotalOfflineDataSize: -1
     };
+
+    this.IsUploading = true
   }
 
   // MARK: ParsePacket
-  ParsePacket(packet) {
+  ParsePacket(packet: Packet) {
     let cmd = packet.Cmd;
     // NLog.log("ParsePacket", cmd, "0x" + cmd.toString(16))
     if (packet.Result > 0) {
@@ -64,7 +77,7 @@ export default class PenClientParserV2 {
       case CMD.VERSION_RESPONSE:
         let versionInfo = Res.VersionInfo(packet);
         this.penVersionInfo = versionInfo;
-        this.PenController.info = versionInfo
+        this.penController.info = versionInfo
         this.IsUploading = false;
         this.state.EventCount = 0;
         NLog.log("ParsePacket Version Info", versionInfo);
@@ -74,14 +87,14 @@ export default class PenClientParserV2 {
       case CMD.SHUTDOWN_EVENT:
         let shutdownReason = packet.GetByte();
         NLog.log("ParsePacket power off", shutdownReason);
-        this.PenController.onMessage( this.PenController, PenMessageType.EVENT_POWER_OFF, {
+        this.penController.onMessage!( this.penController, PenMessageType.EVENT_POWER_OFF, {
           shutdownReason
         });
         break;
 
       case CMD.LOW_BATTERY_EVENT:
         let battery = packet.GetByte();
-        this.PenController.onMessage( this.PenController, PenMessageType.EVENT_LOW_BATTERY, {
+        this.penController.onMessage!( this.penController, PenMessageType.EVENT_LOW_BATTERY, {
           Battery: battery
         });
         break;
@@ -124,24 +137,24 @@ export default class PenClientParserV2 {
         // 최초 연결시
         if (this.state.first) {
           this.state.first = false;
-          this.PenController.onMessage( this.PenController, PenMessageType.PEN_SETTING_INFO, settingInfo);
+          this.penController.onMessage!( this.penController, PenMessageType.PEN_SETTING_INFO, settingInfo);
 
           if (settingInfo.Locked) {
-            this.PenController.onMessage( this.PenController, PenMessageType.PEN_PASSWORD_REQUEST, {
+            this.penController.onMessage!( this.penController, PenMessageType.PEN_PASSWORD_REQUEST, {
               RetryCount: settingInfo.RetryCount,
               ResetCount: settingInfo.ResetCount
             });
           } else {
-            this.PenController.onMessage( this.PenController, PenMessageType.PEN_AUTHORIZED);
+            this.penController.onMessage!( this.penController, PenMessageType.PEN_AUTHORIZED, null);
           }
         } else {
-          this.PenController.onMessage( this.PenController, PenMessageType.PEN_SETTING_INFO, settingInfo);
+          this.penController.onMessage!( this.penController, PenMessageType.PEN_SETTING_INFO, settingInfo);
         }
         break;
 
       case CMD.SETTING_CHANGE_RESPONSE:
         let settingChangeResult = Res.SettingChnage(packet);
-        this.PenController.onMessage( this.PenController, PenMessageType.PEN_SETUP_SUCCESS, settingChangeResult);
+        this.penController.onMessage!( this.penController, PenMessageType.PEN_SETUP_SUCCESS, settingChangeResult);
         break;
 
       // password
@@ -150,17 +163,17 @@ export default class PenClientParserV2 {
         NLog.log("ParsePacket PASSWORD_RESPONSE", password);
         if (password.status === 1) {
           if (this.state.reCheckPassword) {
-            this.PenController.onMessage( this.PenController, PenMessageType.PEN_SETTING_INFO, password);
+            this.penController.onMessage!( this.penController, PenMessageType.PEN_SETTING_INFO, password);
             this.state.reCheckPassword = false;
             break;
           }
-          this.PenController.onMessage( this.PenController, PenMessageType.PEN_AUTHORIZED);
+          this.penController.onMessage!( this.penController, PenMessageType.PEN_AUTHORIZED, null);
         } else {
           if (this.state.reCheckPassword) {
             this.state.reCheckPassword = false;
-            this.PenController.onMessage( this.PenController, PenMessageType.PASSWORD_SETUP_FAILURE);
+            this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_FAILURE, null);
           } else {
-            this.PenController.onMessage( this.PenController, PenMessageType.PEN_PASSWORD_REQUEST, password);
+            this.penController.onMessage!( this.penController, PenMessageType.PEN_PASSWORD_REQUEST, password);
           }
         }
         break;
@@ -169,10 +182,10 @@ export default class PenClientParserV2 {
 
         if (packet.Result === 0x00) {
           this.state.reCheckPassword = true;
-          this.ReqInputPassword(this.state.newPassword);
+          this.penController.ReqInputPassword(this.state.newPassword);
         } else {
           this.state.newPassword = "";
-          this.PenController.onMessage( this.PenController, PenMessageType.PASSWORD_SETUP_FAILURE, passwordChange);
+          this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_FAILURE, passwordChange);
         }
         break;
 
@@ -180,13 +193,13 @@ export default class PenClientParserV2 {
       case CMD.OFFLINE_NOTE_LIST_RESPONSE:
         {
           let noteList = Res.NoteList(packet)
-          this.PenController.onMessage( this.PenController, PenMessageType.OFFLINE_DATA_NOTE_LIST, noteList);
+          this.penController.onMessage!( this.penController, PenMessageType.OFFLINE_DATA_NOTE_LIST, noteList);
         }
         break;
       case CMD.OFFLINE_PAGE_LIST_RESPONSE:
         {
           let pageList = Res.PageList(packet)
-          this.PenController.onMessage( this.PenController, PenMessageType.OFFLINE_DATA_PAGE_LIST, pageList);
+          this.penController.onMessage!( this.penController, PenMessageType.OFFLINE_DATA_PAGE_LIST, pageList);
         }
         break;
       case CMD.OFFLINE_DATA_RESPONSE:
@@ -201,7 +214,7 @@ export default class PenClientParserV2 {
             bytes: this.offline.mTotalOfflineDataSize
           };
           NLog.log("OFFLINE_DATA_RESPONSE ", offlineInfo);
-          this.PenController.onMessage( this.PenController, PenMessageType.OFFLINE_DATA_SEND_START);
+          this.penController.onMessage!( this.penController, PenMessageType.OFFLINE_DATA_SEND_START, null);
         }
         break;
 
@@ -211,14 +224,14 @@ export default class PenClientParserV2 {
 
       case CMD.OFFLINE_DATA_DELETE_RESPONSE:
         // NLog.log("OFFLINE_DATA_DELETE_RESPONSE", packet);
-        this.PenController.onMessage( this.PenController, PenMessageType.OFFLINE_DATA_DELETE_RESPONSE, { Result: packet.Result === 0x00 });
+        this.penController.onMessage!( this.penController, PenMessageType.OFFLINE_DATA_DELETE_RESPONSE, { Result: packet.Result === 0x00 });
         break;
 
       // MARK: CMD Firmware Response
       case CMD.FIRMWARE_UPLOAD_RESPONSE:
         if (packet.Result !== 0 || packet.GetByte() !== 0) {
           this.IsUploading = false;
-          this.PenController.onMessage( this.PenController, PenMessageType.PEN_FW_UPGRADE_SUCCESS, {
+          this.penController.onMessage!( this.penController, PenMessageType.PEN_FW_UPGRADE_SUCCESS, {
             Result: false
           });
         }
@@ -236,13 +249,13 @@ export default class PenClientParserV2 {
         break;
 
       case CMD.ONLINE_DATA_RESPONSE:
-        NLog.log("Using Note Set", packet.result);
+        NLog.log("Using Note Set", packet.Result);
         this.ReqSetupTime();
         break;
 
       case CMD.RES_PDS:
         let pds = Res.PDS(packet);
-        this.PenController.onMessage( this.PenController, PenMessageType.RES_PDS, pds);
+        this.penController.onMessage!( this.penController, PenMessageType.RES_PDS, pds);
         break;
 
       default:
@@ -251,7 +264,7 @@ export default class PenClientParserV2 {
     }
   }
 
-  CheckEventCount(ecount) {
+  CheckEventCount(ecount: number) {
     //Debug.WriteLine("COUNT : " + ecount + ", " + EventCount);
 
     if (ecount - this.state.EventCount !== 1 && (ecount !== 0 || this.state.EventCount !== 255)) {
@@ -264,7 +277,7 @@ export default class PenClientParserV2 {
 
       if (ecount - this.state.EventCount > 1) {
         let extraData = "missed event count " + (this.state.EventCount + 1) + "-" + (ecount - 1);
-        this.PenController.onErrorDetected({
+        this.penController.onErrorDetected({
           ErrorType: ErrorType.InvalidEventCount,
           Dot: errorDot,
           Timestamp: this.state.SessionTs,
@@ -272,7 +285,7 @@ export default class PenClientParserV2 {
         });
       } else if (ecount < this.state.EventCount) {
         let extraData = "invalid event count " + this.state.EventCount + "," + ecount;
-        this.PenController.onErrorDetected({
+        this.penController.onErrorDetected({
           ErrorType: ErrorType.InvalidEventCount,
           Dot: errorDot,
           Timestamp: this.state.SessionTs,
@@ -284,7 +297,7 @@ export default class PenClientParserV2 {
     this.state.EventCount = ecount;
   }
   // MARK: Parse (Up & Down)
-  NewPenDown(pk) {
+  NewPenDown(pk: Packet) {
     if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
       this.MakeUpDot();
     }
@@ -302,7 +315,7 @@ export default class PenClientParserV2 {
     this.state.mPrevDot = null;
   }
 
-  NewPenUp(pk) {
+  NewPenUp(pk: Packet) {
     let ecount = pk.GetByte();
     this.CheckEventCount(ecount);
     let timestamp = pk.GetLong();
@@ -329,13 +342,13 @@ export default class PenClientParserV2 {
       this.ProcessDot(udot, imageInfo);
     } else if (!this.state.IsStartWithDown && !this.state.IsBeforeMiddle) {
       // 즉 다운업(무브없이) 혹은 업만 들어올 경우 UP dot을 보내지 않음
-      this.PenController.onErrorDetected({
+      this.penController.onErrorDetected({
         ErrorType: ErrorType.MissingPenDownPenMove,
         Timestamp: -1
       });
     } else if (!this.state.IsBeforeMiddle) {
       // 무브없이 다운-업만 들어올 경우 UP dot을 보내지 않음
-      this.PenController.onErrorDetected({
+      this.penController.onErrorDetected({
         ErrorType: ErrorType.MissingPenMove,
         Timestamp: this.state.SessionTs
       });
@@ -350,7 +363,7 @@ export default class PenClientParserV2 {
     this.state.mPrevDot = null;
   }
 
-  PenUpDown(pk) {
+  PenUpDown(pk: Packet) {
     let IsDown = pk.GetByte() === 0x00;
     if (IsDown) {
       if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
@@ -364,13 +377,13 @@ export default class PenClientParserV2 {
         this.MakeUpDot(false);
       } else if (!this.state.IsStartWithDown && !this.state.IsBeforeMiddle) {
         // 즉 다운업(무브없이) 혹은 업만 들어올 경우 UP dot을 보내지 않음
-        this.PenController.onErrorDetected({
+        this.penController.onErrorDetected({
           ErrorType: ErrorType.MissingPenDownPenMove,
           Timestamp: -1
         });
       } else if (!this.state.IsBeforeMiddle) {
         // 무브없이 다운-업만 들어올 경우 UP dot을 보내지 않음
-        this.PenController.onErrorDetected({
+        this.penController.onErrorDetected({
           ErrorType: ErrorType.MissingPenMove,
           Timestamp: this.state.SessionTs
         });
@@ -388,7 +401,7 @@ export default class PenClientParserV2 {
     this.state.mPrevDot = null;
   }
 
-  PenErrorDot(cmd, pk) {
+  PenErrorDot(cmd: number, pk: Packet) {
     if (cmd === CMD.ONLINE_NEW_PEN_ERROR_EVENT) {
       let ecount = pk.GetByte();
       this.CheckEventCount(ecount);
@@ -419,7 +432,7 @@ export default class PenClientParserV2 {
       errorDot = this.state.mPrevDot.Clone();
       errorDot.DotType = Dot.DotTypes.PEN_UP;
     }
-    this.PenController.onErrorDetected({
+    this.penController.onErrorDetected({
       ErrorType: ErrorType.ImageProcessingError,
       Dot: errorDot,
       Timestamp: this.state.SessionTs,
@@ -428,7 +441,7 @@ export default class PenClientParserV2 {
   }
 
   // MARK: Parse Paper
-  PaperInfoEvent(cmd, pk) {
+  PaperInfoEvent(cmd: number, pk: Packet) {
     if (cmd === CMD.ONLINE_NEW_PAPER_INFO_EVENT || cmd === CMD.ONLINE_ENCRYPTION_PAPER_INFO_EVENT) {
       let ecount = pk.GetByte();
 
@@ -443,7 +456,7 @@ export default class PenClientParserV2 {
     let rb = pk.GetBytes(4);
 
     this.current.Section = rb[3] & 0xff;
-    this.current.Owner = Converter.byteArrayToInt([rb[0], rb[1], rb[2], 0x00]);
+    this.current.Owner = Converter.byteArrayToInt(new Uint8Array([rb[0], rb[1], rb[2], 0x00]));
     this.current.Note = pk.GetInt();
     this.current.Page = pk.GetInt();
 
@@ -453,7 +466,7 @@ export default class PenClientParserV2 {
   }
 
   // MARK: Parse Dot
-  PenDotEvent(cmd, pk) {
+  PenDotEvent(cmd: number, pk: Packet) {
     if (cmd === CMD.ONLINE_NEW_PEN_DOT_EVENT || cmd === CMD.ONLINE_ENCRYPTION_PEN_DOT_EVENT) {
       let ecount = pk.GetByte();
 
@@ -473,16 +486,16 @@ export default class PenClientParserV2 {
     let ty = pk.GetByte();
     let twist = pk.GetShort();
     let angel = {
-      x: tx,
-      y: ty,
-      t: twist
+      tx,
+      ty,
+      twist
     };
     let dot = null;
 
     if (!this.penSettingInfo.HoverMode && !this.state.IsStartWithDown) {
       if (!this.state.IsStartWithPaperInfo) {
         //펜 다운 없이 페이퍼 정보 없고 무브가 오는 현상(다운 - 무브 - 업 - 다운X - 무브)
-        this.PenController.onErrorDetected({
+        this.penController.onErrorDetected({
           ErrorType: ErrorType.MissingPenDown,
           Timestamp: -1
         });
@@ -494,7 +507,7 @@ export default class PenClientParserV2 {
         let errorDot = Dot.MakeDot(this.current, x, y, force, Dot.DotTypes.PEN_ERROR, this.state.mPenTipType, this.state.mPenTipColor, angel);
 
         //펜 다운 없이 페이퍼 정보 있고 무브가 오는 현상(다운 - 무브 - 업 - 다운X - 무브)
-        this.PenController.onErrorDetected({
+        this.penController.onErrorDetected({
           ErrorType: ErrorType.MissingPenDown,
           Dot: errorDot,
           Timestamp: this.state.SessionTs
@@ -521,7 +534,7 @@ export default class PenClientParserV2 {
         );
       } else {
         //펜 다운 이후 페이지 체인지 없이 도트가 들어왔을 경우
-        this.PenController.onErrorDetected({
+        this.penController.onErrorDetected({
           ErrorType: ErrorType.MissingPageChange,
           Timestamp: this.state.SessionTs
         });
@@ -550,14 +563,14 @@ export default class PenClientParserV2 {
     }
   }
 
-  ProcessDot(dot, obj) {
+  ProcessDot(dot: Dot, obj: any) {
     //dotFilterForPaper.Put(dot, obj);
     this.SendDotReceiveEvent(dot, obj);
   }
 
-  SendDotReceiveEvent(dot, obj) {
+  SendDotReceiveEvent(dot: Dot, obj: any) {
     // NLog.log(dot);
-    this.PenController.onDot(this.PenController, { Dot: dot, ImageProcessingInfo: obj });
+    this.penController.onDot!(this.penController, dot, obj);
   }
 
   UpDotTimerCallback() {
@@ -579,7 +592,7 @@ export default class PenClientParserV2 {
     if (isError) {
       let errorDot = this.state.mPrevDot.Clone();
       errorDot.DotType = Dot.DotTypes.PEN_ERROR;
-      this.PenController.onErrorDetected({
+      this.penController.onErrorDetected({
         ErrorType: ErrorType.MissingPenUp,
         Dot: errorDot,
         Timestamp: this.state.SessionTs
@@ -592,7 +605,7 @@ export default class PenClientParserV2 {
   }
 
   // MARK: Parse Offline
-  ResOfflineData(packet) {
+  ResOfflineData(packet: Packet) {
     const packetid = packet.GetShort();
     const isCompressed = packet.GetByte() === 1 ? true : false;
     const beforsize = packet.GetShort();
@@ -602,7 +615,7 @@ export default class PenClientParserV2 {
     const [Section, Owner] = GetSectionOwner(rb);
     const Note = packet.GetInt();
     const strokeCount = packet.GetShort();
-    const data = packet.GetBytes();
+    const data = packet.GetBytes(null);
     const Paper = {
       packetid,
       isCompressed,
@@ -635,20 +648,20 @@ export default class PenClientParserV2 {
 
     if (transPosition === 2) {
       // NLog.log("OFFLINE_DATA_RECEIVE_END");
-      this.PenController.onMessage(this.PenController, PenMessageType.OFFLINE_DATA_SEND_STATUS, 100);
+      this.penController.onMessage!(this.penController, PenMessageType.OFFLINE_DATA_SEND_STATUS, 100);
     } else {
       this.offline.mReceivedOfflineStroke += strokeCount;
       // NLog.log("OFFLINE_DATA_RECEIVE", strokeCount, this.offline.mReceivedOfflineStroke);
       this.ReqOfflineData2(packetid, true, false);
       let percent = (this.offline.mReceivedOfflineStroke * 100) / this.offline.mTotalOfflineStroke;
-      this.PenController.onMessage( this.PenController, PenMessageType.OFFLINE_DATA_SEND_STATUS, percent);
+      this.penController.onMessage!( this.penController, PenMessageType.OFFLINE_DATA_SEND_STATUS, percent);
     }
   }
 
-  ParseSDK2OfflinePenData(u8, paper) {
+  ParseSDK2OfflinePenData(u8: Uint8Array, paper: any) {
     // NLog.log("OfflineStrokeParser", u8);
     let strokes = [];
-    let packet = new Packet.PacketBuilder().data(u8).Build();
+    let packet = new PacketBuilder().data(u8).Build();
     let strokeCount = paper.strokeCount;
 
     for (let i = 0; i < strokeCount; i++) {
@@ -677,9 +690,9 @@ export default class PenClientParserV2 {
         packet.GetByte(); // nCheckSum
 
         let angel = {
-          x: xtilt,
-          y: ytilt,
-          t: twist
+          tx: xtilt,
+          ty: ytilt,
+          twist: twist
         };
         paper.Time += nTimeDelta;
         let dottype = Dot.DotTypes.PEN_MOVE;
@@ -692,12 +705,12 @@ export default class PenClientParserV2 {
       strokes.push(stroke);
     }
     // NLog.log(strokes)
-    this.PenController.onMessage( this.PenController, PenMessageType.OFFLINE_DATA_SEND_SUCCESS, strokes);
+    this.penController.onMessage!( this.penController, PenMessageType.OFFLINE_DATA_SEND_SUCCESS, strokes);
   }
 
   // NOTE: Request(Offline Receive Response)
-  ReqOfflineData2(index, isSuccess = true, end = false) {
-    let bf = new ByteUtil(this.Escape.bind(this));
+  ReqOfflineData2(index: number, isSuccess = true, end = false) {
+    let bf = new ByteUtil();
 
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.OFFLINE_PACKET_RESPONSE)
@@ -712,7 +725,7 @@ export default class PenClientParserV2 {
 
   // NOTE: Request(PenStatus)
   ReqPenStatus() {
-    let bf = new ByteUtil(this.Escape.bind(this));
+    let bf = new ByteUtil();
 
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.SETTING_INFO_REQUEST)
@@ -725,7 +738,7 @@ export default class PenClientParserV2 {
   // NOTE: Request(SetupTime)
   ReqSetupTime() {
     let timetick = Date.now();
-    let bf = new ByteUtil(this.Escape.bind(this));
+    let bf = new ByteUtil();
 
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.SETTING_CHANGE_REQUEST)
@@ -742,7 +755,7 @@ export default class PenClientParserV2 {
    * Step3 Sand Data from Pen
    * @param {array} buff - uint8array
    */
-  ProtocolParse(buff) {
+  ProtocolParse(buff: Uint8Array) {
     // NLog.log("Parssing Process Start", buff)
 
     let size = buff.length;
@@ -754,7 +767,7 @@ export default class PenClientParserV2 {
         this.IsEscape = false;
       } else if (buff[i] === CONST.PK_ETX) {
         // 패킷 끝
-        let builder = new Packet.PacketBuilder();
+        let builder = new PacketBuilder();
 
         let cmd = this.mBuffer.GetByte();
 
@@ -794,7 +807,12 @@ export default class PenClientParserV2 {
     }
   }
 
-  Escape(input) {
+  // TODO: 
+  ResponseChunkRequest(offset: number, isEnd: boolean) {
+    console.log("TODO")
+  }
+
+  Escape(input: number) {
     if (input === CONST.PK_STX || input === CONST.PK_ETX || input === CONST.PK_DLE) {
       return [CONST.PK_DLE, input ^ 0x20];
     } else {
@@ -802,9 +820,9 @@ export default class PenClientParserV2 {
     }
   }
 
-  Send(bf) {
-    this.PenController.handleWrite(new Buffer(new Uint8Array(bf.ToArray())));
-    bf = {};
+  Send(bf: ByteUtil) {
+    const u8 = bf.ToU8Array()
+    this.penController.handleWrite!(u8);
     return true;
   }
 }

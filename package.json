@@ -1,21 +1,24 @@
 {
   "name": "pensdk",
-  "version": "1.0.5",
+  "version": "0.0.6",
   "description": "Neosmartpen javascript library",
-  "main": "lib/index.js",
-  "directories": {
-    "lib": "lib"
-  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --config webpack.config.js"
+    "start": "node examples/server.js",
+    "build": "rm -rf dist && webpack",
+    "build:tsc": "rm -rf dist && tsc",
+    "test": "mocha --reporter spec",
+    "clean": "rm -rf dist & rm -rf node_modules & rm package-lock.json & rm yarn.lock",
+    "prepare": "yarn build:tsc",
+    "deploy": "yarn publish"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/neostudio-io/webPenSDK.git"
   },
   "keywords": [],
-  "author": "Moon",
+  "author": "AramMoon",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/neostudio-io/webPenSDK/issues"

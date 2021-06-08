@@ -1,4 +1,4 @@
-  function toUTF8Array(str) {
+  function toUTF8Array(str: string): Uint8Array {
     var utf8 = [];
     for (var i = 0; i < str.length; i++) {
       var charcode = str.charCodeAt(i);
@@ -27,33 +27,33 @@
         );
       }
     }
-    return utf8;
+    return new Uint8Array (utf8);
   };
 
-  function byteArrayToInt(bytes) {
+  function byteArrayToInt(bytes: Uint8Array) {
     let arr = new Uint8Array(bytes);
     let dv = new DataView(arr.buffer);
     return dv.getUint32(0, true);
   };
 
-  function intToByteArray(input) {
+  function intToByteArray(input: number) {
     let arr = new Uint8Array(4);
     let dv = new DataView(arr.buffer);
     dv.setUint32(0, input, true);
-    return Array.from(arr);
+    return Uint8Array.from(arr);
   }
 
-  function byteArrayToShort(bytes) {
+  function byteArrayToShort(bytes: Uint8Array) {
     let arr = new Uint8Array(bytes);
     let dv = new DataView(arr.buffer);
     return dv.getUint16(0, true);
   }
 
-  function shortToByteArray(input) {
+  function shortToByteArray(input: number) {
     let arr = new Uint8Array(2);
     let dv = new DataView(arr.buffer);
     dv.setUint16(0, input, true);
-    return Array.from(arr);
+    return Uint8Array.from(arr)
   }
 
   /**
@@ -61,7 +61,7 @@
   * @param {array} bytes
   * @returns {number} bicInt64
   */
- function byteArrayToLong(bytes) {
+ function byteArrayToLong(bytes: Uint8Array) {
     var byte = new Uint8Array(bytes)
     var view = new DataView(byte.buffer)
     var hi = view.getUint32(0, true)
@@ -70,7 +70,7 @@
     return intValue
   }
 
-  function longToByteArray(input) {
+  function longToByteArray(input: number) {
     let long = input
     var byteArray = [0, 0, 0, 0, 0, 0, 0, 0];
     for ( var index = 0; index < byteArray.length; index ++ ) {
@@ -78,7 +78,7 @@
         byteArray[index] = byte;
         long = (long - byte) / 256 ;
     }
-    return Array.from(byteArray)
+    return Uint8Array.from(byteArray)
   }
 
 

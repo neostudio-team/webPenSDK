@@ -142,7 +142,9 @@ const PenMessageType = {
    Pens Log Data(for touch and play)
    - data: LogInfoDataStruct
    */
-  RES_LOG_DATA: 0xf5
+  RES_LOG_DATA: 0xf5,
+
+  OFFLINE_DATA_DELETE_RESPONSE: 0xa5
 };
 
 export default PenMessageType;

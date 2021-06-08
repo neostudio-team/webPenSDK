@@ -1,6 +1,7 @@
+import { Packet } from '../PenCotroller/Packet';
 import {toHexString, GetSectionOwner} from '../Util/ByteUtil'
 
-export function VersionInfo(packet) {
+export function VersionInfo(packet: Packet) {
   const DeviceName = packet.GetString(16);
   const FirmwareVersion = packet.GetString(16);
   const ProtocolVersion = packet.GetString(8);
@@ -19,7 +20,7 @@ export function VersionInfo(packet) {
   return versionInfo;
 }
 
-export function SettingInfo(packet) {
+export function SettingInfo(packet: Packet) {
   // 비밀번호 사용 여부
   let lockyn = packet.GetByte() === 1;
   // 비밀번호 입력 최대 시도 횟수
@@ -70,26 +71,26 @@ export function SettingInfo(packet) {
 }
 
 
-export function SettingChnage(packet) {
+export function SettingChnage(packet: Packet) {
   let SettingType = packet.GetByte();
   let result = packet.Result === 0x00;
   return {SettingType, result}
 }
 
-export function Password(packet) {
+export function Password(packet: Packet) {
   let status = packet.GetByte();
   let RetryCount = packet.GetByte();
   let ResetCount = packet.GetByte();
   return {status, RetryCount, ResetCount}
 }
 
-export function PasswordChange(packet) {
+export function PasswordChange(packet: Packet) {
   let RetryCount = packet.GetByte();
   let ResetCount = packet.GetByte();
   return {RetryCount, ResetCount}
 }
 
-export function PDS(packet) {
+export function PDS(packet: Packet) {
   let owner = packet.GetInt()
   let section = packet.GetInt()
   let note = packet.GetInt()
@@ -101,7 +102,7 @@ export function PDS(packet) {
   return {section, owner, note, page, x, y, fx, fy}
 }
 
-export function NoteList(packet) {
+export function NoteList(packet: Packet) {
   let length = packet.GetShort();
   let result = [];
   for (var i = 0; i < length; i++) {
@@ -114,7 +115,7 @@ export function NoteList(packet) {
   return result
 }
 
-export function PageList(packet){
+export function PageList(packet: Packet){
   let rb = packet.GetBytes(4);
   let [section, owner] = GetSectionOwner(rb);
   let note = packet.GetInt();
