@@ -67,7 +67,9 @@ export default class PenClientParserV2 {
   // MARK: ParsePacket
   ParsePacket(packet: Packet) {
     let cmd = packet.Cmd;
-    // NLog.log("ParsePacket", cmd, "0x" + cmd.toString(16))
+    NLog.log("ParsePacket", cmd, "0x" + cmd.toString(16))
+    NLog.log("ParsePacket", packet.Data)
+
     if (packet.Result > 0) {
       NLog.log("packet result failed", packet);
       return;
@@ -756,7 +758,7 @@ export default class PenClientParserV2 {
    * @param {array} buff - uint8array
    */
   ProtocolParse(buff: Uint8Array) {
-    // NLog.log("Parssing Process Start", buff)
+    NLog.log("Parssing Process Start", buff)
 
     let size = buff.length;
     for (let i = 0; i < size; i++) {
@@ -766,18 +768,25 @@ export default class PenClientParserV2 {
 
         this.IsEscape = false;
       } else if (buff[i] === CONST.PK_ETX) {
+
+        console.log("Protocol End", this.mBuffer)
+
         // 패킷 끝
         let builder = new PacketBuilder();
 
         let cmd = this.mBuffer.GetByte();
+        console.log("Protocol cmd", cmd)
 
         // event command is 0x6X and PDS 0x73
         let result_size = cmd >> 4 !== 0x6 && cmd !== 0x73 && cmd !== 0x24 ? 1 : 0;
         let result = result_size > 0 ? this.mBuffer.GetByte() : -1;
+        console.log("Protocol result", result)
 
         let length = this.mBuffer.GetShort();
+        console.log("Protocol length", length)
 
         let data = this.mBuffer.GetBytes();
+        console.log("Protocol data", data)
 
         builder
           .cmd(cmd)

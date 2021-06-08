@@ -4,11 +4,13 @@
   "description": "Neosmartpen javascript library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules","Test"],
   "scripts": {
     "start": "node examples/server.js",
-    "build": "rm -rf dist && webpack",
-    "build:tsc": "rm -rf dist && tsc",
-    "test": "mocha --reporter spec",
+    "build:webpack": "rm -rf dist && webpack",
+    "build": "rm -rf dist && tsc",
+    "test": "jest",
     "clean": "rm -rf dist & rm -rf node_modules & rm package-lock.json & rm yarn.lock",
     "prepare": "yarn build:tsc",
     "deploy": "yarn publish"
@@ -28,7 +30,9 @@
     "@babel/core": "^7.13.10",
     "@babel/plugin-proposal-class-properties": "^7.13.0",
     "@babel/preset-env": "^7.13.10",
+    "@types/jest": "^26.0.23",
     "babel-loader": "^8.2.2",
+    "jest": "^27.0.4",
     "webpack": "^5.24.4"
   },
   "dependencies": {

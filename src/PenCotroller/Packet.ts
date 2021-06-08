@@ -56,6 +56,7 @@ class Packet {
         }else {
             size = this.Data.length - this.mIndex;
         }
+        console.log("GetBytes", size, this.Data.length)
         let result = this.Data.slice(this.mIndex, this.mIndex + size);
         if ( result.length === 0)
         {
@@ -70,7 +71,13 @@ class Packet {
     }
 
     GetShort() {
-        return Converter.byteArrayToShort(this.GetBytes(2))
+        console.log("GetShort", this.mIndex, this.Data.length)
+        let u8 = this.GetBytes(2)
+        console.log("GetShort u8", u8)
+        let v = Converter.byteArrayToShort(u8)
+        console.log("GetShort value", this.mIndex, this.Data.length, v)
+
+        return v
     }
 
     GetLong() {
@@ -79,10 +86,8 @@ class Packet {
 
     GetString(length: number) {
         let bytes = this.GetBytes(length);
-        // return String.fromCharCode(null, bytes).trim();
-        return bytes.filter(byte => byte !== 0x00)
-          .toString("utf8")
-          .trim();
+        const filteru8 = bytes.filter(byte => byte !== 0x00)
+        return new TextDecoder().decode(filteru8)
     }
 }
 
