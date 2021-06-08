@@ -80,7 +80,7 @@ class Packet {
     GetString(length: number) {
         let bytes = this.GetBytes(length);
         // return String.fromCharCode(null, bytes).trim();
-        return new Buffer(bytes.filter(byte => byte !== 0x00))
+        return bytes.filter(byte => byte !== 0x00)
           .toString("utf8")
           .trim();
     }
