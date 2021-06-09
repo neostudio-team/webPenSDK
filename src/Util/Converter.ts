@@ -44,7 +44,6 @@
   }
 
   function byteArrayToShort(bytes: Uint8Array) {
-    console.log("byteArrayToShort", bytes)
     let arr = new Uint8Array(bytes);
     let dv = new DataView(arr.buffer);
     return dv.getUint16(0, true);

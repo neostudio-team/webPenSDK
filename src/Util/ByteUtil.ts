@@ -82,7 +82,6 @@ export default class ByteUtil {
       length = size
     }else{
       length = this.mBuffer.length - this.mPosRead;
-      console.log("GetBytes all", length)
     }
     let result = this.mBuffer.slice(this.mPosRead, this.mPosRead + length);
     this.mPosRead += length;
@@ -138,7 +137,6 @@ export default class ByteUtil {
 
 export function toHexString(bytes: Uint8Array) {
   const hex = Array.from(bytes).map( x => (x as any).toString(16).padStart(2, '0')).join("");
-  console.log("mac", bytes,hex)
   return hex
 }
 
