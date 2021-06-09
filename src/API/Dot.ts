@@ -1,3 +1,5 @@
+import PageInfo from "./PageInfo";
+
 const DotTypes = Object.freeze({
   PEN_DOWN: 0,
   PEN_MOVE: 1,
@@ -13,24 +15,18 @@ type Angle = {
 }
 
 class Dot {
-  section: number
-  owner: number
-  note: number
-  page: number
+  pageInfo: PageInfo
   x: number
   y: number
-  angle: Angle
   f: number
-  color: number
+  dotType: number
   timestamp: number
-  DotType: number
-  PenTipType: number
+  penTipType: number
+  color: number
+  angle: Angle
 
   constructor(){
-    this.section = 0;
-    this.owner = 0;
-    this.note = 0;
-    this.page = 0;
+    this.pageInfo = new PageInfo(0,0,0,0)
     this.x = 0;
     this.y = 0;
     this.angle = {
@@ -39,10 +35,10 @@ class Dot {
       twist: 0
     };
     this.f = 0;
-    this.color = 0;
+    this.color = 0x000000ff;
     this.timestamp = 0;
-    this.DotType = Dot.DotTypes.PEN_DOWN;
-    this.PenTipType = 0; // 0: Normal, 1: Eraser
+    this.dotType = Dot.DotTypes.PEN_DOWN;
+    this.penTipType = 0; // 0: Normal, 1: Eraser
   }
 
   static MakeDot(paper: any, x: number, y: number, force: number, type: number, penTipType: number, color: number, angel = {tx:0, ty: 0, twist: 0}) {
@@ -67,16 +63,13 @@ class Dot {
 
   Clone() {
     let newDot = new Dot();
-    newDot.section = this.section;
-    newDot.owner = this.owner;
-    newDot.note = this.note;
-    newDot.page = this.page;
+    newDot.pageInfo = this.pageInfo
     newDot.x = this.x;
     newDot.y = this.y;
     newDot.f = this.f;
     newDot.timestamp = this.timestamp;
-    newDot.DotType = this.DotType;
-    newDot.PenTipType = this.PenTipType
+    newDot.dotType = this.dotType;
+    newDot.penTipType = this.penTipType
     newDot.color = this.color;
     newDot.angle = this.angle;
     return newDot;
@@ -96,22 +89,22 @@ class DotBuilder {
   }
 
   section(section: number) {
-    this.mDot.section = section;
+    this.mDot.pageInfo.section = section;
     return this;
   }
 
   owner(owner: number) {
-    this.mDot.owner = owner;
+    this.mDot.pageInfo.owner = owner;
     return this;
   }
 
   note(note: number) {
-    this.mDot.note = note;
+    this.mDot.pageInfo.book = note;
     return this;
   }
 
   page(page: number) {
-    this.mDot.page = page;
+    this.mDot.pageInfo.page = page;
     return this;
   }
 
@@ -150,12 +143,12 @@ class DotBuilder {
   }
 
   dotType(dotType: number) {
-    this.mDot.DotType = dotType;
+    this.mDot.dotType = dotType;
     return this;
   }
 
   penTipType(penTipType: number) {
-    this.mDot.PenTipType = penTipType
+    this.mDot.penTipType = penTipType
     return this
   }
 

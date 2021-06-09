@@ -444,7 +444,7 @@ export default class PenClientParserV2 {
 
   // MARK: Parse Paper
   PaperInfoEvent(cmd: number, pk: Packet) {
-    if (cmd === CMD.ONLINE_NEW_PAPER_INFO_EVENT || cmd === CMD.ONLINE_ENCRYPTION_PAPER_INFO_EVENT) {
+    if (cmd === CMD.ONLINE_NEW_PAPER_INFO_EVENT) {
       let ecount = pk.GetByte();
 
       this.CheckEventCount(ecount);
@@ -469,7 +469,7 @@ export default class PenClientParserV2 {
 
   // MARK: Parse Dot
   PenDotEvent(cmd: number, pk: Packet) {
-    if (cmd === CMD.ONLINE_NEW_PEN_DOT_EVENT || cmd === CMD.ONLINE_ENCRYPTION_PEN_DOT_EVENT) {
+    if (cmd === CMD.ONLINE_NEW_PEN_DOT_EVENT) {
       let ecount = pk.GetByte();
 
       this.CheckEventCount(ecount);
