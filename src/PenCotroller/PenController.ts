@@ -4,7 +4,7 @@ import PenMessageType from "../API/PenMessageType";
 import PenRequestV2 from "./PenRequestV2"
 import Dot from "../API/Dot"
 
-type OnDot = (pencontroller: PenController, dot: Dot, info: any) => void
+type OnDot = (pencontroller: PenController, dot: Dot) => void
 type OnMessage = (pencontroller: PenController, msgType: number, args: any) => void
 type HandleWrite = (u8: Uint8Array) => void
 

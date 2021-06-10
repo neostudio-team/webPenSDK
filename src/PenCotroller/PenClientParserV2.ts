@@ -11,6 +11,7 @@ import zlib from "zlib";
 
 import PenMessageType, { SettingType, PenTipType, ErrorType } from "../API/PenMessageType";
 import PenController from "./PenController";
+import DotFilter from "../Util/DotFilter";
 
 export default class PenClientParserV2 {
   penController: PenController
@@ -22,6 +23,7 @@ export default class PenClientParserV2 {
   IsEscape: boolean
   offline: any
   IsUploading: boolean
+  dotFilter = new DotFilter(this.SendDotReceiveEvent)
 
   constructor(penController: PenController) {
     this.penController = penController;
@@ -274,7 +276,7 @@ export default class PenClientParserV2 {
 
       if (this.state.mPrevDot != null) {
         errorDot = this.state.mPrevDot.Clone();
-        errorDot.DotType = Dot.DotTypes.PEN_ERROR;
+        errorDot.dotType = Dot.DotTypes.PEN_ERROR;
       }
 
       if (ecount - this.state.EventCount > 1) {
@@ -330,7 +332,7 @@ export default class PenClientParserV2 {
     let sendImageCount = pk.GetShort();
     if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
       let udot = this.state.mPrevDot.Clone();
-      udot.DotType = Dot.DotTypes.PEN_UP;
+      udot.dotType = Dot.DotTypes.PEN_UP;
       let imageInfo = null;
       if (!this.state.IsStartWithPaperInfo) {
         imageInfo = {
@@ -341,7 +343,7 @@ export default class PenClientParserV2 {
           Transferred: sendImageCount
         };
       }
-      this.ProcessDot(udot, imageInfo);
+      this.ProcessDot(udot);
     } else if (!this.state.IsStartWithDown && !this.state.IsBeforeMiddle) {
       // 즉 다운업(무브없이) 혹은 업만 들어올 경우 UP dot을 보내지 않음
       this.penController.onErrorDetected({
@@ -432,7 +434,7 @@ export default class PenClientParserV2 {
     let errorDot = null;
     if (this.state.mPrevDot != null) {
       errorDot = this.state.mPrevDot.Clone();
-      errorDot.DotType = Dot.DotTypes.PEN_UP;
+      errorDot.dotType = Dot.DotTypes.PEN_UP;
     }
     this.penController.onErrorDetected({
       ErrorType: ErrorType.ImageProcessingError,
@@ -544,7 +546,7 @@ export default class PenClientParserV2 {
     }
 
     if (dot != null) {
-      this.ProcessDot(dot, null);
+      this.ProcessDot(dot);
     }
 
     this.state.IsBeforeMiddle = true;
@@ -565,16 +567,6 @@ export default class PenClientParserV2 {
     }
   }
 
-  ProcessDot(dot: Dot, obj: any) {
-    //dotFilterForPaper.Put(dot, obj);
-    this.SendDotReceiveEvent(dot, obj);
-  }
-
-  SendDotReceiveEvent(dot: Dot, obj: any) {
-    // NLog.log(dot);
-    this.penController.onDot!(this.penController, dot, obj);
-  }
-
   UpDotTimerCallback() {
     NLog.log("UpDotTimerCallback");
 
@@ -593,7 +585,7 @@ export default class PenClientParserV2 {
   MakeUpDot(isError = true) {
     if (isError) {
       let errorDot = this.state.mPrevDot.Clone();
-      errorDot.DotType = Dot.DotTypes.PEN_ERROR;
+      errorDot.dotType = Dot.DotTypes.PEN_ERROR;
       this.penController.onErrorDetected({
         ErrorType: ErrorType.MissingPenUp,
         Dot: errorDot,
@@ -602,8 +594,8 @@ export default class PenClientParserV2 {
     }
 
     let audot = this.state.mPrevDot.Clone();
-    audot.DotType = Dot.DotTypes.PEN_UP;
-    this.ProcessDot(audot, null);
+    audot.dotType = Dot.DotTypes.PEN_UP;
+    this.ProcessDot(audot);
   }
 
   // MARK: Parse Offline
@@ -823,6 +815,18 @@ export default class PenClientParserV2 {
     }
   }
 
+  // Send Dot
+  ProcessDot(dot: Dot) {
+    this.dotFilter.put(dot)
+    // this.SendDotReceiveEvent(dot);
+  }
+
+  SendDotReceiveEvent(dot: Dot) {
+    // NLog.log(dot);
+    this.penController.onDot!(this.penController, dot);
+  }
+
+  // Send to Pen
   Send(bf: ByteUtil) {
     const u8 = bf.ToU8Array()
     this.penController.handleWrite!(u8);
