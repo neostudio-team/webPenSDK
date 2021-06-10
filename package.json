@@ -1,6 +1,6 @@
 {
   "name": "pensdk",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Neosmartpen javascript library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
