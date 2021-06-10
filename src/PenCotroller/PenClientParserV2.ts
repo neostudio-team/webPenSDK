@@ -23,7 +23,6 @@ export default class PenClientParserV2 {
   IsEscape: boolean
   offline: any
   IsUploading: boolean
-  dotFilter = new DotFilter(this.SendDotReceiveEvent)
 
   constructor(penController: PenController) {
     this.penController = penController;
@@ -817,14 +816,20 @@ export default class PenClientParserV2 {
 
   // Send Dot
   ProcessDot(dot: Dot) {
-    this.dotFilter.put(dot)
-    // this.SendDotReceiveEvent(dot);
+    // this.dotFilter.put(dot)
+    this.SendDotReceiveEvent(dot);
   }
 
-  SendDotReceiveEvent(dot: Dot) {
+  SendDotReceiveEvent = (dot: Dot) => {
     // NLog.log(dot);
-    this.penController.onDot!(this.penController, dot);
+    if (this.penController.onDot) {
+      this.penController.onDot(this.penController, dot);
+    }else{
+      NLog.log("Need onDot Callback")
+    }
   }
+
+  dotFilter = new DotFilter(this.SendDotReceiveEvent)
 
   // Send to Pen
   Send(bf: ByteUtil) {
