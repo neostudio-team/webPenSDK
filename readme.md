@@ -8,25 +8,31 @@ yarn add pensdk
 ```
 ## Usage
 
-### Javascript
+### Library Set
 ```javascript
-var NeoInk = require('neoink');
+import { PenController, PenMessageType, Dot, SettingType} from "pensdk"
 
-NeoInk.dotEvent = (dot) => {
-}
-
-NeoInk.pagesEvent = (pages) => {
-}
+let controller = new PenController()
 ```
 
+### Step1: Data Parsing from SmartPen
+``` javascript
+// 1. Create Callback functions
+handleDot = (controller, dot) => { };
+handleMessage = (controller, type, args) => { };
 
-### TypeScript
-```typescript
-import NeoInk, {Dot, PageData, }  from 'neoink'
+// 2. Set Callback functions
+controller.addCallback(this.handleDot, this.handleMessage);
 
-NeoInk.dotEvent = (dot: Dot) => {
-}
+// 3. Set Data from Pen
+controller.putData(u8)
+```
 
-NeoInk.pagesEvent = (pages: PageData[]) => {
-}
+### Step2: Set Send Data to SmartPen
+```javascript
+// Write to Pen
+controller.addWrite( (data) => {
+  // TODO: Send Data to Pen
+  // writeD
+})
 ```
