@@ -154,8 +154,8 @@ export default class PenController {
 
   SetHoverEnable(enable: boolean) {
     this.Request(
-      () => this.mClientV1.ReqPenStatus(),
-      () => this.mClientV2.ReqPenStatus()
+      () => this.mClientV1.SetHoverEnable(enable),
+      () => this.mClientV2.ReqSetupHoverMode(enable)
     );
   }
 

@@ -521,7 +521,7 @@ export default class PenClientParserV2 {
       }
     }
 
-    if (this.penSettingInfo.HoverMode && !this.state.IsStartWithDown && this.state.IsStartWithPaperInfo) {
+    if (this.penSettingInfo.HoverMode && !this.state.IsStartWithDown) {
       dot = Dot.MakeDot(this.current, x, y, force, Dot.DotTypes.PEN_HOVER,  this.state.mPenTipType, this.state.mPenTipColor, angel);
     } else if (this.state.IsStartWithDown) {
       if (this.state.IsStartWithPaperInfo) {
