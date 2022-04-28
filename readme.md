@@ -1,6 +1,6 @@
 # web_pen_sdk
-<p>이 문서는 네오스마트펜을 위한 web_pen_sdk를 사용하기 위해 작성되었습니다.</p>
-<p>This document is written to be used the web_pen_sdk for NeoSmartPen.</p>
+이 문서는 네오스마트펜을 위한 web_pen_sdk를 사용하기 위해 작성되었습니다.<br />
+This document is written to be used the web_pen_sdk for NeoSmartPen.
 
 ## Installation 
 ``` sh
@@ -154,8 +154,8 @@ const [paperSize, setPaperSize] = useState<PaperSize>();
 
 useEffect(() => {
   async function getNoteImageUsingAPI(pageInfo) {
-    await api.getNoteImage(pageInfo, setImageBlobUrl);
-    const paperSize: PaperSize = await api.extractMarginInfo(pageInfo);
+    await NoteServer.getNoteImage(pageInfo, setImageBlobUrl);
+    const paperSize: PaperSize = await NoteServer.extractMarginInfo(pageInfo);
     setPaperSize(paperSize);
   }
 
