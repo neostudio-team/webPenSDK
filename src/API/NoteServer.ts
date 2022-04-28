@@ -5,14 +5,14 @@ import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import JSZip from 'jszip';
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_apiKey,
-  authDomain: process.env.REACT_APP_authDomain,
-  databaseURL: process.env.REACT_APP_databaseURL,
-  projectId: process.env.REACT_APP_projectId,
-  storageBucket: process.env.REACT_APP_storageBucket,
-  messagingSenderId: process.env.REACT_APP_messagingSenderId,
-  appId: process.env.REACT_APP_appId,
-  measurementId: process.env.REACT_APP_measurementId
+  apiKey: "AIzaSyAY7MrI37TvkDerHsShcvOsueDpi4TGihw",
+  authDomain: "neonotes2-d0880.firebaseapp.com",
+  databaseURL: "https://neonotes2-d0880.firebaseio.com",
+  projectId: "neonotes2-d0880",
+  storageBucket: "neonotes2-d0880.appspot.com",
+  messagingSenderId: "693506452621",
+  appId: "1:693506452621:web:8b6600b884b8822d",
+  measurementId: "G-44CKW86QHE"
 };
 
 // Ncode Formula
