@@ -12,6 +12,13 @@ type PageInfo2 = {
   page: number;
 }
 
+type PaperSize = {
+  Xmin: number;
+  Xmax: number;
+  Ymin: number;
+  Ymax: number;
+}
+
 type PaperBase = {
   Xmin: number;
   Ymin: number;
@@ -46,6 +53,7 @@ type Options = {
 export type { 
   PageInfo,
   PageInfo2,
+  PaperSize,
   PaperBase,
   Dot,
   ScreenDot,

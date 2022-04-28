@@ -1,6 +1,6 @@
 import PenController from './PenController';
 import PenMessageType from '../API/PenMessageType';
-import { Dot, PageInfo, PageInfo2, View, Options } from '../Util/type';
+import { Dot, PageInfo, PageInfo2, View, Options, PaperSize } from '../Util/type';
 
 const serviceUuid = parseInt('0x19F1');
 const characteristicUuidNoti = parseInt('0x2BA1');
@@ -237,17 +237,17 @@ class PenHelper {
     return true;
   }
 
-  ncodeToScreen = (dot: Dot, view: View, ncodeSize: any) => {
+  ncodeToScreen = (dot: Dot, view: View, paperSize: PaperSize) => {
     /**
      * paperBase: ncode paper의 margin 값
-     * ncodeWidth: ncode의 가로길이
-     * ncodeHeight: ncode의 세로길이
+     * paperWidth: ncode paper의 가로길이
+     * paperHeight: ncode paper의 세로길이
      * 
      */
-    let paperBase, ncodeWidth, ncodeHeight;
-    paperBase = { Xmin: ncodeSize.Xmin, Ymin: ncodeSize.Ymin };
-    ncodeWidth = ncodeSize.Xmax - ncodeSize.Xmin;
-    ncodeHeight = ncodeSize.Ymax - ncodeSize.Ymin;
+    let paperBase, paperWidth, paperHeight;
+    paperBase = { Xmin: paperSize.Xmin, Ymin: paperSize.Ymin };
+    paperWidth = paperSize.Xmax - paperSize.Xmin;
+    paperHeight = paperSize.Ymax - paperSize.Ymin;
 
     /**
      * view(Canvas)에 보여질수 있는 좌표값을 구하기 위해 ncode dot 좌표를 계산하는 로직
@@ -255,13 +255,13 @@ class PenHelper {
      * view_dot_position = (ncode_dot_position * view_size) / ncode_size
      * 따라서, ncode_dot_position에 각각의 width, height ratio를 곱해주면 된다.
      * 
-     * widthRatio = view.width / ncodeWidth
-     * heightRatio = view.height / ncodeHeight
+     * widthRatio = view.width / paperWidth
+     * heightRatio = view.height / paperHeight
      * 
      */
 
-    const widthRatio = view.width / ncodeWidth;
-    const heightRatio = view.height / ncodeHeight;
+    const widthRatio = view.width / paperWidth;
+    const heightRatio = view.height / paperHeight;
     // dot의 기본 margin 값인 Xmin, Ymin 값을 빼주도록 한다.
     const x = (dot.x - paperBase.Xmin) * widthRatio;
     const y = (dot.y - paperBase.Ymin) * heightRatio;
@@ -276,11 +276,11 @@ class PenHelper {
    * 90', 270' -> portrait
    * 
    */
-  ncodeToScreen_smartPlate = (dot: Dot, view: View, angle: number, ncodeSize: any) => {
-    let paperBase, ncodeWidth, ncodeHeight;
-    paperBase = { Xmin: ncodeSize.Xmin, Ymin: ncodeSize.Ymin };
-    ncodeWidth = ncodeSize.Xmax - ncodeSize.Xmin;
-    ncodeHeight = ncodeSize.Ymax - ncodeSize.Ymin;
+  ncodeToScreen_smartPlate = (dot: Dot, view: View, angle: number, paperSize: PaperSize) => {
+    let paperBase, paperWidth, paperHeight;
+    paperBase = { Xmin: paperSize.Xmin, Ymin: paperSize.Ymin };
+    paperWidth = paperSize.Xmax - paperSize.Xmin;
+    paperHeight = paperSize.Ymax - paperSize.Ymin;
 
     let plateMode = "landscape";
     if (angle === 90 || angle === 270){
@@ -289,9 +289,9 @@ class PenHelper {
 
     // plateMode 가 portrait 일때는 ncode의 width <-> height swap
     if (plateMode === "portrait") {
-      const tmp = ncodeHeight;
-      ncodeHeight = ncodeWidth;
-      ncodeWidth = tmp;
+      const tmp = paperHeight;
+      paperHeight = paperWidth;
+      paperWidth = tmp;
     }
 
     let nx = Math.cos(Math.PI/180 * angle) * dot.x - Math.sin(Math.PI/180 * angle) * dot.y;
@@ -302,17 +302,17 @@ class PenHelper {
       paperBase.Ymin = 0;
     } else if (angle === 90){
       paperBase.Ymin = 0;
-      nx += ncodeSize.Ymax;
+      nx += paperSize.Ymax;
     } else if (angle === 180) {
-      nx += ncodeSize.Xmax;
-      ny += ncodeSize.Ymax;      
+      nx += paperSize.Xmax;
+      ny += paperSize.Ymax;      
     } else if (angle === 270) {
       paperBase.Xmin = 0;
-      ny += ncodeSize.Xmax;
+      ny += paperSize.Xmax;
     }
 
-    const widthRatio = view.width / ncodeWidth;
-    const heightRatio = view.height / ncodeHeight;
+    const widthRatio = view.width / paperWidth;
+    const heightRatio = view.height / paperHeight;
     const x = (nx - paperBase.Xmin) * widthRatio;
     const y = (ny - paperBase.Ymin) * heightRatio;
 
