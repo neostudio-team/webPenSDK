@@ -1,7 +1,7 @@
 {
-  "name": "pensdk",
-  "version": "0.0.16",
-  "description": "Neosmartpen javascript library",
+  "name": "web_pen_sdk",
+  "version": "0.0.1",
+  "description": "Neosmartpen typescript library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "include": [
@@ -25,7 +25,7 @@
     "url": "git+https://github.com/neostudio-io/webPenSDK.git"
   },
   "keywords": [],
-  "author": "AramMoon",
+  "author": "Minhee Lee",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/neostudio-io/webPenSDK/issues"
@@ -38,7 +38,9 @@
     "@types/jest": "^26.0.23",
     "babel-loader": "^8.2.2",
     "jest": "^27.0.4",
-    "webpack": "^5.24.4"
+    "webpack": "^5.24.4",
+    "firebase": "^9.6.11",
+    "jszip": "^3.9.1"
   },
   "dependencies": {
     "@types/web-bluetooth": "0.0.14",
