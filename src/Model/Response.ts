@@ -1,6 +1,11 @@
 import { Packet } from '../PenCotroller/Packet';
 import {toHexString, GetSectionOwner} from '../Util/ByteUtil'
 
+/**
+ * 펜에서 반환된, 디바이스 버전(정보) 패킷을 파싱하는 함수
+ * @param {Packet} packet 
+ * @returns
+ */
 export function VersionInfo(packet: Packet) {
   const DeviceName = packet.GetString(16);
   const FirmwareVersion = packet.GetString(16);
@@ -8,6 +13,7 @@ export function VersionInfo(packet: Packet) {
   const SubName = packet.GetString(16);
   const DeviceType = packet.GetShort();
   const MacAddress = toHexString(packet.GetBytes(6));
+  const PressureSensorType = packet.GetByte();
 
   const versionInfo = {
     DeviceName,
@@ -15,11 +21,17 @@ export function VersionInfo(packet: Packet) {
     ProtocolVersion,
     SubName,
     DeviceType,
-    MacAddress
+    MacAddress,
+    PressureSensorType
   }
   return versionInfo;
 }
 
+/**
+ * 펜에서 반환된, 펜 설정 정보 패킷을 파싱하는 함수
+ * @param {Packet} packet 
+ * @returns
+ */
 export function SettingInfo(packet: Packet) {
   // 비밀번호 사용 여부
   let lockyn = packet.GetByte() === 1;
@@ -70,13 +82,22 @@ export function SettingInfo(packet: Packet) {
   return settingInfo
 }
 
-
-export function SettingChnage(packet: Packet) {
+/**
+ * 펜에서 반환된, 펜 설정 변경의 성공여부를 파싱하는 함수
+ * @param {Packet} packet 
+ * @returns {{number, boolean}} 
+ */
+export function SettingChange(packet: Packet) {
   let SettingType = packet.GetByte();
   let result = packet.Result === 0x00;
   return {SettingType, result}
 }
 
+/**
+ * 펜에서 반환된, 입력된 비밀번호 결과 값을 파싱하는 함수
+ * @param {Packet} packet 
+ * @returns {{number, number, number}} 
+ */
 export function Password(packet: Packet) {
   let status = packet.GetByte();
   let RetryCount = packet.GetByte();
@@ -84,12 +105,22 @@ export function Password(packet: Packet) {
   return {status, RetryCount, ResetCount}
 }
 
+/**
+ * 펜에서 반환된, 패스워드 변경 결과 값을 파싱하는 함수
+ * @param {Packet} packet 
+ * @returns {{number, number}} 
+ */
 export function PasswordChange(packet: Packet) {
   let RetryCount = packet.GetByte();
   let ResetCount = packet.GetByte();
   return {RetryCount, ResetCount}
 }
 
+/**
+ * PDS용 좌표 데이터 파싱하는 함수
+ * @param {Packet} packet 
+ * @returns
+ */
 export function PDS(packet: Packet) {
   let owner = packet.GetInt()
   let section = packet.GetInt()
@@ -102,6 +133,11 @@ export function PDS(packet: Packet) {
   return {section, owner, note, page, x, y, fx, fy}
 }
 
+/**
+ * 펜에서 반환된, 오프라인 데이터의 종이정보(section, owner, note) 리스트를 파싱하는 함수
+ * @param {Packet} packet 
+ * @returns {array}
+ */
 export function NoteList(packet: Packet) {
   let length = packet.GetShort();
   let result = [];
@@ -115,6 +151,11 @@ export function NoteList(packet: Packet) {
   return result
 }
 
+/**
+ * 펜에서 반환된, 오프라인 데이터의 종이정보(page) 리스트를 파싱하는 함수
+ * @param {Packet} packet
+ * @returns {array}
+ */
 export function PageList(packet: Packet){
   let rb = packet.GetBytes(4);
   let [section, owner] = GetSectionOwner(rb);
