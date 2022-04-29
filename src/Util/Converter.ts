@@ -30,12 +30,22 @@
     return new Uint8Array (utf8);
   };
 
+  /**
+   * 바이트 값을 정수(int)로 변환하는 함수
+   * @param {array} bytes 
+   * @returns 
+   */
   function byteArrayToInt(bytes: Uint8Array) {
     let arr = new Uint8Array(bytes);
     let dv = new DataView(arr.buffer);
     return dv.getUint32(0, true);
   };
 
+  /**
+   * 정수(int)를 4바이트 크기의 배열로 변환하는 함수
+   * @param {number} input 
+   * @returns 
+   */
   function intToByteArray(input: number) {
     let arr = new Uint8Array(4);
     let dv = new DataView(arr.buffer);
@@ -43,12 +53,22 @@
     return Uint8Array.from(arr);
   }
 
+  /**
+   * 바이트 값을 정수(short)로 변환하는 함수
+   * @param {array} bytes 
+   * @returns 
+   */
   function byteArrayToShort(bytes: Uint8Array) {
     let arr = new Uint8Array(bytes);
     let dv = new DataView(arr.buffer);
     return dv.getUint16(0, true);
   }
 
+  /**
+   * 정수(short)를 2바이트 크기의 배열로 변환하는 함수
+   * @param {number} input 
+   * @returns 
+   */
   function shortToByteArray(input: number) {
     let arr = new Uint8Array(2);
     let dv = new DataView(arr.buffer);
@@ -57,7 +77,7 @@
   }
 
   /**
-  * Returns the sum of a and b
+  * 바이트 값을 정수(long)로 변환하는 함수
   * @param {array} bytes
   * @returns {number} bicInt64
   */
@@ -70,6 +90,11 @@
     return intValue
   }
 
+  /**
+   * 정수(long)를 8바이트 크기의 배열로 변환하는 함수
+   * @param {number} input 
+   * @returns 
+   */
   function longToByteArray(input: number) {
     let long = input
     var byteArray = [0, 0, 0, 0, 0, 0, 0, 0];

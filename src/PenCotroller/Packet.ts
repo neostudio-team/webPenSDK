@@ -44,11 +44,20 @@ class Packet {
         this.mIndex += size;
     }
 
+    /**
+     * 패킷에서 1바이트 크기의 값을 반환받는 함수
+     * @returns 
+     */
     GetByte() {
         return this.GetBytes(1)[0];
     }
 
 
+    /**
+     * 패킷에서 원하는 바이트 크기만큼의 값을 반환하고, 바이트 위치값을 수정하는 함수
+     * @param {(number | null)} arg
+     * @returns 
+     */
     GetBytes(arg: number | null) {
         let size = 0;
         if (arg) {
@@ -65,20 +74,37 @@ class Packet {
         return result;
     }
 
+    /**
+     * 패킷에서 4바이트 크기의 값을 반환받는 함수
+     * @returns 
+     */
     GetInt() {
         return Converter.byteArrayToInt(this.GetBytes(4))
     }
 
+    /**
+     * 패킷에서 2바이트 크기의 값을 반환받는 함수
+     * @returns 
+     */
     GetShort() {
         let u8 = this.GetBytes(2)
         let v = Converter.byteArrayToShort(u8)
         return v
     }
 
+    /**
+     * 패킷에서 8바이트 크기의 값을 반환받는 함수
+     * @returns 
+     */
     GetLong() {
         return Converter.byteArrayToLong(this.GetBytes(8))
     }
 
+    /**
+     * 패킷에서 원하는 바이트 크기만큼의 값을 반환받는 함수
+     * @param {number} length 
+     * @returns 
+     */
     GetString(length: number) {
         let bytes = this.GetBytes(length);
         const filteru8 = bytes.filter(byte => byte !== 0x00)
