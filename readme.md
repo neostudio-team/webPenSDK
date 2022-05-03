@@ -25,7 +25,7 @@ scanPen = async () => {
 
 ### 2. isSamePage
 서로 다른 ncode 페이지 정보(SOBP)를 바탕으로 같은 페이지인지 구별하기 위한 로직입니다. <br />
-SOBP는 페이지를 구별하기 정보로서, Section/Owner/Book/Page의 줄임말입니다.
+SOBP는 페이지를 구별하기 위한 정보로서, Section/Owner/Book/Page의 줄임말입니다.
 ```typescript
 /**
  * This function is to distinguish whether it is the same page based on different ncode page information (SOBP).
