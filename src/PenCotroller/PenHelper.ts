@@ -212,7 +212,7 @@ class PenHelper {
    */
   characteristicBinding = (read: any, write: any, device: any) => {
     let controller = new PenController();
-  
+    controller.device = device;
     // Read Set
     read.startNotifications();
     read.addEventListener('characteristicvaluechanged', (event: any) => {
