@@ -23,42 +23,43 @@ class PenHelper {
   writecharacteristic: any;
 
   constructor() {
-    this.pens = []; // PenController Array
-    this.dotCallback = null;
+    this.pens = [];  // PenController Array
+    this.dotCallback = null;  // Dot Event Callback function
     this.pageCallback = null;
-    this.messageCallback = null;
-    this.d = { section: 0, owner: 0, note: 0, page: 0 };
+    this.messageCallback = null;  // Pen Event Callback function
+    this.d = { section: 0, owner: 0, note: 0, page: 0 };  // PageInfo
     this.dotStorage = {};
     this.mac = '';
     this.isPlate = false;
     this.plateMode = '';
   }
 
+  /**
+   * @returns {boolean}
+   */
   isConnected = () => {
     return this.writecharacteristic ? true : false;
   }
 
-  // MARK: Dot Event Callback
+  /**
+   * MARK: Dot Event Callback - pen에서 넘어오는 dot을 처리하기 위한 callback function
+   * 
+   * @param {any} controller 
+   * @param {any} args 
+   */
   handleDot = (controller: any, args: any) => {
     const mac = controller.info.MacAddress;
     this.mac = mac;
     const dot = args;
     
-    // platePage 인지 확인 후 isPlate 값 설정
     const pageInfo = dot.pageInfo;
     this.isPlate = false;
-    if (this.isPlatePaper(pageInfo)) {
+    if (this.isPlatePaper(pageInfo)) {   // platePage 인지 확인 후 isPlate 값 설정
       this.isPlate = true;
     }
     dot.isPlate = this.isPlate;
 
-    /**
-     * 기존 dot을 args.Dot으로 받아오는 코드 수정
-     * Dot type 재정의
-     * 0(Down), 1(Move), 2(Up), 3(Hover)
-     * 
-     */
-    if (dot.DotType === 0) { // Down
+    if (dot.DotType === 0) {  // Down
       if (this.d.section !== dot.section || this.d.owner !== dot.owner  || this.d.note !== dot.note || this.d.page !== dot.page) {
         if (this.pageCallback) { 
           this.pageCallback(dot);
@@ -66,9 +67,9 @@ class PenHelper {
         this.d = dot;
         this.dotCallback = null;
       }
-    } else if (dot.DotType === 1) { // Move
+    } else if (dot.DotType === 1) {  // Move
 
-    } else if (dot.DotType === 2) { // Up
+    } else if (dot.DotType === 2) {  // Up
       
     }
     
@@ -85,7 +86,13 @@ class PenHelper {
     }
   };
 
-  // MARK: Pen Event Callback
+  /**
+   * MARK: Pen Event Callback - Pen event 발생시 message를 처리하기 위한 로직
+   * 
+   * @param {any} controller
+   * @param {any} type 
+   * @param {any} args 
+   */
   handleMessage = (controller: any, type: any, args: any) => {
     const mac = controller.info.MacAddress;
     
@@ -103,6 +110,11 @@ class PenHelper {
     }
   };
 
+  /**
+   * 펜 연결을 위한 bluetooth device를 scan하는 로직
+   * 
+   * @returns {boolean}
+   */
   scanPen = async () => {
     if (await this.notSupportBLE()) return;
 
@@ -135,6 +147,12 @@ class PenHelper {
     return false;
   };
 
+  /**
+   * Bluetooth device의 연결을 설정하는 로직
+   * 
+   * @param {any} device 
+   * @returns 
+   */
   connectDevice = async (device: any) => {
     if (!device) return;
 
@@ -149,6 +167,12 @@ class PenHelper {
     }
   };
 
+  /**
+   * Bluetooth 16bit UUID service를 binding 하기 위한 로직
+   * 
+   * @param {any} service 
+   * @param {any} device 
+   */
   serviceBinding_16 = async (service: any, device: any) => {
     try {
       const service_16 = await service.getPrimaryService(serviceUuid);
@@ -161,6 +185,12 @@ class PenHelper {
     }
   };
 
+  /**
+   * Bluetooth 128bit UUID service를 binding 하기 위한 로직
+   * 
+   * @param {any} service 
+   * @param {any} device 
+   */
   serviceBinding_128 = async (service: any, device: any) => {
     try {
       const service_128 = await service.getPrimaryService(PEN_SERVICE_UUID_128);
@@ -173,9 +203,16 @@ class PenHelper {
     }
   };
 
+  /**
+   * Bluetooth의 Characteristics 상태 정보를 binding 하기 위한 로직
+   * 
+   * @param {any} read 
+   * @param {any} write 
+   * @param {any} device 
+   */
   characteristicBinding = (read: any, write: any, device: any) => {
     let controller = new PenController();
-    // controller.device = device;
+  
     // Read Set
     read.startNotifications();
     read.addEventListener('characteristicvaluechanged', (event: any) => {
@@ -196,7 +233,8 @@ class PenHelper {
         console.log('write Error', err);
       });
     })
-    controller.SetHoverEnable(true);
+    
+    controller.SetHoverEnable(true);  // Device Hover Mode Set
 
     // Call back Event Set
     controller.addCallback(this.handleDot, this.handleMessage);
@@ -205,7 +243,11 @@ class PenHelper {
     this.pens.push(controller);
   }
 
-  // disconnected Callback
+  /**
+   * Disconnected Callback function
+   * 
+   * @param {any} event 
+   */
   onDisconnected = (event: any) => {
     console.log('device disconnect', event);
     console.log('device id',  event.currentTarget.id, this.pens);
@@ -213,11 +255,21 @@ class PenHelper {
     console.log('pen list', this.pens);
   }
 
-  // disconnect Action
+  /**
+   * Disconnect Action 
+   * 
+   * @param {any} penController 
+   */
   disconnect = (penController: any) => {
     penController.device.gatt.disconnect();
   }
 
+  /**
+   * 해당 pageInfo가 Plate paper인지 확인하기 위한 로직
+   * 
+   * @param {PageInfo} pageInfo 
+   * @returns {boolean}
+   */
   isPlatePaper = (pageInfo: PageInfo) => {
     const { owner, book } = pageInfo;
     if (owner === 1013 && book === 2) {
@@ -226,6 +278,13 @@ class PenHelper {
     return false;
   }
 
+  /**
+   * props로 받은 pageInfo들을 바탕으로 같은 page인지 확인하기 위한 로직
+   * 
+   * @param {PageInfo} page1 
+   * @param {PageInfo} page2 
+   * @returns {boolean}
+   */
   isSamePage = (page1: PageInfo, page2: PageInfo) => {
     if (page1 === undefined && page2 === undefined) return true;
     if (page1 && !page2) return false;
@@ -237,27 +296,26 @@ class PenHelper {
     return true;
   }
 
+  /**
+   * Ncode dot 좌표를 view(Canvas) 크기에 맞춘 좌표값으로 변환하는 로직
+   * @param {Dot} dot 
+   * @param {View} view 
+   * @param {PaperSize} paperSize 
+   * @returns {Dot}
+   */
   ncodeToScreen = (dot: Dot, view: View, paperSize: PaperSize) => {
-    /**
-     * paperBase: ncode paper의 margin 값
-     * paperWidth: ncode paper의 가로길이
-     * paperHeight: ncode paper의 세로길이
-     * 
-     */
     let paperBase, paperWidth, paperHeight;
-    paperBase = { Xmin: paperSize.Xmin, Ymin: paperSize.Ymin };
-    paperWidth = paperSize.Xmax - paperSize.Xmin;
-    paperHeight = paperSize.Ymax - paperSize.Ymin;
+    paperBase = { Xmin: paperSize.Xmin, Ymin: paperSize.Ymin };  // ncode paper의 margin 값
+    paperWidth = paperSize.Xmax - paperSize.Xmin;  // ncode paper의 가로길이
+    paperHeight = paperSize.Ymax - paperSize.Ymin;  // ncode paper의 세로길이
 
     /**
-     * view(Canvas)에 보여질수 있는 좌표값을 구하기 위해 ncode dot 좌표를 계산하는 로직
      * ncode_size : ncode_dot_position = view_size : view_dot_position
      * view_dot_position = (ncode_dot_position * view_size) / ncode_size
      * 따라서, ncode_dot_position에 각각의 width, height ratio를 곱해주면 된다.
      * 
      * widthRatio = view.width / paperWidth
      * heightRatio = view.height / paperHeight
-     * 
      */
 
     const widthRatio = view.width / paperWidth;
@@ -270,11 +328,12 @@ class PenHelper {
   }
 
   /**
-   * SmartPlate를 위한 ncode dot 변환 로직
-   * angle 값을 받아 해당 angle에 맞는 dot 좌표를 return 해준다.
-   * 0', 180' -> landscape
-   * 90', 270' -> portrait
-   * 
+   * SmartPlate의 Ncode dot 좌표를 view(Canvas) 크기, angle(각도)에 맞춘 좌표값으로 변환하는 로직
+   * @param {Dot} dot 
+   * @param {View} view 
+   * @param {number} angle - [0', 180']: landscape, [90', 270']: portrait 
+   * @param {PaperSize} paperSize 
+   * @returns {Dot}
    */
   ncodeToScreen_smartPlate = (dot: Dot, view: View, angle: number, paperSize: PaperSize) => {
     let paperBase, paperWidth, paperHeight;
