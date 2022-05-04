@@ -13,7 +13,7 @@ $ yarn add web_pen_sdk
 
 ## Description
 ### **PenHelper**
-> scanPen, connectDevice, serviceBinding_16, serviceBinding_128, characteristicBinding, disconnect, dotCallback, handleDot, ncodeToScreen, ncodeToScreen_smartPlate, isSamePage
+> scanPen, connectDevice, serviceBinding_16, serviceBinding_128, characteristicBinding, disconnect, dotCallback, handleDot, messageCallback, handleMessage, ncodeToScreen, ncodeToScreen_smartPlate, isSamePage
 
 ### [펜 연결 설정/해제]
 ### 1-1. scanPen
@@ -54,14 +54,50 @@ this.pens = [penController, penController, ...];
 disconnect = (penController: any) => { ... }
 ```
 
+### [펜 이벤트 정보]
+### 2-1. messageCallback, handleMessage
+블루투스 펜의 이벤트를 처리합니다.
+```ts
+handleMessage = (controller: any, type: any, args: any) => { ... }
+```
+| Type (Hex) | Title | Description |
+|-----------|-------|-------------|
+| 98 (0x62) | PEN_DISCONNECTED | 펜 연결해제 |
+| 1 (0x01) | PEN_AUTHORIZED | 펜 인증성공 |
+| 2 (0x02) | PEN_PASSWORD_REQUEST | 비밀번호 요청 |
+| 17 (0x11) | PEN_SETTING_INFO | 펜의 상태정보(배터리, 메모리 등) |
+| 18 (0x12) | PEN_SETUP_SUCCESS | 펜 연결 후 초기설정 성공 |
+| 19 (0x13) | PEN_SETUP_FAILURE | 펜 연결 후 초기설정 실패 |
+| 82 (0x52) | PASSWORD_SETUP_SUCCESS | 패스워드 설정 성공 |
+| 83 (0x53) | PASSWORD_SETUP_FAILURE | 패스워드 설정 실패 |
+| 99 (0x63) | EVENT_LOW_BATTERY | 배터리 잔량 부족시 이벤트 |
+| 100 (0x64) | EVENT_POWER_OFF | 전원 OFF 이벤트 |
+| 34 (0x22) | PEN_FW_UPGRADE_STATUS | 펜 펌웨어 업그레이드 상태 |
+| 35 (0x23) | PEN_FW_UPGRADE_SUCCESS | 펜 펌웨어 업그레이드 성공 |
+| 36 (0x24) | PEN_FW_UPGRADE_FAILURE | 펜 펌웨어 업드레이드 실패 |
+| 37 (0x25) | PEN_FW_UPGRADE_SUSPEND | 펜 펌웨어 업그레이드 중단 |
+| 48 (0x30) | OFFLINE_DATA_NOTE_LIST | 오프라인 데이터 노트 리스트 |
+| 49 (0x31) | OFFLINE_DATA_PAGE_LIST | 오프라인 데이터 페이지 리스트 |
+| 50 (0x32) | OFFLINE_DATA_SEND_START | 오프라인 데이터 보내기 시작 |
+| 51 (0x33) | OFFLINE_DATA_SEND_STATUS | 오프라인 데이터 보내는 상태 |
+| 52 (0x34) | OFFLINE_DATA_SEND_SUCCESS | 오프라인 데이터 보내기 성공 |
+| 53 (0x35) | OFFLINE_DATA_SEND_FAILURE | 오프라인 데이터 보내기 실패 |
+| 84 (0x54) | PEN_CONNECTION_FAILURE_BTDUPLICATE | 중복되는 블루투스 펜 연결 시도시 실패 |
+| 193 (0xc1) | PEN_PROFILE | 펜의 프로필 |
+| 115 (0x73) | RES_PDS | 펜 PDS |
+| 104 (0x68) | EVENT_DOT_ERROR | 펜 Dot 이벤트 에러 |
+| 244 (0xf4) | RES_LOG_INFO | 펜 로그 정보 |
+| 245 (0xf5) | RES_LOG_DATA | 펜 로그 데이터 |
+| 165 (0xa5) | OFFLINE_DATA_DELETE_RESPONSE | 오프라인 데이터 삭제 상태 |
+
 ### [펜 Dot 처리]
-### 2-1. dotCallback, handleDot
+### 3-1. dotCallback, handleDot
 펜에서 넘어온 dot 데이터는 penController에 등록된 callback 함수인 handleDot을 통해 처리됩니다.
 ```ts
 handleDot = (controller: any, args: any) => { ... }
 ```
 
-### 2-2. ncodeToScreen
+### 3-2. ncodeToScreen
 일반적인 ncode dot 좌표값을 view에 보여지게 하기 위하여 view size에 맞춰 변환시키는 로직입니다.
 ```ts
 /**
@@ -77,7 +113,7 @@ ncodeToScreen = (dot: Dot, view: View, paperSize: PaperSize) => {
 }
 ```
 
-### 2-3. ncodeToScreen_smartPlate
+### 3-3. ncodeToScreen_smartPlate
 SmartPlate의 ncode dot 좌표값을 view에 보여지게 하기 위하여 view size에 맞춰 변환시키는 로직입니다.
 ```ts
 /**
@@ -95,7 +131,7 @@ ncodeToScreen_smartPlate = (dot: Dot, view: View, angle: number, paperSize: Pape
 ```
 
 ### [Additional]
-### 3. isSamePage
+### 4. isSamePage
 서로 다른 ncode 페이지 정보(SOBP)를 바탕으로 같은 페이지인지 구별하기 위한 로직입니다. <br />
 SOBP는 페이지를 구별하기 위한 정보로서, Section/Owner/Book/Page의 줄임말입니다.
 ```ts
@@ -180,7 +216,22 @@ import { PenHelper, NoteServer } from 'web_pen_sdk';
 PenHelper.scanPen();
 ```
 
-### Step2: 스마트펜으로부터 실시간 dot data를 받아옵니다.
+### Step2: 펜에 발생되는 이벤트 처리 (연결, 배터리정보 등)
+```ts
+useEffect(() => {
+  PenHelper.messageCallback = async (mac, type, args) => {
+    messageProcess(mac, type, args)
+  }
+});
+
+const messageProcess = (mac, type, args) => {
+  switch(type) {
+    ...
+  }
+}
+```
+
+### Step3: 스마트펜으로부터 실시간 dot data를 받아옵니다.
 ```ts
 /** Data Parsing from SmartPen */
 PenHelper.dotCallback = (mac, dot) => {
@@ -188,7 +239,7 @@ PenHelper.dotCallback = (mac, dot) => {
 }
 ```
 
-### Step3: NoteServer.extractMarginInfo()를 사용하여 ncode paper의 size 정보를 받아옵니다.
+### Step4: NoteServer.extractMarginInfo()를 사용하여 ncode paper의 size 정보를 받아옵니다.
 ```ts
 /** Use NoteServer.extractMarginInfo() function to get size information of the ncode paper. */
 const [paperSize, setPaperSize] = useState<PaperSize>();
@@ -196,7 +247,7 @@ const [paperSize, setPaperSize] = useState<PaperSize>();
 const paperSize: PaperSize = await NoteServer.extractMarginInfo(pageInfo);
 ```
 
-### Step4: NoteServer.getNoteImage()를 사용하여 note의 image url을 받아옵니다.
+### Step5: NoteServer.getNoteImage()를 사용하여 note의 image url을 받아옵니다.
 ```ts
 /** Use NoteServer.getNoteImage() function to get image url of the note. */
 const [imageBlobUrl, setImageBlobUrl] = useState<string>();
@@ -204,7 +255,7 @@ const [imageBlobUrl, setImageBlobUrl] = useState<string>();
 await NoteServer.getNoteImage(pageInfo, setImageBlobUrl);
 ```
 
-### Step5: 스마트펜으로부터 받은 ncode dot 데이터를 view 사이즈에 맞게 변환하여 사용합니다.
+### Step6: 스마트펜으로부터 받은 ncode dot 데이터를 view 사이즈에 맞게 변환하여 사용합니다.
 ```ts
 /**
  * Draw on Canvas with SmartPen
@@ -221,7 +272,7 @@ const screenDot = PenHelper.ncodeToScreen_smartPlate(dot, view, angle, paperSize
 const path = new Path(screenDot.x, screenDot.y);
 ```
 
-### Step6: Full code
+### Step7: Full code
 ```ts
 const scanPen = () => {
   PenHelper.scanPen();
@@ -245,6 +296,31 @@ useEffect(() => {
     getNoteImageUsingAPI(pageInfo);
   }
 }, [pageInfo]);
+```
+```ts
+const [penInfo, setPenInfo] = useState<any>();
+
+useEffect(() => {
+  PenHelper.messageCallback = async (mac, type, args) => {
+    messageProcess(mac, type, args);
+  }
+});
+
+const messageProcess = (mac, type, args) => {
+  switch (type) {
+    case PenMessageType.PEN_SETTING_INFO:
+      const _controller = PenHelper.pens.filter((c) => c.info.MacAddress === mac);
+      setController(_controller);  // 해당 펜의 controller를 등록해준다.
+      setPenInfo(args);  // 펜의 상태정보를 저장해준다.
+      break;
+    case PenMessageType.PEN_DISCONNECTED:
+      console.log('Pen disconnted');
+      PenHelper.disconnect(controller);
+      break;
+    default:
+      break;
+  }
+}
 ```
 ```ts
 useEffect(() => {
