@@ -17,6 +17,7 @@ export default class PenController {
   handleWrite: HandleWrite | null
   Protocol: number
   info: object
+  device: any
 
   constructor() {
     this.mParserV2 = new PenClientParserV2(this);
