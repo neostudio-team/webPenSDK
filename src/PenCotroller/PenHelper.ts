@@ -239,7 +239,8 @@ class PenHelper {
     // Call back Event Set
     controller.addCallback(this.handleDot, this.handleMessage);
     // device Status Set
-    device.addEventListener('gattserverdisconnected', this.onDisconnected);
+    device.addEventListener('gattserverdisconnected', this.onDisconnected.bind(this, controller));
+    
     this.pens.push(controller);
   }
 
@@ -248,11 +249,11 @@ class PenHelper {
    * 
    * @param {any} event 
    */
-  onDisconnected = (event: any) => {
-    console.log('device disconnect', event);
+  onDisconnected = (controller:any, event: any) => {
+    console.log('device disconnect', controller, event);
     console.log('device id',  event.currentTarget.id, this.pens);
-    this.pens = this.pens.filter((p: { device: { id: any; }; }) => p.device.id !== event.currentTarget.id);
-    console.log('pen list', this.pens);
+    this.pens = this.pens.filter((p: any) => p !== controller);
+    controller.onMessage!(controller, PenMessageType.PEN_DISCONNECTED, null);
   }
 
   /**

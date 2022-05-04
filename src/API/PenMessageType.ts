@@ -1,5 +1,11 @@
 const PenMessageType = {
   /**
+   Pens when the pen disconnected, the events that occur
+   - data: nil
+   */
+   PEN_DISCONNECTED: 0x62,
+
+  /**
    Pens when the pen authorized, the events that occur
    - data: nil
    */
