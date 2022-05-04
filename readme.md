@@ -13,35 +13,57 @@ $ yarn add web_pen_sdk
 
 ## Description
 ### **PenHelper**
-> scanPen, isSamePage, ncodeToScreen, ncodeToScreen_smartPlate 
-### 1. scanPen
+> scanPen, connectDevice, serviceBinding_16, serviceBinding_128, characteristicBinding, disconnect, dotCallback, handleDot, ncodeToScreen, ncodeToScreen_smartPlate, isSamePage
+
+### [펜 연결 설정/해제]
+### 1-1. scanPen
 블루투스 펜 연결을 위해 디바이스를 스캔하는 로직입니다.
-```typescript
+```ts
 /** This function scans the device for bluetooth pen connection. */
-scanPen = async () => {
-  ...
-}
+scanPen = async () => { ... }
 ```
 
-### 2. isSamePage
-서로 다른 ncode 페이지 정보(SOBP)를 바탕으로 같은 페이지인지 구별하기 위한 로직입니다. <br />
-SOBP는 페이지를 구별하기 위한 정보로서, Section/Owner/Book/Page의 줄임말입니다.
-```typescript
-/**
- * This function is to distinguish whether it is the same page based on different ncode page information (SOBP).
- * 
- * @param {PageInfo} page1
- * @param {PageInfo} page2
- * @returns {boolean}
- */
-isSamePage = (page1: PageInfo, page2: PageInfo) => {
-  ...
-}
+### 1-2. connectDevice
+실제 블루투스 장비와의 연결을 시도합니다.
+```ts
+connectDevice = async (device: any) => { ... }
 ```
 
-### 3. ncodeToScreen
+### 1-3. serviceBinding_16, serviceBinding_128
+블루투스 service를 16bit/128bit UUID로 binding 합니다.
+```ts
+serviceBinding_16 = async (service: any, device: any) => { ... }
+serviceBinding_128 = async (service: any, device: any) => { ... }
+```
+
+### 1-4. characteristicBinding
+블루투스 펜 장비의 연결이 완료된 후 발생되는 펜 event를 처리하기 위해 PenController를 설정합니다. <br />
+연결된 펜의 정보, Dot 처리 등 모든 펜 event는 PenController를 통해 처리됩니다. <br />
+해당 penController는 PenHelper.pens[] 안에 저장됩니다.
+```ts
+characteristicBinding = (read: any, write: any, device: any) => { ... }
+```
+```ts
+// PenHelper.ts
+this.pens = [penController, penController, ...];
+```
+
+### 1-5. disconnect
+블루투스 장비 연결을 해제합니다.
+```ts
+disconnect = (penController: any) => { ... }
+```
+
+### [펜 Dot 처리]
+### 2-1. dotCallback, handleDot
+펜에서 넘어온 dot 데이터는 penController에 등록된 callback 함수인 handleDot을 통해 처리됩니다.
+```ts
+handleDot = (controller: any, args: any) => { ... }
+```
+
+### 2-2. ncodeToScreen
 일반적인 ncode dot 좌표값을 view에 보여지게 하기 위하여 view size에 맞춰 변환시키는 로직입니다.
-```typescript
+```ts
 /**
  * This function is to convert the general ncode dot coordinate values ​​according to the view size in order to be shown in the view.
  * 
@@ -55,9 +77,9 @@ ncodeToScreen = (dot: Dot, view: View, paperSize: PaperSize) => {
 }
 ```
 
-### 4. ncodeToScreen_smartPlate
+### 2-3. ncodeToScreen_smartPlate
 SmartPlate의 ncode dot 좌표값을 view에 보여지게 하기 위하여 view size에 맞춰 변환시키는 로직입니다.
-```typescript
+```ts
 /**
  * This function is to convert the SmartPlate ncode dot coordinate values ​​according to the view size in order to be shown in the view.
  * 
@@ -72,11 +94,30 @@ ncodeToScreen_smartPlate = (dot: Dot, view: View, angle: number, paperSize: Pape
 }
 ```
 
+### [Additional]
+### 3. isSamePage
+서로 다른 ncode 페이지 정보(SOBP)를 바탕으로 같은 페이지인지 구별하기 위한 로직입니다. <br />
+SOBP는 페이지를 구별하기 위한 정보로서, Section/Owner/Book/Page의 줄임말입니다.
+```ts
+/**
+ * This function is to distinguish whether it is the same page based on different ncode page information (SOBP).
+ * 
+ * @param {PageInfo} page1
+ * @param {PageInfo} page2
+ * @returns {boolean}
+ */
+isSamePage = (page1: PageInfo, page2: PageInfo) => {
+  ...
+}
+```
+
+
+
 ### **NoteServer**
 > extractMarginInfo, getNoteImage
 ### 1. extractMarginInfo
 펜으로부터 받은 페이지 정보(SOBP)를 바탕으로 nproj로 부터 해당 ncode 페이지의 margin info를 추출하는 로직입니다.
-```typescript
+```ts
 /**
  * This function is to extract the margin info of the ncode page from nproj based on pageInfo.
  * 
@@ -90,7 +131,7 @@ const extractMarginInfo = async (pageInfo: PageInfo) => {
 
 ### 2. getNoteImage
 펜으로부터 받은 페이지 정보(SOBP)를 바탕으로 노트의 이미지를 받아오기 위한 로직입니다.
-```typescript
+```ts
 /**
  * This function is to get the note image based on pageInfo.
  * 
@@ -129,18 +170,18 @@ SetAutoPowerOnEnable, SetBeepSoundEnable, SetHoverEnable, SetOfflineDataEnable, 
 
 ## Usage with react hook
 ### Library Set
-```typescript
+```ts
 import { PenHelper, NoteServer } from 'web_pen_sdk';
 ```
 
 ### Step1: PenHelper.scanPen()을 사용하여 pen 연결을 합니다.
-```typescript
+```ts
 /** Connect SmartPen to Web service */
 PenHelper.scanPen();
 ```
 
 ### Step2: 스마트펜으로부터 실시간 dot data를 받아옵니다.
-```typescript
+```ts
 /** Data Parsing from SmartPen */
 PenHelper.dotCallback = (mac, dot) => {
   strokeProcess(dot);
@@ -148,7 +189,7 @@ PenHelper.dotCallback = (mac, dot) => {
 ```
 
 ### Step3: NoteServer.extractMarginInfo()를 사용하여 ncode paper의 size 정보를 받아옵니다.
-```typescript
+```ts
 /** Use NoteServer.extractMarginInfo() function to get size information of the ncode paper. */
 const [paperSize, setPaperSize] = useState<PaperSize>();
 
@@ -156,7 +197,7 @@ const paperSize: PaperSize = await NoteServer.extractMarginInfo(pageInfo);
 ```
 
 ### Step4: NoteServer.getNoteImage()를 사용하여 note의 image url을 받아옵니다.
-```typescript
+```ts
 /** Use NoteServer.getNoteImage() function to get image url of the note. */
 const [imageBlobUrl, setImageBlobUrl] = useState<string>();
 
@@ -164,7 +205,7 @@ await NoteServer.getNoteImage(pageInfo, setImageBlobUrl);
 ```
 
 ### Step5: 스마트펜으로부터 받은 ncode dot 데이터를 view 사이즈에 맞게 변환하여 사용합니다.
-```typescript
+```ts
 /**
  * Draw on Canvas with SmartPen
  * Coordinate Transformation with ncode_dot based on view_size, ncode_size
@@ -181,7 +222,7 @@ const path = new Path(screenDot.x, screenDot.y);
 ```
 
 ### Step6: Full code
-```typescript
+```ts
 const scanPen = () => {
   PenHelper.scanPen();
 };
@@ -189,7 +230,7 @@ const scanPen = () => {
 ```html
 <Button onClick={scanPen}></Button>
 ```
-```typescript
+```ts
 const [imageBlobUrl, setImageBlobUrl] = useState<string>();
 const [paperSize, setPaperSize] = useState<PaperSize>();
 
@@ -205,7 +246,7 @@ useEffect(() => {
   }
 }, [pageInfo]);
 ```
-```typescript
+```ts
 useEffect(() => {
   PenHelper.dotCallback = async (mac, dot) => {
     strokeProcess(dot);
@@ -217,7 +258,7 @@ const strokeProcess = (dot: Dot) => {
   const view = { width: canvasFb.width, height: canvasFb.height };
 
   let screenDot: ScreenDot;
-  if (PenHelper.isSamePage(dot.pageInfo, PlateNcode_3)) { // SmartPlate
+  if (PenHelper.isSamePage(dot.pageInfo, PlateNcode_3)) {  // SmartPlate
     screenDot = PenHelper.ncodeToScreen_smartPlate(dot, view, angle, paperSize);
   } else {  // Default
     screenDot = PenHelper.ncodeToScreen(dot, view, paperSize);
@@ -226,4 +267,13 @@ const strokeProcess = (dot: Dot) => {
 }
 ```
 
-Copyright(c) 2022, NeoLAB Convergence INC. No license allowed.
+<br />
+
+## 🐾 Sample Page
+> https://github.com/MHCHOI3/web-sdk-sample2
+
+## 📑 web_pen_sdk 공식문서
+> ### [Google Docs](https://docs.google.com/document/d/12ZSPQ-CVEOq4yxvNn2jcI9L_SZ01zJkMvbWBVfJCHWQ/edit?usp=sharing)
+
+## 📜 License
+#### **Copyright(c) 2022, NeoLAB Convergence INC. No license allowed.**
