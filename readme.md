@@ -80,35 +80,35 @@ const disconnectPen = () => {
 ```ts
 handleMessage = (controller: any, type: any, args: any) => { ... }
 ```
-| Type (Hex) | Title | Description |
-|-----------|-------|-------------|
-| 98 (0x62) | PEN_DISCONNECTED | 펜 연결해제 |
-| 1 (0x01) | PEN_AUTHORIZED | 펜 인증성공 |
-| 2 (0x02) | PEN_PASSWORD_REQUEST | 비밀번호 요청 |
-| 17 (0x11) | PEN_SETTING_INFO | 펜의 상태정보(배터리, 메모리 등) |
-| 18 (0x12) | PEN_SETUP_SUCCESS | 펜 연결 후 초기설정 성공 |
-| 19 (0x13) | PEN_SETUP_FAILURE | 펜 연결 후 초기설정 실패 |
-| 82 (0x52) | PASSWORD_SETUP_SUCCESS | 패스워드 설정 성공 |
-| 83 (0x53) | PASSWORD_SETUP_FAILURE | 패스워드 설정 실패 |
-| 99 (0x63) | EVENT_LOW_BATTERY | 배터리 잔량 부족시 이벤트 |
-| 100 (0x64) | EVENT_POWER_OFF | 전원 OFF 이벤트 |
-| 34 (0x22) | PEN_FW_UPGRADE_STATUS | 펜 펌웨어 업그레이드 상태 |
-| 35 (0x23) | PEN_FW_UPGRADE_SUCCESS | 펜 펌웨어 업그레이드 성공 |
-| 36 (0x24) | PEN_FW_UPGRADE_FAILURE | 펜 펌웨어 업드레이드 실패 |
-| 37 (0x25) | PEN_FW_UPGRADE_SUSPEND | 펜 펌웨어 업그레이드 중단 |
-| 48 (0x30) | OFFLINE_DATA_NOTE_LIST | 오프라인 데이터 노트 리스트 |
-| 49 (0x31) | OFFLINE_DATA_PAGE_LIST | 오프라인 데이터 페이지 리스트 |
-| 50 (0x32) | OFFLINE_DATA_SEND_START | 오프라인 데이터 보내기 시작 |
-| 51 (0x33) | OFFLINE_DATA_SEND_STATUS | 오프라인 데이터 보내는 상태 |
-| 52 (0x34) | OFFLINE_DATA_SEND_SUCCESS | 오프라인 데이터 보내기 성공 |
-| 53 (0x35) | OFFLINE_DATA_SEND_FAILURE | 오프라인 데이터 보내기 실패 |
-| 84 (0x54) | PEN_CONNECTION_FAILURE_BTDUPLICATE | 중복되는 블루투스 펜 연결 시도시 실패 |
-| 193 (0xc1) | PEN_PROFILE | 펜의 프로필 |
-| 115 (0x73) | RES_PDS | 펜 PDS |
-| 104 (0x68) | EVENT_DOT_ERROR | 펜 Dot 이벤트 에러 |
-| 244 (0xf4) | RES_LOG_INFO | 펜 로그 정보 |
-| 245 (0xf5) | RES_LOG_DATA | 펜 로그 데이터 |
-| 165 (0xa5) | OFFLINE_DATA_DELETE_RESPONSE | 오프라인 데이터 삭제 상태 |
+| Type (Hex) | Title | Description | |
+|-----------|-------|-------------| - |
+| 98 (0x62) | PEN_DISCONNECTED | 펜 연결해제 | - |
+| 1 (0x01) | PEN_AUTHORIZED | 펜 인증성공 | - |
+| 2 (0x02) | PEN_PASSWORD_REQUEST | 비밀번호 요청 | - |
+| 17 (0x11) | PEN_SETTING_INFO | 펜의 상태정보(배터리, 메모리 등) | 펜 충전시 배터리정보 -> 128 |
+| 18 (0x12) | PEN_SETUP_SUCCESS | 펜 연결 후 초기설정 성공 | - |
+| 19 (0x13) | PEN_SETUP_FAILURE | 펜 연결 후 초기설정 실패 | - |
+| 82 (0x52) | PASSWORD_SETUP_SUCCESS | 패스워드 설정 성공 | - |
+| 83 (0x53) | PASSWORD_SETUP_FAILURE | 패스워드 설정 실패 | - |
+| 99 (0x63) | EVENT_LOW_BATTERY | 배터리 잔량 부족시 이벤트 | - |
+| 100 (0x64) | EVENT_POWER_OFF | 전원 OFF 이벤트 | - |
+| 34 (0x22) | PEN_FW_UPGRADE_STATUS | 펜 펌웨어 업그레이드 상태 | - |
+| 35 (0x23) | PEN_FW_UPGRADE_SUCCESS | 펜 펌웨어 업그레이드 성공 | - |
+| 36 (0x24) | PEN_FW_UPGRADE_FAILURE | 펜 펌웨어 업드레이드 실패 | - |
+| 37 (0x25) | PEN_FW_UPGRADE_SUSPEND | 펜 펌웨어 업그레이드 중단 | - |
+| 48 (0x30) | OFFLINE_DATA_NOTE_LIST | 오프라인 데이터 노트 리스트 | - |
+| 49 (0x31) | OFFLINE_DATA_PAGE_LIST | 오프라인 데이터 페이지 리스트 | - |
+| 50 (0x32) | OFFLINE_DATA_SEND_START | 오프라인 데이터 보내기 시작 | - |
+| 51 (0x33) | OFFLINE_DATA_SEND_STATUS | 오프라인 데이터 보내는 상태 | - |
+| 52 (0x34) | OFFLINE_DATA_SEND_SUCCESS | 오프라인 데이터 보내기 성공 | - |
+| 53 (0x35) | OFFLINE_DATA_SEND_FAILURE | 오프라인 데이터 보내기 실패 | - |
+| 84 (0x54) | PEN_CONNECTION_FAILURE_BTDUPLICATE | 중복되는 블루투스 펜 연결 시도시 실패 | - |
+| 193 (0xc1) | PEN_PROFILE | 펜의 프로필 | - |
+| 115 (0x73) | RES_PDS | 펜 PDS | - |
+| 104 (0x68) | EVENT_DOT_ERROR | 펜 Dot 이벤트 에러 | - |
+| 244 (0xf4) | RES_LOG_INFO | 펜 로그 정보 | - |
+| 245 (0xf5) | RES_LOG_DATA | 펜 로그 데이터 | - |
+| 165 (0xa5) | OFFLINE_DATA_DELETE_RESPONSE | 오프라인 데이터 삭제 상태 | - |
 
 ``` ts
 // Usage with react hook
@@ -127,7 +127,7 @@ const messageProcess = (mac, type, args) => {
   switch(type) {
     case PenMessageType.PEN_SETTING_INFO:
       setController(args);  // 펜 controller 등록
-      setBattery(args.Battery);  // 배터리 상태정보를 저장 -> 충전중(-1)
+      setBattery(args.Battery);  // 배터리 상태정보를 저장 -> 충전중일 때 128로 표시
       ...
     case PenMessageType.PEN_DISCONNECTED:  // 펜 연결해제시 모든 상태값 초기화
       setController(null);
@@ -416,3 +416,4 @@ const path = new Path(screenDot.x, screenDot.y);
 ### Updates
 - Pen Event Handler 추가에 따른 readme 업데이트
 - Sample Page에 펜 연결해제 기능 추가, 배터리 정보 표시될 수 있도록 업데이트
+- 펜 충전시 배터리 상태정보는 128을 가진다. -> 추가 설명 업데이트
