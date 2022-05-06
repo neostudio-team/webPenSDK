@@ -16,11 +16,21 @@ $ yarn add web_pen_sdk
 > scanPen, connectDevice, serviceBinding_16, serviceBinding_128, characteristicBinding, disconnect, dotCallback, handleDot, messageCallback, handleMessage, ncodeToScreen, ncodeToScreen_smartPlate, isSamePage
 
 ### [펜 연결 설정/해제]
+
 ### 1-1. scanPen
 블루투스 펜 연결을 위해 디바이스를 스캔하는 로직입니다.
 ```ts
 /** This function scans the device for bluetooth pen connection. */
 scanPen = async () => { ... }
+```
+```ts
+// Usage with react hook
+
+const scanPen = () => {
+  PenHelper.scanPen();
+};
+
+<Button onClick={scanPen}></Button>
 ```
 
 ### 1-2. connectDevice
@@ -46,12 +56,22 @@ characteristicBinding = (read: any, write: any, device: any) => { ... }
 ```ts
 // PenHelper.ts
 this.pens = [penController, penController, ...];
+
+// penController 사용씬 2-1 참조
 ```
+
 
 ### 1-5. disconnect
 블루투스 장비 연결을 해제합니다.
 ```ts
 disconnect = (penController: any) => { ... }
+```
+```ts
+// Usage with react hook
+
+const disconnectPen = () => {
+  PenHelper.disconnect(controller);
+}
 ```
 
 ### [펜 이벤트 정보]
@@ -90,6 +110,39 @@ handleMessage = (controller: any, type: any, args: any) => { ... }
 | 245 (0xf5) | RES_LOG_DATA | 펜 로그 데이터 |
 | 165 (0xa5) | OFFLINE_DATA_DELETE_RESPONSE | 오프라인 데이터 삭제 상태 |
 
+``` ts
+// Usage with react hook
+
+const [controller, setController] = useState();
+const [penInfo, setPenInfo] = useState();
+const [battery, setBattery] = useState();
+
+useEffect(() => {
+  PenHelper.messageCallback = async (mac, type, args) => {
+    messageProcess(mac, type, args);
+  }
+});
+
+const messageProcess = (mac, type, args) => {
+  switch(type) {
+    case PenMessageType.PEN_SETTING_INFO:
+      setController(args);  // 펜 controller 등록
+      setBattery(args.Battery);  // 배터리 상태정보를 저장 -> 충전중(-1)
+      ...
+    case PenMessageType.PEN_DISCONNECTED:  // 펜 연결해제시 모든 상태값 초기화
+      setController(null);
+      setPenInfo(null);
+      setBattery(null);
+    case PenMessageType.PEN_PASSWORD_REQUEST: ...
+    case PenMessageType.PEN_SETUP_SUCCESS:  // 팬 연결 성공시 처리
+      if (controller) {
+        setPenInfo(controller.info);
+      }
+      ...
+  }
+}
+```
+
 ### [펜 Dot 처리]
 ### 3-1. dotCallback, handleDot
 펜에서 넘어온 dot 데이터는 penController에 등록된 callback 함수인 handleDot을 통해 처리됩니다.
@@ -108,8 +161,8 @@ handleDot = (controller: any, args: any) => { ... }
  * @param {PaperSize} paperSize
  * @returns {ScreenDot}
  */
-ncodeToScreen = (dot: Dot, view: View, paperSize: PaperSize) => {
-  ...
+ncodeToScreen = (dot: Dot, view: View, paperSize: PaperSize) => { 
+  ... 
 }
 ```
 
@@ -126,6 +179,29 @@ SmartPlate의 ncode dot 좌표값을 view에 보여지게 하기 위하여 view 
  * @returns {ScreenDot}
  */
 ncodeToScreen_smartPlate = (dot: Dot, view: View, angle: number, paperSize: PaperSize) => {
+  ...
+}
+```
+
+```ts
+// Usage with react hook
+
+useEffect(() => {
+  PenHelper.dotCallback = async (mac, dot) => {
+    strokeProcess(dot);
+  }
+});
+
+const strokeProcess = (dot: Dot) => {
+  ...
+  const view = { width: canvasFb.width, height: canvasFb.height };
+
+  let screenDot: ScreenDot;
+  if (PenHelper.isSamePage(dot.pageInfo, PlateNcode_3)) {  // SmartPlate
+    screenDot = PenHelper.ncodeToScreen_smartPlate(dot, view, angle, paperSize);
+  } else {  // Default
+    screenDot = PenHelper.ncodeToScreen(dot, view, paperSize);
+  }
   ...
 }
 ```
@@ -180,6 +256,25 @@ const getNoteImage = async (pageInfo: PageInfo, setImageBlobUrl: any) => {
 }
 ```
 
+```ts
+// Usage with react hook
+
+const [imageBlobUrl, setImageBlobUrl] = useState<string>();
+const [paperSize, setPaperSize] = useState<PaperSize>();
+
+useEffect(() => {
+  async function getNoteImageUsingAPI(pageInfo) {
+    await NoteServer.getNoteImage(pageInfo, setImageBlobUrl);
+    const paperSize: PaperSize = await NoteServer.extractMarginInfo(pageInfo);
+    setPaperSize(paperSize);
+  }
+
+  if (pageInfo) {
+    getNoteImageUsingAPI(pageInfo);
+  }
+}, [pageInfo]);
+```
+
 ### **PenController**
 > RequestVersionInfo, SetPassword, InputPassword, RequestPenStatus, SetRtcTime, SetAutoPowerOffTime, SetPenCapPowerOnOffEnable,
 SetAutoPowerOnEnable, SetBeepSoundEnable, SetHoverEnable, SetOfflineDataEnable, SetColor, RequestAvailableNotes, RequestOfflineNoteList, RequestOfflinePageList, RequestOfflineData, RequestOfflineDelete
@@ -204,10 +299,10 @@ SetAutoPowerOnEnable, SetBeepSoundEnable, SetHoverEnable, SetOfflineDataEnable, 
 | RequestOfflineData | section: number, owner: number, <br/>note: number,  deleteOnFinished: boolean,<br/> pages: number[ ] | 펜에 저장된 오프라인 필기 데이터를 요청 <br/> ( P 가 빈 배열일 경우 노트 내 모든 page 요청 ) <br/> ( deleteOnFinished 가 true일 경우 전송 완료된 데이터 삭제 )|
 | RequestOfflineDelete | section: number, owner: number, <br/> notes: number[ ] | 펜에 저장된 오프라인 필기 데이터에 대한 삭제를 요청 |
 
-## Usage with react hook
+## 전체적인 Flow
 ### Library Set
 ```ts
-import { PenHelper, NoteServer } from 'web_pen_sdk';
+import { PenHelper, NoteServer, PenMessageType } from 'web_pen_sdk';
 ```
 
 ### Step1: PenHelper.scanPen()을 사용하여 pen 연결을 합니다.
@@ -216,7 +311,7 @@ import { PenHelper, NoteServer } from 'web_pen_sdk';
 PenHelper.scanPen();
 ```
 
-### Step2: 펜에 발생되는 이벤트 처리 (연결, 배터리정보 등)
+### Step2: 펜에 발생되는 이벤트(연결, 배터리정보 등)를 처리합니다.
 ```ts
 useEffect(() => {
   PenHelper.messageCallback = async (mac, type, args) => {
@@ -226,16 +321,21 @@ useEffect(() => {
 
 const messageProcess = (mac, type, args) => {
   switch(type) {
+    case PenMessageType.x:
     ...
   }
 }
 ```
 
-### Step3: 스마트펜으로부터 실시간 dot data를 받아옵니다.
+### Step3: 펜으로부터 실시간 dot data를 받아옵니다.
 ```ts
 /** Data Parsing from SmartPen */
 PenHelper.dotCallback = (mac, dot) => {
   strokeProcess(dot);
+}
+
+const strokeProcess = (dot: Dot) => {
+  ...
 }
 ```
 
@@ -261,85 +361,16 @@ await NoteServer.getNoteImage(pageInfo, setImageBlobUrl);
  * Draw on Canvas with SmartPen
  * Coordinate Transformation with ncode_dot based on view_size, ncode_size
  */ 
-const view = { width: canvasFb.width, height: canvasFb.height };
-
-// case Default:
-const screenDot = PenHelper.ncodeToScreen(dot, view, paperSize);
-// case SmartPlate:
-const screenDot = PenHelper.ncodeToScreen_smartPlate(dot, view, angle, paperSize)
-
-/** Create path data using screenDot */
-const path = new Path(screenDot.x, screenDot.y);
-```
-
-### Step7: Full code
-```ts
-const scanPen = () => {
-  PenHelper.scanPen();
-};
-```
-```html
-<Button onClick={scanPen}></Button>
-```
-```ts
-const [imageBlobUrl, setImageBlobUrl] = useState<string>();
-const [paperSize, setPaperSize] = useState<PaperSize>();
-
-useEffect(() => {
-  async function getNoteImageUsingAPI(pageInfo) {
-    await NoteServer.getNoteImage(pageInfo, setImageBlobUrl);
-    const paperSize: PaperSize = await NoteServer.extractMarginInfo(pageInfo);
-    setPaperSize(paperSize);
-  }
-
-  if (pageInfo) {
-    getNoteImageUsingAPI(pageInfo);
-  }
-}, [pageInfo]);
-```
-```ts
-const [penInfo, setPenInfo] = useState<any>();
-
-useEffect(() => {
-  PenHelper.messageCallback = async (mac, type, args) => {
-    messageProcess(mac, type, args);
-  }
-});
-
-const messageProcess = (mac, type, args) => {
-  switch (type) {
-    case PenMessageType.PEN_SETTING_INFO:
-      const _controller = PenHelper.pens.filter((c) => c.info.MacAddress === mac);
-      setController(_controller);  // 해당 펜의 controller를 등록해준다.
-      setPenInfo(args);  // 펜의 상태정보를 저장해준다.
-      break;
-    case PenMessageType.PEN_DISCONNECTED:
-      console.log('Pen disconnted');
-      PenHelper.disconnect(controller);
-      break;
-    default:
-      break;
-  }
-}
-```
-```ts
-useEffect(() => {
-  PenHelper.dotCallback = async (mac, dot) => {
-    strokeProcess(dot);
-  }
-});
-
 const strokeProcess = (dot: Dot) => {
-  ...
   const view = { width: canvasFb.width, height: canvasFb.height };
 
-  let screenDot: ScreenDot;
-  if (PenHelper.isSamePage(dot.pageInfo, PlateNcode_3)) {  // SmartPlate
-    screenDot = PenHelper.ncodeToScreen_smartPlate(dot, view, angle, paperSize);
-  } else {  // Default
-    screenDot = PenHelper.ncodeToScreen(dot, view, paperSize);
-  }
-  ...
+  // case Default:
+  const screenDot = PenHelper.ncodeToScreen(dot, view, paperSize);
+  // case SmartPlate:
+  const screenDot = PenHelper.ncodeToScreen_smartPlate(dot, view, angle, paperSize)
+
+  /** Create path data using screenDot */
+const path = new Path(screenDot.x, screenDot.y);
 }
 ```
 
@@ -353,3 +384,21 @@ const strokeProcess = (dot: Dot) => {
 
 ## 📜 License
 #### **Copyright(c) 2022, NeoLAB Convergence INC. No license allowed.**
+
+<br />
+
+## Release Note
+
+### **~2022. 05. 05.** (MHCHOI)
+### Updates
+- web_pen_sdk 패키지 배포
+- Sample page 구성
+
+<hr />
+
+### **2022. 05. 06.** (MHCHOI)
+### New Features
+- **Pen Event Handler** - 펜에서 발생되는 이벤트(연결, 해제, 패스워드 요구 등)를 처리하는 로직 추가
+### Updates
+- Pen Event Handler 추가에 따른 readme 업데이트
+- Sample Page에 펜 연결해제 기능 추가, 배터리 정보 표시될 수 있도록 업데이트
