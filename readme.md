@@ -133,7 +133,8 @@ const messageProcess = (mac, type, args) => {
       setController(null);
       setPenInfo(null);
       setBattery(null);
-    case PenMessageType.PEN_PASSWORD_REQUEST: ...
+    case PenMessageType.PEN_PASSWORD_REQUEST: ...  // 패스워드 요청시 처리
+      onPasswordRequired(args);
     case PenMessageType.PEN_SETUP_SUCCESS:  // 팬 연결 성공시 처리
       if (controller) {
         setPenInfo(controller.info);
@@ -141,6 +142,19 @@ const messageProcess = (mac, type, args) => {
       ...
   }
 }
+
+...
+
+const onPasswordRequired = (args: any) => {
+  const password = input();
+  ...
+  if (args.RetryCount >= 10) {
+    alert('펜의 모든정보가 초기화 됩니다.');
+  }
+  ...
+  controller.InputPassword(password);  // 등록된 펜 controller를 사용하여 비밀번호를 전달한다.
+}
+...
 ```
 
 ### [펜 Dot 처리]
