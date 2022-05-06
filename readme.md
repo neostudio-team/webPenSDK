@@ -126,7 +126,8 @@ useEffect(() => {
 const messageProcess = (mac, type, args) => {
   switch(type) {
     case PenMessageType.PEN_SETTING_INFO:
-      setController(args);  // 펜 controller 등록
+      const _controller = PenHelper.pens.filter((c) => c.info.MacAddress === mac)[0];
+      setController(_controller);  // 해당 펜의 controller를 등록해준다.
       setBattery(args.Battery);  // 배터리 상태정보를 저장 -> 충전중일 때 128로 표시
       ...
     case PenMessageType.PEN_DISCONNECTED:  // 펜 연결해제시 모든 상태값 초기화
