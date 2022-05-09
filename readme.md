@@ -114,7 +114,7 @@ handleMessage = (controller: any, type: any, args: any) => { ... }
 // Usage with react hook
 
 const [controller, setController] = useState();
-const [penInfo, setPenInfo] = useState();
+const [penVersionInfo, setPenVersionInfo] = useState();
 const [battery, setBattery] = useState();
 
 useEffect(() => {
@@ -138,7 +138,7 @@ const messageProcess = (mac, type, args) => {
       onPasswordRequired(args);
     case PenMessageType.PEN_SETUP_SUCCESS:  // 팬 연결 성공시 처리
       if (controller) {
-        setPenInfo(controller.info);
+        setPenVersionInfo(controller.info);
       }
       ...
   }
@@ -402,19 +402,27 @@ const path = new Path(screenDot.x, screenDot.y);
 
 <br />
 
-## Release Note
-
-### **~2022. 05. 05.** (MHCHOI)
+Release Note
+=====
+**~2022. 05. 05.** (MHCHOI)
+-----
 ### Updates
 - web_pen_sdk 패키지 배포
 - Sample page 구성
 
-<hr />
-
-### **2022. 05. 06.** (MHCHOI)
+**2022. 05. 06.** (MHCHOI)
+-----
 ### New Features
 - **Pen Event Handler** - 펜에서 발생되는 이벤트(연결, 해제, 패스워드 요구 등)를 처리하는 로직 추가
 ### Updates
 - Pen Event Handler 추가에 따른 readme 업데이트
 - Sample Page에 펜 연결해제 기능 추가, 배터리 정보 표시될 수 있도록 업데이트
 - 펜 충전시 배터리 상태정보는 128을 가진다. -> 추가 설명 업데이트
+
+**2022. 05. 09.** (WONHO)
+-----
+### New Features
+- **SettingInfo, VersionInfo** type declaration
+### Updates
+- SettingInfo, VersionInfo type 정의에 따른 코드 수정
+- PenHelper 안에 정의된 any type 수정
