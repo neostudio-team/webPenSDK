@@ -50,6 +50,33 @@ type Options = {
   filters: any;
 }
 
+type VersionInfo = {
+  DeviceName: string;
+  FirmwareVersion: string;
+  ProtocolVersion: string;
+  SubName: string;
+  DeviceType: number;
+  MacAddress: string;
+  PressureSensorType: number;
+}
+
+type SettingInfo = {
+  Locked: boolean;
+  ResetCount: number;
+  RetryCount: number;
+  Timestamp: number;
+  AutoShutdownTime: number;
+  MaxForce: number;
+  Battery: number;
+  UsedMem: number;
+  UseOfflineData: boolean;
+  AutoPowerOn: boolean;
+  PenCapPower: boolean;
+  HoverMode: boolean;
+  Beep: boolean;
+  PenSensitivity: number;
+}
+
 export type { 
   PageInfo,
   PageInfo2,
@@ -59,4 +86,6 @@ export type {
   ScreenDot,
   View,
   Options,
+  VersionInfo,
+  SettingInfo
 };
