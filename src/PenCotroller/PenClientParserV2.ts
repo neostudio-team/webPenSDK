@@ -12,11 +12,12 @@ import zlib from "zlib";
 import PenMessageType, { SettingType, PenTipType, ErrorType } from "../API/PenMessageType";
 import PenController from "./PenController";
 import DotFilter from "../Util/DotFilter";
+import { VersionInfo, SettingInfo } from "../Util/type";
 
 export default class PenClientParserV2 {
   penController: PenController
-  penVersionInfo: any
-  penSettingInfo: any
+  penVersionInfo: VersionInfo
+  penSettingInfo: SettingInfo
   current: any
   state: any
   mBuffer: any
@@ -27,8 +28,8 @@ export default class PenClientParserV2 {
   constructor(penController: PenController) {
     this.penController = penController;
 
-    this.penVersionInfo = {}; // ref) Response.VersionInfo
-    this.penSettingInfo = {}; // ref) Response.SettingInfo
+    this.penVersionInfo = {} as VersionInfo; // ref) Response.VersionInfo
+    this.penSettingInfo = {} as SettingInfo; // ref) Response.SettingInfo
 
     this.current = {
       Section: -1,

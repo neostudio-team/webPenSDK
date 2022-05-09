@@ -10,8 +10,9 @@ const PEN_SERVICE_UUID_128 = '4f99f138-9d53-5bfa-9e50-b147491afe68';
 const PEN_CHARACTERISTICS_NOTIFICATION_UUID_128 = '64cd86b1-2256-5aeb-9f04-2caf6c60ae57';
 const PEN_CHARACTERISTICS_WRITE_UUID_128 = '8bc8cc7d-88ca-56b0-af9a-9bf514d0d61a';
 
+
 class PenHelper {
-  pens: any;
+  pens: PenController[];
   dotCallback: any;
   pageCallback: any;
   messageCallback: any;
@@ -20,7 +21,7 @@ class PenHelper {
   mac: string;
   isPlate: boolean;
   plateMode: string;
-  writecharacteristic: any;
+  writecharacteristic: boolean;
 
   constructor() {
     this.pens = [];  // PenController Array
@@ -32,6 +33,7 @@ class PenHelper {
     this.mac = '';
     this.isPlate = false;
     this.plateMode = '';
+    this.writecharacteristic = false;
   }
 
   /**
@@ -47,7 +49,7 @@ class PenHelper {
    * @param {any} controller 
    * @param {any} args 
    */
-  handleDot = (controller: any, args: any) => {
+  handleDot = (controller: PenController, args: any) => {
     const mac = controller.info.MacAddress;
     this.mac = mac;
     const dot = args;
@@ -249,7 +251,7 @@ class PenHelper {
    * 
    * @param {any} event 
    */
-  onDisconnected = (controller:any, event: any) => {
+  onDisconnected = (controller: PenController, event: any) => {
     console.log('device disconnect', controller, event);
     console.log('device id',  event.currentTarget.id, this.pens);
     this.pens = this.pens.filter((p: any) => p !== controller);
@@ -261,7 +263,7 @@ class PenHelper {
    * 
    * @param {any} penController 
    */
-  disconnect = (penController: any) => {
+  disconnect = (penController: PenController) => {
     penController.device.gatt.disconnect();
   }
 

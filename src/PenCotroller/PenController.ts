@@ -3,6 +3,7 @@ import * as Error from "../Model/SDKError";
 import PenMessageType from "../API/PenMessageType";
 import PenRequestV2 from "./PenRequestV2"
 import Dot from "../API/Dot"
+import { VersionInfo } from "../Util/type";
 
 type OnDot = (pencontroller: PenController, dot: Dot) => void
 type OnMessage = (pencontroller: PenController, msgType: number, args: any) => void
@@ -16,7 +17,7 @@ export default class PenController {
   onMessage: OnMessage | null
   handleWrite: HandleWrite | null
   Protocol: number
-  info: object
+  info: VersionInfo
   device: any
 
   constructor() {
@@ -26,7 +27,7 @@ export default class PenController {
     this.onMessage = null;
     this.Protocol = 2;
     this.handleWrite = null;
-    this.info = {}
+    this.info = {} as VersionInfo;
   }
 
   /**
