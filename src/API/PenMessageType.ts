@@ -36,6 +36,12 @@ const PenMessageType = {
   PEN_SETUP_FAILURE: 0x13,
 
   /**
+   The constant PEN_USING_NOTE_SET_RESULT.
+   - data: Result
+   */
+  PEN_USING_NOTE_SET_RESULT: 0x1a,
+
+  /**
    The constant PASSWORD_SETUP_SUCCESS.
    - data: PenPasswordChangeStruct
    */
@@ -123,6 +129,12 @@ const PenMessageType = {
   OFFLINE_DATA_SEND_FAILURE: 0x35,
 
   /**
+   The constant OFFLINE_DATA_DELETE_RESPONSE.
+   - data: Result
+   */
+  OFFLINE_DATA_DELETE_RESPONSE: 0xa5,
+
+  /**
    * Pens when the connection fails cause duplicate BT connection, an event that occurs
    */
   PEN_CONNECTION_FAILURE_BTDUPLICATE: 0x54,
@@ -156,8 +168,6 @@ const PenMessageType = {
    - data: LogInfoDataStruct
    */
   RES_LOG_DATA: 0xf5,
-
-  OFFLINE_DATA_DELETE_RESPONSE: 0xa5
 };
 
 export default PenMessageType;

@@ -231,7 +231,14 @@ export default class PenClientParserV2 {
             bytes: this.offline.mTotalOfflineDataSize
           };
           NLog.log("OFFLINE_DATA_RESPONSE ", offlineInfo);
-          this.penController.onMessage!( this.penController, PenMessageType.OFFLINE_DATA_SEND_START, null);
+          if(this.offline.mTotalOfflineDataSize > 0){
+            this.penController.onMessage!( this.penController, PenMessageType.OFFLINE_DATA_SEND_START, null);
+          }else{
+            this.penController.onMessage!( this.penController, PenMessageType.OFFLINE_DATA_SEND_FAILURE, null);
+          }
+          if(packet.Result !== 0x00){
+            this.penController.onMessage!( this.penController, PenMessageType.OFFLINE_DATA_SEND_FAILURE, null);
+          }
         }
         break;
 
@@ -267,7 +274,7 @@ export default class PenClientParserV2 {
 
       case CMD.ONLINE_DATA_RESPONSE:
         NLog.log("Using Note Set", packet.Result);
-        this.ReqSetupTime();
+          this.penController.onMessage!( this.penController, PenMessageType.PEN_USING_NOTE_SET_RESULT, { Result: packet.Result === 0x00 });
         break;
 
       case CMD.RES_PDS:
