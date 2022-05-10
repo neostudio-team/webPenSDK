@@ -164,7 +164,11 @@ export default class PenClientParserV2 {
 
       case CMD.SETTING_CHANGE_RESPONSE:
         let settingChangeResult = Res.SettingChange(packet);
-        this.penController.onMessage!( this.penController, PenMessageType.PEN_SETUP_SUCCESS, settingChangeResult);
+        if(settingChangeResult.result){
+          this.penController.onMessage!( this.penController, PenMessageType.PEN_SETUP_SUCCESS, settingChangeResult);
+        }else{
+          this.penController.onMessage!( this.penController, PenMessageType.PEN_SETUP_FAILURE, settingChangeResult);
+        }
         break;
 
       // password
@@ -173,15 +177,15 @@ export default class PenClientParserV2 {
         NLog.log("ParsePacket PASSWORD_RESPONSE", password);
         if (password.status === 1) {
           if (this.state.reCheckPassword) {
-            this.penController.onMessage!( this.penController, PenMessageType.PEN_SETTING_INFO, password);
+            this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_SUCCESS, null);
             this.state.reCheckPassword = false;
             break;
           }
           this.penController.onMessage!( this.penController, PenMessageType.PEN_AUTHORIZED, null);
         } else {
           if (this.state.reCheckPassword) {
-            this.state.reCheckPassword = false;
             this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_FAILURE, null);
+            this.state.reCheckPassword = false;
           } else {
             this.penController.onMessage!( this.penController, PenMessageType.PEN_PASSWORD_REQUEST, password);
           }
@@ -190,9 +194,12 @@ export default class PenClientParserV2 {
       case CMD.PASSWORD_CHANGE_RESPONSE:
         let passwordChange = Res.PasswordChange(packet);
 
-        if (packet.Result === 0x00) {
+        if (passwordChange.status === 0) {
           this.state.reCheckPassword = true;
-          this.penController.ReqInputPassword(this.state.newPassword);
+          this.penController.InputPassword(this.state.newPassword);
+          if (this.state.newPassword = ""){ //패스워드 사용 안함 설정 성공시
+            this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_SUCCESS, passwordChange);
+          }
         } else {
           this.state.newPassword = "";
           this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_FAILURE, passwordChange);
@@ -636,7 +643,7 @@ export default class PenClientParserV2 {
    * 펜업 이벤트를 강제로 발생시키기 위한 함수, 또한 참일 경우 에러 메시지 송출
    * @param {boolean} isError 
    */
-  MakeUpDot(isError = true) {
+  MakeUpDot(isError:boolean = true) {
     if (isError) {
       let errorDot = this.state.mPrevDot.Clone();
       errorDot.dotType = Dot.DotTypes.PEN_ERROR;
@@ -777,7 +784,7 @@ export default class PenClientParserV2 {
    * @param {boolean} isSuccess
    * @param {boolean} end - true일 경우 전송 중단, false일 경우 계속 전송
    */
-  ReqOfflineData2(index: number, isSuccess = true, end = false) {
+  ReqOfflineData2(index: number, isSuccess: boolean = true, end: boolean = false) {
     let bf = new ByteUtil();
 
     bf.Put(CONST.PK_STX, false)

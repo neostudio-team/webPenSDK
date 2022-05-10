@@ -72,13 +72,11 @@ export default class PenRequestV2 {
    * @returns 
    */
   ReqSetUpPassword(oldPassword: string, newPassword = "") {
-    if (!oldPassword || !newPassword) return false;
+    if (!oldPassword) return false;
     NLog.log("ReqSetUpPassword", oldPassword, newPassword);
     // if (oldPassword === this.defaultConfig.DEFAULT_PASSWORD) return false;
     if (newPassword === this.defaultConfig.DEFAULT_PASSWORD) return false;
-
-    this.state.newPassword = newPassword;
-
+    
     let oPassByte = Converter.toUTF8Array(oldPassword);
     let nPassByte = Converter.toUTF8Array(newPassword);
 

@@ -119,6 +119,12 @@ export default class PenController {
    * @memberof PenController
    */
   SetPassword(oldone: string, newone = "") {
+    if(newone === this.mClientV2.defaultConfig.DEFAULT_PASSWORD){
+      this.onMessage!(this, PenMessageType.PEN_ILLEGAL_PASSWORD_0000, null);
+      return
+    }else{
+      this.mParserV2.state.newPassword = newone;
+    }
     this.Request(
       () => {},
       () => {
@@ -293,7 +299,7 @@ export default class PenController {
    * @param {array} pages - 빈 배열일 경우 노트 내 모든 page를 요청 
    * @returns 
    */
-  RequestOfflineData(section: number, owner: number, note: number, deleteOnFinished = true, pages = [] ) {
+  RequestOfflineData(section: number, owner: number, note: number, deleteOnFinished:boolean = true, pages = [] ) {
     return this.Request(
       () => this.mClientV1.ReqOfflineData(),
       () => {
@@ -343,27 +349,16 @@ export default class PenController {
   }
   // Skip pen profile
 
-  // Password
-  /**
-   * 펜에 비밀번호를 전송하는 함수
-   * @param {string} pass 
-   */
-  ReqInputPassword(pass: string) {
-    this.Request(()=> this.mClientV1.ReqInputPassword(pass), 
-    this.mClientV2.ReqInputPassword(pass))
-  }
-  //TODO
   OnConnected() {
     if (this.Protocol !== 1) {
       this.mParserV2.state.first = true
       this.mClientV2.ReqVersionTask();
     }
   }
-  //TODO
+
   OnDisconnected() {
     if (this.Protocol === 1) this.mClientV1.OnDisconnected();
     else this.mClientV2.OnDisconnected();
-
-    // this.onDisconnected();
+    this.onMessage!(this, PenMessageType.PEN_DISCONNECTED, null);
   }
 }

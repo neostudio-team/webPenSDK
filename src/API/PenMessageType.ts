@@ -1,11 +1,5 @@
 const PenMessageType = {
   /**
-   Pens when the pen disconnected, the events that occur
-   - data: nil
-   */
-   PEN_DISCONNECTED: 0x62,
-
-  /**
    Pens when the pen authorized, the events that occur
    - data: nil
    */
@@ -16,6 +10,12 @@ const PenMessageType = {
    - data: PenPasswordStruct?
    */
   PEN_PASSWORD_REQUEST: 0x02,
+  
+  /**
+   Pens when the pen disconnected, the events that occur
+   - data: nil
+   */
+  PEN_DISCONNECTED: 0x04,
 
   /**
    The status(battery, memory, ...) of pen
@@ -48,13 +48,20 @@ const PenMessageType = {
   PASSWORD_SETUP_FAILURE: 0x53,
 
   /**
+   * The constant PEN_SETUP_FAILURE_ILLEGAL_PASSWORD_0000.
+   * data: nil
+   */
+  PEN_ILLEGAL_PASSWORD_0000: 0x54,
+
+  /**
    The constant EVENT_LOW_BATTERY.
    - data : Int (%)
    */
   EVENT_LOW_BATTERY: 0x63,
 
   /**
-   - data: PowerOffReason
+   - data: PowerOffReason(0: autoPowerOffTime, 1: lowBattery, 2: update, 3: powerKey, 4: penCapPowerOff, 
+    5: alert(SystemError), 6: usbDiskIn(BTDisconnected), 7: passwordFail, 8: testToolDisconnected)
    */
   EVENT_POWER_OFF: 0x64,
 

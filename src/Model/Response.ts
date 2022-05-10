@@ -85,18 +85,18 @@ export function SettingInfo(packet: Packet) {
 /**
  * 펜에서 반환된, 펜 설정 변경의 성공여부를 파싱하는 함수
  * @param {Packet} packet 
- * @returns {{number, boolean}} 
+ * @returns {{number, boolean}}
  */
 export function SettingChange(packet: Packet) {
   let SettingType = packet.GetByte();
-  let result = packet.Result === 0x00;
+  let result = packet.GetByte() === 0;
   return {SettingType, result}
 }
 
 /**
  * 펜에서 반환된, 입력된 비밀번호 결과 값을 파싱하는 함수
  * @param {Packet} packet 
- * @returns {{number, number, number}} 
+ * @returns {{number, number, number}} - status: 0 = 비밀번호 필요 / 1 = 비밀번호 불요 or 비밀번호 성공 / 2 = 입력한도초과리셋 / 3 = 오류
  */
 export function Password(packet: Packet) {
   let status = packet.GetByte();
@@ -108,12 +108,13 @@ export function Password(packet: Packet) {
 /**
  * 펜에서 반환된, 패스워드 변경 결과 값을 파싱하는 함수
  * @param {Packet} packet 
- * @returns {{number, number}} 
+ * @returns {{number, number, number}} - status: 0 = 성공 / 1 = 기존비밀번호 불일치 / 2 = 입력한도초과리셋 / 3 = 오류
  */
 export function PasswordChange(packet: Packet) {
   let RetryCount = packet.GetByte();
   let ResetCount = packet.GetByte();
-  return {RetryCount, ResetCount}
+  let status = packet.GetByte();
+  return {RetryCount, ResetCount, status}
 }
 
 /**

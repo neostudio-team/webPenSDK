@@ -259,7 +259,7 @@ class PenHelper {
     NLog.log('device disconnect', controller, event);
     NLog.log('device id',  event.currentTarget.id, this.pens);
     this.pens = this.pens.filter((p: any) => p !== controller);
-    controller.onMessage!(controller, PenMessageType.PEN_DISCONNECTED, null);
+    controller.OnDisconnected();
   }
 
   /**
