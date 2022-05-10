@@ -139,12 +139,14 @@ class PenHelper {
   notSupportBLE = async () => {
     if (!navigator.bluetooth) {
       alert('Bluetooth not support');
+      NLog.log("Bluetooth not support")
       return true;
     }
 
     const isEnableBle = await navigator.bluetooth.getAvailability();
     if (!isEnableBle) {
       alert('Bluetooth not support');
+      NLog.log("Bluetooth not support")
       return true;
     }
     return false;
@@ -161,10 +163,10 @@ class PenHelper {
 
     NLog.log('Connect start', device);
     try {
-      const service = await device.gatt?.connect() as BluetoothRemoteGATTServer;
-      NLog.log('service', service);
-      this.serviceBinding_16(service, device);
-      this.serviceBinding_128(service, device);
+      const server = await device.gatt?.connect() as BluetoothRemoteGATTServer;
+      NLog.log('service', server);
+      this.serviceBinding_16(server, device);
+      this.serviceBinding_128(server, device);
     } catch (err) {
       NLog.log('err conect', err);
     }
@@ -173,12 +175,12 @@ class PenHelper {
   /**
    * Bluetooth 16bit UUID service를 binding 하기 위한 로직
    * 
-   * @param {BluetoothRemoteGATTServer} service 
+   * @param {BluetoothRemoteGATTServer} server 
    * @param {BluetoothDevice} device 
    */
-  serviceBinding_16 = async (service: BluetoothRemoteGATTServer, device: BluetoothDevice) => {
+  serviceBinding_16 = async (server: BluetoothRemoteGATTServer, device: BluetoothDevice) => {
     try {
-      const service_16 = await service.getPrimaryService(serviceUuid);
+      const service_16 = await server.getPrimaryService(serviceUuid);
       NLog.log('service_16', service_16);
       const characteristicNoti = await service_16.getCharacteristic(characteristicUuidNoti);
       const characteristicWrite = await service_16.getCharacteristic(characteristicUuidWrite);
@@ -191,12 +193,12 @@ class PenHelper {
   /**
    * Bluetooth 128bit UUID service를 binding 하기 위한 로직
    * 
-   * @param {BluetoothRemoteGATTService} service 
+   * @param {BluetoothRemoteGATTService} server 
    * @param {BluetoothDevice} device 
    */
-  serviceBinding_128 = async (service: BluetoothRemoteGATTServer, device: BluetoothDevice) => {
+  serviceBinding_128 = async (server: BluetoothRemoteGATTServer, device: BluetoothDevice) => {
     try {
-      const service_128 = await service.getPrimaryService(PEN_SERVICE_UUID_128);
+      const service_128 = await server.getPrimaryService(PEN_SERVICE_UUID_128);
       NLog.log('service_128', service_128);
       const characteristicNoti = await service_128.getCharacteristic(PEN_CHARACTERISTICS_NOTIFICATION_UUID_128);
       const characteristicWrite = await service_128.getCharacteristic(PEN_CHARACTERISTICS_WRITE_UUID_128);
@@ -209,15 +211,15 @@ class PenHelper {
   /**
    * Bluetooth의 Characteristics 상태 정보를 binding 하기 위한 로직
    * 
-   * @param {any} read 
-   * @param {any} write 
+   * @param {BluetoothRemoteGATTCharacteristic} read 
+   * @param {BluetoothRemoteGATTCharacteristic} write 
    * @param {BluetoothDevice} device 
    */
-  characteristicBinding = (read: BluetoothRemoteGATTCharacteristic, write: BluetoothRemoteGATTCharacteristic, device: BluetoothDevice) => {
+  characteristicBinding = async (read: BluetoothRemoteGATTCharacteristic, write: BluetoothRemoteGATTCharacteristic, device: BluetoothDevice) => {
     let controller = new PenController();
     controller.device = device;
     // Read Set
-    read.startNotifications();
+    await read.startNotifications();
     read.addEventListener('characteristicvaluechanged', (event: any) => {
       const value = event.target.value;
       let a: any = [];
