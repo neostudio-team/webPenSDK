@@ -1,6 +1,7 @@
 import PenController from './PenController';
 import PenMessageType from '../API/PenMessageType';
 import { Dot, PageInfo, PageInfo2, View, Options, PaperSize } from '../Util/type';
+import * as NLog from '../Util/NLog'
 
 const serviceUuid = parseInt('0x19F1');
 const characteristicUuidNoti = parseInt('0x2BA1');
@@ -46,7 +47,7 @@ class PenHelper {
   /**
    * MARK: Dot Event Callback - pen에서 넘어오는 dot을 처리하기 위한 callback function
    * 
-   * @param {any} controller 
+   * @param {PenController} controller 
    * @param {any} args 
    */
   handleDot = (controller: PenController, args: any) => {
@@ -100,7 +101,7 @@ class PenHelper {
     
     switch (type) {
       case PenMessageType.PEN_AUTHORIZED:
-        console.log('PenHelper PEN_AUTHORIZED');
+        NLog.log('PenHelper PEN_AUTHORIZED');
         controller.RequestAvailableNotes();
         break;
       default:
@@ -126,12 +127,12 @@ class PenHelper {
 
     try {
       const device = await navigator.bluetooth.requestDevice(options);
-      console.log('> Name:             ' + device.name);
-      console.log('> Id:               ' + device.id);
-      console.log('> Connected:        ' + device.gatt?.connected);
+      NLog.log('> Name:             ' + device.name);
+      NLog.log('> Id:               ' + device.id);
+      NLog.log('> Connected:        ' + device.gatt?.connected);
       this.connectDevice(device);
     } catch (err) {
-      console.log('err', err);
+      NLog.log('err', err);
     }
   };
 
@@ -152,56 +153,56 @@ class PenHelper {
   /**
    * Bluetooth device의 연결을 설정하는 로직
    * 
-   * @param {any} device 
+   * @param {BluetoothDevice} device 
    * @returns 
    */
-  connectDevice = async (device: any) => {
+  connectDevice = async (device: BluetoothDevice) => {
     if (!device) return;
 
-    console.log('Connect start', device);
+    NLog.log('Connect start', device);
     try {
-      const service = await device.gatt.connect();
-      console.log('service', service);
+      const service = await device.gatt?.connect() as BluetoothRemoteGATTServer;
+      NLog.log('service', service);
       this.serviceBinding_16(service, device);
       this.serviceBinding_128(service, device);
     } catch (err) {
-      console.log('err conect', err);
+      NLog.log('err conect', err);
     }
   };
 
   /**
    * Bluetooth 16bit UUID service를 binding 하기 위한 로직
    * 
-   * @param {any} service 
-   * @param {any} device 
+   * @param {BluetoothRemoteGATTServer} service 
+   * @param {BluetoothDevice} device 
    */
-  serviceBinding_16 = async (service: any, device: any) => {
+  serviceBinding_16 = async (service: BluetoothRemoteGATTServer, device: BluetoothDevice) => {
     try {
       const service_16 = await service.getPrimaryService(serviceUuid);
-      console.log('service_16', service_16);
+      NLog.log('service_16', service_16);
       const characteristicNoti = await service_16.getCharacteristic(characteristicUuidNoti);
       const characteristicWrite = await service_16.getCharacteristic(characteristicUuidWrite);
       this.characteristicBinding(characteristicNoti,characteristicWrite, device);
     } catch (err) {
-      console.log('not support service uuid', err);
+      NLog.log('not support service uuid', err);
     }
   };
 
   /**
    * Bluetooth 128bit UUID service를 binding 하기 위한 로직
    * 
-   * @param {any} service 
-   * @param {any} device 
+   * @param {BluetoothRemoteGATTService} service 
+   * @param {BluetoothDevice} device 
    */
-  serviceBinding_128 = async (service: any, device: any) => {
+  serviceBinding_128 = async (service: BluetoothRemoteGATTServer, device: BluetoothDevice) => {
     try {
       const service_128 = await service.getPrimaryService(PEN_SERVICE_UUID_128);
-      console.log('service_128', service_128);
+      NLog.log('service_128', service_128);
       const characteristicNoti = await service_128.getCharacteristic(PEN_CHARACTERISTICS_NOTIFICATION_UUID_128);
       const characteristicWrite = await service_128.getCharacteristic(PEN_CHARACTERISTICS_WRITE_UUID_128);
       this.characteristicBinding(characteristicNoti,characteristicWrite , device);
     } catch (err) {
-      console.log('not support service uuid', err);
+      NLog.log('not support service uuid', err);
     }
   };
 
@@ -210,9 +211,9 @@ class PenHelper {
    * 
    * @param {any} read 
    * @param {any} write 
-   * @param {any} device 
+   * @param {BluetoothDevice} device 
    */
-  characteristicBinding = (read: any, write: any, device: any) => {
+  characteristicBinding = (read: BluetoothRemoteGATTCharacteristic, write: BluetoothRemoteGATTCharacteristic, device: BluetoothDevice) => {
     let controller = new PenController();
     controller.device = device;
     // Read Set
@@ -230,9 +231,9 @@ class PenHelper {
     // Write Set
     controller.addWrite((data) => {
       write.writeValue(data).then(() => {
-        console.log('write success CMD: ', '0x' + data[1].toString(16), data[1]);
+        NLog.log('write success CMD: ', '0x' + data[1].toString(16), data[1]);
       }).catch((err: any) => {
-        console.log('write Error', err);
+        NLog.log('write Error', err);
       });
     })
     
@@ -249,11 +250,12 @@ class PenHelper {
   /**
    * Disconnected Callback function
    * 
+   * @param {PenController} controller
    * @param {any} event 
    */
   onDisconnected = (controller: PenController, event: any) => {
-    console.log('device disconnect', controller, event);
-    console.log('device id',  event.currentTarget.id, this.pens);
+    NLog.log('device disconnect', controller, event);
+    NLog.log('device id',  event.currentTarget.id, this.pens);
     this.pens = this.pens.filter((p: any) => p !== controller);
     controller.onMessage!(controller, PenMessageType.PEN_DISCONNECTED, null);
   }
@@ -261,7 +263,7 @@ class PenHelper {
   /**
    * Disconnect Action 
    * 
-   * @param {any} penController 
+   * @param {PenController} penController 
    */
   disconnect = (penController: PenController) => {
     penController.device.gatt.disconnect();
