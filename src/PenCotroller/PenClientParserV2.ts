@@ -196,6 +196,7 @@ export default class PenClientParserV2 {
 
         if (passwordChange.status === 0) {
           this.state.reCheckPassword = true;
+          this.penController.RequestPenStatus();
           this.penController.InputPassword(this.state.newPassword);
           if (this.state.newPassword = ""){ //패스워드 사용 안함 설정 성공시
             this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_SUCCESS, passwordChange);
@@ -274,7 +275,7 @@ export default class PenClientParserV2 {
 
       case CMD.ONLINE_DATA_RESPONSE:
         NLog.log("Using Note Set", packet.Result);
-          this.penController.onMessage!( this.penController, PenMessageType.PEN_USING_NOTE_SET_RESULT, { Result: packet.Result === 0x00 });
+        this.penController.onMessage!( this.penController, PenMessageType.PEN_USING_NOTE_SET_RESULT, { Result: packet.Result === 0x00 });
         break;
 
       case CMD.RES_PDS:
