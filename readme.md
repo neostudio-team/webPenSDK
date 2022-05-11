@@ -82,14 +82,16 @@ handleMessage = (controller: any, type: any, args: any) => { ... }
 ```
 | Type (Hex) | Title | Description | |
 |-----------|-------|-------------| - |
-| 98 (0x62) | PEN_DISCONNECTED | 펜 연결해제 | - |
 | 1 (0x01) | PEN_AUTHORIZED | 펜 인증성공 | - |
 | 2 (0x02) | PEN_PASSWORD_REQUEST | 비밀번호 요청 | - |
+| 4 (0x04) | PEN_DISCONNECTED | 펜 연결해제 | - |
 | 17 (0x11) | PEN_SETTING_INFO | 펜의 상태정보(배터리, 메모리 등) | 펜 충전시 배터리정보 -> 128 |
 | 18 (0x12) | PEN_SETUP_SUCCESS | 펜 연결 후 초기설정 성공 | - |
 | 19 (0x13) | PEN_SETUP_FAILURE | 펜 연결 후 초기설정 실패 | - |
+| 26 (0x1a) | PEN_USING_NOTE_SET_RESULT | 실시간 필기 데이터 요청 결과 | - |
 | 82 (0x52) | PASSWORD_SETUP_SUCCESS | 패스워드 설정 성공 | - |
 | 83 (0x53) | PASSWORD_SETUP_FAILURE | 패스워드 설정 실패 | - |
+| 84 (0x54) | PEN_ILLEGAL_PASSWORD_0000 | 신규 패스워드 0000 제한 | - |
 | 99 (0x63) | EVENT_LOW_BATTERY | 배터리 잔량 부족시 이벤트 | - |
 | 100 (0x64) | EVENT_POWER_OFF | 전원 OFF 이벤트 | - |
 | 34 (0x22) | PEN_FW_UPGRADE_STATUS | 펜 펌웨어 업그레이드 상태 | - |
