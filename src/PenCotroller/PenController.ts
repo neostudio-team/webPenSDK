@@ -3,7 +3,7 @@ import * as Error from "../Model/SDKError";
 import PenMessageType from "../API/PenMessageType";
 import PenRequestV2 from "./PenRequestV2"
 import Dot from "../API/Dot"
-import { VersionInfo } from "../Util/type";
+import { DotErrorInfo, VersionInfo } from "../Util/type";
 
 type OnDot = (pencontroller: PenController, dot: Dot) => void
 type OnMessage = (pencontroller: PenController, msgType: number, args: any) => void
@@ -61,11 +61,11 @@ export default class PenController {
 
   // Error process
   /**
-   * 에러 발생 시 메시지 출력을 위한 함수
+   * 도트 에러 발생 시 메시지 출력을 위한 함수
    * - 해당 함수가 기능하기 위해서는 onMessage를 구현해야 한다.
    * @param {any} args 
    */
-  onErrorDetected(args: any) {
+  onErrorDetected(args: DotErrorInfo) {
     this.onMessage!(this, PenMessageType.EVENT_DOT_ERROR, args)
   }
 
@@ -359,6 +359,7 @@ export default class PenController {
   OnDisconnected() {
     if (this.Protocol === 1) this.mClientV1.OnDisconnected();
     else this.mClientV2.OnDisconnected();
+    this.mParserV2.OnDisconnected();
     this.onMessage!(this, PenMessageType.PEN_DISCONNECTED, null);
   }
 }

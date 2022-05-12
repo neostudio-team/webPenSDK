@@ -77,6 +77,14 @@ type SettingInfo = {
   PenSensitivity: number;
 }
 
+type DotErrorInfo = {
+  ErrorType: number,
+  Dot?: Dot,
+  Timestamp: number,
+  ExtraData?: string,
+  ImageProcessErrorInfo?: any
+}
+
 export type { 
   PageInfo,
   PageInfo2,
@@ -87,5 +95,6 @@ export type {
   View,
   Options,
   VersionInfo,
-  SettingInfo
+  SettingInfo,
+  DotErrorInfo
 };
