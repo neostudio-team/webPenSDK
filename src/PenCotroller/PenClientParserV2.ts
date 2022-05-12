@@ -341,7 +341,6 @@ export default class PenClientParserV2 {
     this.state.SessionTs = this.current.Time;
     this.state.IsBeforeMiddle = false;
     this.state.IsStartWithPaperInfo = false;
-    this.state.IsStartWithPaperInfo = false;
     this.state.mDotCount = 0;
     this.state.mPenTipType = pk.GetByte() === 0x00 ? PenTipType.Normal : PenTipType.Eraser;
     this.state.mPenTipColor = pk.GetInt();
@@ -397,7 +396,6 @@ export default class PenClientParserV2 {
     this.state.IsStartWithDown = false;
     this.state.IsBeforeMiddle = false;
     this.state.IsStartWithPaperInfo = false;
-    this.state.IsStartWithPaperInfo = false;
     this.state.mDotCount = 0;
     this.state.mPrevDot = null;
   }
@@ -438,7 +436,6 @@ export default class PenClientParserV2 {
       this.state.SessionTs = -1;
     }
     this.state.IsBeforeMiddle = false;
-    this.state.IsStartWithPaperInfo = false;
     this.state.IsStartWithPaperInfo = false;
     this.state.mDotCount = 0;
     this.state.mPenTipType = pk.GetByte() === 0x00 ? PenTipType.Normal : PenTipType.Eraser;
@@ -585,6 +582,13 @@ export default class PenClientParserV2 {
     if (this.penSettingInfo.HoverMode && !this.state.IsStartWithDown) {
       dot = Dot.MakeDot(this.current, x, y, force, Dot.DotTypes.PEN_HOVER,  this.state.mPenTipType, this.state.mPenTipColor, angel);
     } else if (this.state.IsStartWithDown) {
+      if (this.current.Time < 10000) {
+        this.UpDotTimerCallback();
+        this.penController.onErrorDetected({
+          ErrorType: ErrorType.InvalidTime,
+          Timestamp: this.state.SessionTs
+        })
+      }
       if (this.state.IsStartWithPaperInfo) {
         dot = Dot.MakeDot(
           this.current,
@@ -630,10 +634,10 @@ export default class PenClientParserV2 {
     }
   }
 
-  //TODO
+  /**
+   * 펜 다운 후 도트 들어올 때 정상적인 시간 값이 아닐 경우, 펜 이벤트 설정 값들을 초기화하는 함수
+   */
   UpDotTimerCallback() {
-    NLog.log("UpDotTimerCallback");
-
     if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
       this.MakeUpDot();
       this.current.Time = -1;
