@@ -2,6 +2,7 @@ import PenController from './PenController';
 import PenMessageType from '../API/PenMessageType';
 import { Dot, PageInfo, PageInfo2, View, Options, PaperSize } from '../Util/type';
 import * as NLog from '../Util/NLog'
+import { SDKversion } from '../Util/SDKVersion';
 
 const serviceUuid = parseInt('0x19F1');
 const characteristicUuidNoti = parseInt('0x2BA1');
@@ -42,6 +43,10 @@ class PenHelper {
    */
   isConnected = () => {
     return this.writecharacteristic ? true : false;
+  }
+  
+  debugMode = (bool : boolean) => {
+    NLog.setDebug(bool);
   }
 
   /**
@@ -130,6 +135,7 @@ class PenHelper {
       NLog.log('> Name:             ' + device.name);
       NLog.log('> Id:               ' + device.id);
       NLog.log('> Connected:        ' + device.gatt?.connected);
+      NLog.log('> SDKVersion:       ' + SDKversion)
       this.connectDevice(device);
     } catch (err) {
       NLog.log('err', err);

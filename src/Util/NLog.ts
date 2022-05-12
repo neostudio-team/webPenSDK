@@ -4,4 +4,8 @@ function log(...arg: any) {
   if (debug) console.log(...arg)
 }
 
-export {log, debug}
+function setDebug(bool : boolean){
+  debug = bool;
+}
+
+export {log, debug, setDebug}
