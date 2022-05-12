@@ -43,7 +43,7 @@ const PenMessageType = {
 
   /**
    The constant PASSWORD_SETUP_SUCCESS.
-   - data: PenPasswordChangeStruct
+   - data: UsingPassword (isPenUsingPassword: Boolean)
    */
   PASSWORD_SETUP_SUCCESS: 0x52,
 

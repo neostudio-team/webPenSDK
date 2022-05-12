@@ -177,7 +177,7 @@ export default class PenClientParserV2 {
         NLog.log("ParsePacket PASSWORD_RESPONSE", password);
         if (password.status === 1) {
           if (this.state.reCheckPassword) {
-            this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_SUCCESS, null);
+            this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_SUCCESS, {UsingPassword: true});
             this.state.reCheckPassword = false;
             break;
           }
@@ -196,10 +196,9 @@ export default class PenClientParserV2 {
 
         if (passwordChange.status === 0) {
           this.state.reCheckPassword = true;
-          this.penController.RequestPenStatus();
           this.penController.InputPassword(this.state.newPassword);
-          if (this.state.newPassword = ""){ //패스워드 사용 안함 설정 성공시
-            this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_SUCCESS, passwordChange);
+          if (!this.state.newPassword){ //패스워드 사용 안함 설정 성공시
+            this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_SUCCESS, {UsingPassword: false});
           }
         } else {
           this.state.newPassword = "";
