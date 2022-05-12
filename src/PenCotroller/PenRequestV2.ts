@@ -516,15 +516,15 @@ export default class PenRequestV2 {
 
   //TODO: Firmware
   ReqPenSwUpgrade(file: any, version: any) {
-    console.log("TODO: firmware Update")//
+    // console.log("TODO: firmware Update")//
   }
 
   SuspendSwUpgrade() {
-    console.log("TODO: firmware SuspendSwUpgrade")//
+    // console.log("TODO: firmware SuspendSwUpgrade")//
   }
 
   OnDisconnected(){
-    console.log("TODO: Disconnect ")//
+    // console.log("TODO: Disconnect ")//
 
   }
 

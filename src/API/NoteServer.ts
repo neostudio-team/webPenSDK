@@ -1,5 +1,6 @@
 import { PageInfo } from '../Util/type';
 import { initializeApp } from 'firebase/app';
+import * as NLog from '../Util/NLog'
 
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import JSZip from 'jszip';
@@ -54,7 +55,7 @@ const extractMarginInfo = async (pageInfo: PageInfo) => {
           return;
         }
 
-        console.log(`Target SOBP: ${section}(section) ${owner}(owner) ${book}(book) ${page}(page)`);
+        NLog.log(`Target SOBP: ${section}(section) ${owner}(owner) ${book}(book) ${page}(page)`);
 
         let x1, x2, y1, y2, crop_margin: any, l, t, r, b;
 
@@ -71,7 +72,7 @@ const extractMarginInfo = async (pageInfo: PageInfo) => {
           r = parseFloat(margins[2]);
           b = parseFloat(margins[3]);
         } catch (err) {
-          console.log(err);
+          NLog.log(err);
           return;
         }
 
