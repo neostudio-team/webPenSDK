@@ -933,7 +933,7 @@ export default class PenClientParserV2 {
 
   // Send Dot
   ProcessDot(dot: Dot) {
-    if(this.penSettingInfo.HoverMode){
+    if(this.penSettingInfo.HoverMode && !this.state.IsStartWithDown){
       this.SendDotReceiveEvent(dot);
     }else{
       this.dotFilter.put(dot)
