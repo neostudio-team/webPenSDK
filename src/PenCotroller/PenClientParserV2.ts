@@ -181,7 +181,9 @@ export default class PenClientParserV2 {
             this.state.reCheckPassword = false;
             break;
           }
-          this.penController.onMessage!( this.penController, PenMessageType.PEN_AUTHORIZED, null);
+          this.penController.SetHoverEnable(true);
+          //TODO
+          setTimeout(()=>this.penController.onMessage!( this.penController, PenMessageType.PEN_AUTHORIZED, null), 500);
         } else {
           if (this.state.reCheckPassword) {
             this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_FAILURE, null);
@@ -855,6 +857,9 @@ export default class PenClientParserV2 {
     NLog.log("Parssing Process Start", buff)
 
     let size = buff.length;
+    if(buff.includes(125)){
+      // debugger ; 
+    }
     for (let i = 0; i < size; i++) {
       if (buff[i] === CONST.PK_STX) {
         // 패킷 시작
@@ -890,19 +895,23 @@ export default class PenClientParserV2 {
         this.IsEscape = false;
       } else if (buff[i] === CONST.PK_DLE) {
         if (i < size - 1) {
-          this.mBuffer.Put(buff[++i] ^ 0x20);
-        } else {
-          this.IsEscape = true;
+          this.mBuffer.Put(buff[i+1] ^ 0x20);
+          i++;
         }
-      } else if (this.IsEscape) {
-        this.mBuffer.Put(buff[i] ^ 0x20);
-
-        this.IsEscape = false;
       } else {
         this.mBuffer.Put(buff[i]);
       }
     }
   }
+
+  // for (let i = 0; i < len; i++) {
+  //   if (packet[i] === 0x7d) {
+  //     unescapedBuf[cnt++] = packet[i + 1] ^ 0x20;
+  //     i++;
+  //   } else {
+  //     unescapedBuf[cnt++] = packet[i];
+  //   }
+  // }
 
   // TODO: 
   ResponseChunkRequest(offset: number, isEnd: boolean) {
