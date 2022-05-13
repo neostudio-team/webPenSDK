@@ -1,3 +1,3 @@
-const SDKversion = "0.0.5.1";
+const SDKversion = "0.5.2";
 
 export {SDKversion}
