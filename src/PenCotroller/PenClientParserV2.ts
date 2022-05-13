@@ -857,9 +857,6 @@ export default class PenClientParserV2 {
     NLog.log("Parssing Process Start", buff)
 
     let size = buff.length;
-    if(buff.includes(125)){
-      // debugger ; 
-    }
     for (let i = 0; i < size; i++) {
       if (buff[i] === CONST.PK_STX) {
         // 패킷 시작
@@ -895,7 +892,7 @@ export default class PenClientParserV2 {
         this.IsEscape = false;
       } else if (buff[i] === CONST.PK_DLE) {
         if (i < size - 1) {
-          this.mBuffer.Put(buff[i+1] ^ 0x20);
+          this.mBuffer.Put(buff[i+1] ^ 0x20, false);
           i++;
         }
       } else {
@@ -933,7 +930,7 @@ export default class PenClientParserV2 {
 
   // Send Dot
   ProcessDot(dot: Dot) {
-    if(this.penSettingInfo.HoverMode && !this.state.IsStartWithDown){
+    if(dot.dotType === Dot.DotTypes.PEN_HOVER){
       this.SendDotReceiveEvent(dot);
     }else{
       this.dotFilter.put(dot)
