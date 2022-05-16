@@ -22,8 +22,8 @@ export default class PenRequestV2 {
   constructor(penController: PenController) {
     this.penController = penController;
     this.defaultConfig = Object.freeze({
-      SupportedProtocolVersion: "2.12",
-      PEN_PROFILE_SUPPORT_PROTOCOL_VERSION: 2.1,
+      SupportedProtocolVersion: "2.17",
+      PEN_PROFILE_SUPPORT_PROTOCOL_VERSION: 2.17,
       DEFAULT_PASSWORD: "0000"
     });
   }
