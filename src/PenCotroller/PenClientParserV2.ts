@@ -276,6 +276,7 @@ export default class PenClientParserV2 {
 
       case CMD.ONLINE_DATA_RESPONSE:
         NLog.log("Using Note Set", packet.Result);
+        this.penController.SetHoverEnable(true); 
         this.penController.onMessage!( this.penController, PenMessageType.PEN_USING_NOTE_SET_RESULT, { Result: packet.Result === 0x00 });
         break;
 
