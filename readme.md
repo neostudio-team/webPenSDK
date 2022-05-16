@@ -104,13 +104,13 @@ handleMessage = (controller: any, type: any, args: any) => { ... }
 | 51 (0x33) | OFFLINE_DATA_SEND_STATUS | 오프라인 데이터 보내는 상태 | - |
 | 52 (0x34) | OFFLINE_DATA_SEND_SUCCESS | 오프라인 데이터 보내기 성공 | - |
 | 53 (0x35) | OFFLINE_DATA_SEND_FAILURE | 오프라인 데이터 보내기 실패 | - |
+| 165 (0xa5) | OFFLINE_DATA_DELETE_RESPONSE | 오프라인 데이터 삭제 상태 | - |
 | 84 (0x54) | PEN_CONNECTION_FAILURE_BTDUPLICATE | 중복되는 블루투스 펜 연결 시도시 실패 | - |
 | 193 (0xc1) | PEN_PROFILE | 펜의 프로필 | - |
 | 115 (0x73) | RES_PDS | 펜 PDS | - |
 | 104 (0x68) | EVENT_DOT_ERROR | 펜 Dot 이벤트 에러 | - |
 | 244 (0xf4) | RES_LOG_INFO | 펜 로그 정보 | - |
 | 245 (0xf5) | RES_LOG_DATA | 펜 로그 데이터 | - |
-| 165 (0xa5) | OFFLINE_DATA_DELETE_RESPONSE | 오프라인 데이터 삭제 상태 | - |
 
 ``` ts
 // Usage with react hook
@@ -428,3 +428,14 @@ Release Note
 ### Updates
 - SettingInfo, VersionInfo type 정의에 따른 코드 수정
 - PenHelper 안에 정의된 any type 수정
+
+**2022. 05. 12.** (WONHO)
+-----
+### New Features
+- **DotErrorInfo** type declaration
+- Dot Event 시 비정상 TimeStamp 시 Error 처리
+### Updates
+- 펜 비밀번호 설정, 변경, 해제 관련 messageType 추가 및 수정
+- 오프라인 및 실시간 데이터 관련 messageType 추가 및 수정
+- hover를 제외한 모든 Dot는 DotFilter 거치도록 수정
+- Packet Escape 로직 수정
