@@ -78,12 +78,18 @@ const CMD = {
   /**오프라인 데이터 삭제 요청에 대한 응답을 반환하는 커맨드 */
   OFFLINE_DATA_DELETE_RESPONSE: 0xa5,
   
+  /**펌웨어 업데이트를 요청하는 커맨드 */
   FIRMWARE_UPLOAD_REQUEST: 0x31,
+  /**펌웨어 업데이트 요청에 대한 응답을 반환하는 커맨드 */
   FIRMWARE_UPLOAD_RESPONSE: 0xb1,
+  /**펌웨어 업데이트를 위해 파일을 전송받는 커맨드, PEN->APP */
   FIRMWARE_PACKET_REQUEST: 0x32,
+  /**펌웨어 업데이트 위해 파일을 전송하는 커맨드, APP->PEN */
   FIRMWARE_PACKET_RESPONSE: 0xb2,
 
+  /**펜에 동록된 프로파일 생성, 삭제, 조회 등을 요청하는 커맨드*/
   PEN_PROFILE_REQUEST: 0x41,
+  /**프로파일 요청에 대한 응답을 반환하는 커맨드 */
   PEN_PROFILE_RESPONSE: 0xc1,
 
   // Only Touch and play
