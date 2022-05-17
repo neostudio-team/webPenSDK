@@ -53,6 +53,8 @@ const CMD = {
   ONLINE_NEW_PEN_DOT_EVENT: 0x6c,
   /**펜이 입력되었지만 에러가 발생했을 경우, Dot 간의 시간차, 펜 카메라를 통해 들어오는 이미지 밝기, 노출 시간, NADC(ncode처리모듈) 에러코드 등을 반환하는 커맨드, count 요소 추가 */
   ONLINE_NEW_PEN_ERROR_EVENT: 0x6d,
+  /**펜이 hover Mode일 경우 펜의 각종 Dot 정보(좌표 값, 기울기 등)를 반환하는 커맨드*/
+  ONLINE_PEN_HOVER_EVENT: 0x6f,
 
   /**오프라인 데이터의 종이 정보(section, owner, note) 리스트를 요청하는 커맨드 */
   OFFLINE_NOTE_LIST_REQUEST: 0x21,

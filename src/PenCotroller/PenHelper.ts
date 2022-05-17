@@ -245,8 +245,6 @@ class PenHelper {
       });
     })
     
-    controller.SetHoverEnable(true);  // Device Hover Mode Set
-
     // Call back Event Set
     controller.addCallback(this.handleDot, this.handleMessage);
     // device Status Set

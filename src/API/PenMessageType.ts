@@ -18,6 +18,11 @@ const PenMessageType = {
   PEN_DISCONNECTED: 0x04,
 
   /**
+   * Pens when the connection is successful, the events that occur
+   - data: nil
+   */
+  PEN_CONNECTION_SUCCESS: 0x06,
+  /**
    The status(battery, memory, ...) of pen
    - data: PenSettingStruct
    */
@@ -205,3 +210,12 @@ export const ErrorType = {
   MissingPageChange: 7,
   MissingPenMove: 8
 };
+
+export const ProfileType = {
+  CreateProfile: 0x01,
+  DeleteProfile: 0x02,
+  InfoProfile: 0x03,
+  WriteProfileValue: 0x11,
+  ReadProfileValue: 0x12,
+  DeleteProfileValue: 0x13
+}

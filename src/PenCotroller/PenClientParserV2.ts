@@ -91,6 +91,7 @@ export default class PenClientParserV2 {
         this.IsUploading = false;
         this.state.EventCount = 0;
         NLog.log("ParsePacket Version Info", versionInfo);
+        this.penController.onMessage!( this.penController, PenMessageType.PEN_CONNECTION_SUCCESS, null);
         this.ReqPenStatus();
         break;
 
@@ -127,6 +128,10 @@ export default class PenClientParserV2 {
       case CMD.ONLINE_PEN_DOT_EVENT:
       case CMD.ONLINE_NEW_PEN_DOT_EVENT:
         this.PenDotEvent(cmd, packet);
+        break;
+
+      case CMD.ONLINE_PEN_HOVER_EVENT:
+        this.PenHoverEvent(packet);
         break;
 
       case CMD.ONLINE_PAPER_INFO_EVENT:
@@ -181,9 +186,7 @@ export default class PenClientParserV2 {
             this.state.reCheckPassword = false;
             break;
           }
-          this.penController.SetHoverEnable(true);
-          //TODO
-          setTimeout(()=>this.penController.onMessage!( this.penController, PenMessageType.PEN_AUTHORIZED, null), 500);
+          this.penController.onMessage!( this.penController, PenMessageType.PEN_AUTHORIZED, null);
         } else {
           if (this.state.reCheckPassword) {
             this.penController.onMessage!( this.penController, PenMessageType.PASSWORD_SETUP_FAILURE, null);
@@ -619,6 +622,32 @@ export default class PenClientParserV2 {
     this.state.IsBeforeMiddle = true;
     this.state.mPrevDot = dot;
     this.state.mDotCount++;
+  }
+
+  /**
+   * 실시간으로 필기 데이터 전송 시, 전달된 패킷에서 호버중인 Dot의 각종 값(좌표, 기울기)을 파싱하는 함수
+   * - 정상적으로 PenDown -> PenMove, PageInfo 를 수행했다면 moveDot를 Move Dot를 전달한다.
+   * - 패킷 파싱의 마지막 단계, 해당 함수를 호출하기 위해서는 ParsePacket 작업이 필요하다.
+   * @param {Packet} pk 
+   */
+  PenHoverEvent = (pk: Packet) => {
+    const timeadd = pk.GetByte();
+    this.current.Time += timeadd;
+    let x = pk.GetShort();
+    let y = pk.GetShort();
+    const fx = pk.GetByte();
+    const fy = pk.GetByte();
+    x += fx * 0.01;
+    y += fy * 0.01;
+    let dot = null;
+
+    if (this.penSettingInfo.HoverMode && !this.state.IsStartWithDown) {
+      dot = Dot.MakeDot(this.current, x, y, 0, Dot.DotTypes.PEN_HOVER,  this.state.mPenTipType, this.state.mPenTipColor, {tx:0, ty: 0, twist: 0});
+    }
+
+    if (dot != null) {
+      this.ProcessDot(dot);
+    }
   }
 
   /**
