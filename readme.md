@@ -85,9 +85,10 @@ handleMessage = (controller: any, type: any, args: any) => { ... }
 | 1 (0x01) | PEN_AUTHORIZED | 펜 인증성공 | - |
 | 2 (0x02) | PEN_PASSWORD_REQUEST | 비밀번호 요청 | - |
 | 4 (0x04) | PEN_DISCONNECTED | 펜 연결해제 | - |
+| 6 (0x06) | PEN_CONNECTION_SUCCESS | 펜 연결 성공 | - |
 | 17 (0x11) | PEN_SETTING_INFO | 펜의 상태정보(배터리, 메모리 등) | 펜 충전시 배터리정보 -> 128 |
-| 18 (0x12) | PEN_SETUP_SUCCESS | 펜 연결 후 초기설정 성공 | - |
-| 19 (0x13) | PEN_SETUP_FAILURE | 펜 연결 후 초기설정 실패 | - |
+| 18 (0x12) | PEN_SETUP_SUCCESS | 펜 설정 변경 성공 | - |
+| 19 (0x13) | PEN_SETUP_FAILURE | 펜 설정 변경 실패 | - |
 | 26 (0x1a) | PEN_USING_NOTE_SET_RESULT | 실시간 필기 데이터 요청 결과 | - |
 | 82 (0x52) | PASSWORD_SETUP_SUCCESS | 패스워드 설정 성공 | - |
 | 83 (0x53) | PASSWORD_SETUP_FAILURE | 패스워드 설정 실패 | - |
@@ -439,3 +440,17 @@ Release Note
 - 오프라인 및 실시간 데이터 관련 messageType 추가 및 수정
 - hover를 제외한 모든 Dot는 DotFilter 거치도록 수정
 - Packet Escape 로직 수정
+
+**2022. 05. 16.** (WONHO)
+-----
+### Updates
+- SupportedProtocolVersion 수정
+
+**2022. 05. 17.** (WONHO)
+-----
+### New Features
+- **PEN_CONNECTION_SUCCESS** MessageType declaration
+- **ONLINE_PEN_HOVER_EVENT** - v2.18 용 펜 hover 이벤트 로직 추가
+- Dot Event 시 비정상 TimeStamp 시 Error 처리
+### Updates
+- SupportedProtocolVersion 수정
