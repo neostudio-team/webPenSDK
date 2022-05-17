@@ -4,7 +4,7 @@ import * as NLog from '../Util/NLog'
 import CMD from "./CMD";
 import CONST from "./Const";
 
-import { SettingType} from "../API/PenMessageType";
+import { ProfileType, SettingType} from "../API/PenMessageType";
 import { PenController } from "..";
 
 type DefaultConfig = {
@@ -22,8 +22,8 @@ export default class PenRequestV2 {
   constructor(penController: PenController) {
     this.penController = penController;
     this.defaultConfig = Object.freeze({
-      SupportedProtocolVersion: "2.17",
-      PEN_PROFILE_SUPPORT_PROTOCOL_VERSION: 2.17,
+      SupportedProtocolVersion: "2.18",
+      PEN_PROFILE_SUPPORT_PROTOCOL_VERSION: 2.18,
       DEFAULT_PASSWORD: "0000"
     });
   }
