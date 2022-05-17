@@ -976,6 +976,7 @@ export default class PenClientParserV2 {
     // NLog.log(dot);
     if (this.penController.onDot) {
       this.penController.onDot(this.penController, dot);
+      NLog.log("ParseDot ] X:", dot.x, " Y:", dot.y, " f:", dot.f, " DotType:", dot.dotType, " SOBP: ", dot.pageInfo);
     }else{
       NLog.log("Need onDot Callback")
     }
