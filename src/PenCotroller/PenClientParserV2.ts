@@ -87,7 +87,7 @@ export default class PenClientParserV2 {
       case CMD.VERSION_RESPONSE:
         let versionInfo = Res.VersionInfo(packet);
         this.penVersionInfo = versionInfo;
-        this.penController.info = versionInfo
+        this.penController.info = versionInfo;
         this.IsUploading = false;
         this.state.EventCount = 0;
         NLog.log("ParsePacket Version Info", versionInfo);
@@ -279,7 +279,7 @@ export default class PenClientParserV2 {
 
       case CMD.ONLINE_DATA_RESPONSE:
         NLog.log("Using Note Set", packet.Result);
-        this.penController.SetHoverEnable(true); 
+        // this.penController.SetHoverEnable(true); 
         this.penController.onMessage!( this.penController, PenMessageType.PEN_USING_NOTE_SET_RESULT, { Result: packet.Result === 0x00 });
         break;
 
@@ -930,15 +930,6 @@ export default class PenClientParserV2 {
       }
     }
   }
-
-  // for (let i = 0; i < len; i++) {
-  //   if (packet[i] === 0x7d) {
-  //     unescapedBuf[cnt++] = packet[i + 1] ^ 0x20;
-  //     i++;
-  //   } else {
-  //     unescapedBuf[cnt++] = packet[i];
-  //   }
-  // }
 
   // TODO: 
   ResponseChunkRequest(offset: number, isEnd: boolean) {
