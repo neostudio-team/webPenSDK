@@ -287,6 +287,11 @@ export default class PenClientParserV2 {
         let pds = Res.PDS(packet);
         this.penController.onMessage!( this.penController, PenMessageType.RES_PDS, pds);
         break;
+      
+      case CMD.PEN_PROFILE_RESPONSE:
+        const profile = Res.ProfileData(packet);
+        this.penController.onMessage!( this.penController, PenMessageType.PEN_PROFILE, profile);
+        break;
 
       default:
         NLog.log("ParsePacket: not implemented yet", packet);

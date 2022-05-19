@@ -1,3 +1,4 @@
+import { ProfileType } from '../API/PenMessageType';
 import { Packet } from '../PenCotroller/Packet';
 import {toHexString, GetSectionOwner} from '../Util/ByteUtil'
 
@@ -175,4 +176,90 @@ export function PageList(packet: Packet){
     Pages: pages
   };
   return result
+}
+
+/**
+ * 펜에서 반환된, 프로파일 데이터를 파싱하는 함수
+ * @param {Packet} packet 
+ * @returns - status: 0 = 성공 / 1 = 실패 / 10 = 프로파일 이미 존재 / 11 = 프로파일 없음 / 21 = 프로파일 내 key 없음 / 30 = 권한없음 (비밀번호 틀림) / 40 = 버퍼 크기 맞지 않음
+ */
+export const ProfileData = (packet: Packet) => {
+  const profileName = packet.GetString(8);
+  const ptype = packet.GetByte();
+
+  let status = 0;
+  let keyCount = 0;
+  let key = "";
+  let values = [];
+  let result: any = {
+    profileName: profileName,
+    type: "0x" + ptype.toString(16),
+  };
+
+  switch(ptype){
+    case ProfileType.CreateProfile:
+      status = packet.GetByte();
+
+      result.status = "0x" + status.toString(16);
+      break;
+    case ProfileType.DeleteProfile:
+      status = packet.GetByte();
+
+      result.status = "0x" + status.toString(16);
+      break;
+    case ProfileType.InfoProfile:
+      status = packet.GetByte();
+      const allSectorCount = packet.GetShort();
+      const sectorSize = packet.GetShort();
+      const usedSectorCount = packet.GetShort();
+      const usedKeySectorCount = packet.GetShort();
+
+      result.status = "0x" + status.toString(16);
+      result.allSectorCount = allSectorCount,
+      result.sectorSize = sectorSize,
+      result.usedSectorCount = usedSectorCount,
+      result.usedKeySectorCount = usedKeySectorCount
+      break;
+    case ProfileType.WriteProfileValue:
+      keyCount = packet.GetByte();
+
+      for(let i = 0; i < keyCount; i++){
+        key = packet.GetString(16)
+        status = packet.GetByte();
+        values.push({key: key, status: "0x" + status.toString(16)})
+      }
+
+      result.keyCount = keyCount,
+      result.values = values
+      break;
+    case ProfileType.ReadProfileValue:
+      keyCount = packet.GetByte();
+
+      for(let i = 0; i < keyCount; i++){
+        key = packet.GetString(16)
+        status = packet.GetByte();
+        const dataLength = packet.GetShort();
+        const data = packet.GetBytes(dataLength);
+        const str = String.fromCharCode(...data)
+        values.push({key: key, status: "0x" + status.toString(16), dataLength: dataLength, data: str})
+      }
+
+      result.keyCount = keyCount,
+      result.values = values
+      break;
+    case ProfileType.DeleteProfileValue:
+      keyCount = packet.GetByte();
+
+      for(let i = 0; i < keyCount; i++){
+        key = packet.GetString(16)
+        status = packet.GetByte();
+        values.push({key: key, status: "0x" + status.toString(16)})
+      }
+
+      result.keyCount = keyCount,
+      result.values = values
+      break;
+  }
+
+  return result;
 }

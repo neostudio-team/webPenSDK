@@ -361,7 +361,7 @@ export default class PenRequestV2 {
    * @returns 
    */
   IsSupportPenProfile() {
-    let temp = this.state.VersionInfo.ProtocolVersion.split(".");
+    let temp = this.penController.mParserV2.penVersionInfo.ProtocolVersion.split(".");
     let tempVer = "";
     if (temp.length === 1) tempVer += temp[0];
     else if (temp.length >= 2) tempVer += temp[0] + "." + temp[1];
@@ -521,6 +521,245 @@ export default class PenRequestV2 {
 
   SuspendSwUpgrade() {
     // console.log("TODO: firmware SuspendSwUpgrade")//
+  }
+
+  /**
+   * 펜에 프로파일 생성을 요청하기 위한 버퍼를 만들고 전송하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @param {string} password 
+   * @returns 
+   */
+  ReqProfileCreate = (name: string, password: string) => {
+    const bf = new ByteUtil();
+
+    const profileName = Converter.toUTF8Array(name);
+    const profilePassword = Converter.toUTF8Array(password);
+
+    //프로파일 고정값
+    const neoStudioProfileName = "neonote2"
+    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
+    const neoNoteProfileName = "neolab"
+    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
+    const passwordNeo = new Uint8Array(neoNoteProfilePassword);
+
+    bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
+    
+    bf.PutShort(21)
+      .PutArray(nameNeo, 8)
+      .Put(ProfileType.CreateProfile)
+      .PutArray(passwordNeo, 8)
+      .PutShort(Math.pow(2,5)) //sector 크기
+      .PutShort(Math.pow(2,7)); //sector 개수
+
+    bf.Put(CONST.PK_ETX, false);
+    // NLog.log("ReqProfileCreate", bf);
+    return this.Send(bf);    
+  }
+
+  /**
+   * 펜에 설정된 프로파일 제거를 요청하기 위한 버퍼를 만들고 전송하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @param {string} password 
+   * @returns 
+   */
+  ReqProfileDelete = (name: string, password: string) => {
+    const bf = new ByteUtil();
+
+    const profileName = Converter.toUTF8Array(name);
+    const profilePassword = Converter.toUTF8Array(password);
+
+    //프로파일 고정값
+    const neoStudioProfileName = "neonote2"
+    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
+    const neoNoteProfileName = "neolab"
+    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
+    const passwordNeo = new Uint8Array(neoNoteProfilePassword);
+    
+    bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
+    
+    bf.PutShort(17)
+      .PutArray(nameNeo, 8)
+      .Put(ProfileType.DeleteProfile)
+      .PutArray(passwordNeo, 8);
+
+    bf.Put(CONST.PK_ETX, false);
+    // NLog.log("ReqProfileDelete", bf);
+    return this.Send(bf);    
+  }
+
+  /**
+   * 펜에 설정된 프로파일 정보를 요청하기 위한 버퍼를 만들고 전송하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @returns 
+   */
+  ReqProfileInfo = (name: string) => {
+    const bf = new ByteUtil();
+
+    const profileName = Converter.toUTF8Array(name);
+    
+    //프로파일 고정값
+    const neoStudioProfileName = "neonote2"
+    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
+    const neoNoteProfileName = "neolab"
+    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
+    const passwordNeo = new Uint8Array(neoNoteProfilePassword);
+    
+    bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
+    
+    bf.PutShort(9)
+      .PutArray(nameNeo, 8)
+      .Put(ProfileType.InfoProfile);
+
+    bf.Put(CONST.PK_ETX, false);
+    // NLog.log("ReqProfileInfo", bf);
+    return this.Send(bf);    
+  }
+
+  /**
+   * 펜에 설정된 프로파일 내 데이터 작성을 요청하기 위한 버퍼를 만들고 전송하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @param {string} password 
+   * @param {Array} keys 
+   * @param {Array} data 
+   * @returns 
+   */
+   ReqProfileWriteValue = (name: string, password: string, data : { [key:string]:any }) => {
+    // this.ReqProfileWriteValue("test","test",{"test": 123})
+      
+    const keyArray = [];
+    const dataArray = [];
+    for(const key in data){
+      const keyValue = Converter.toUTF8Array(key);
+      keyArray.push(keyValue);
+      const dataValue = Converter.toUTF8Array(data[key]);
+      dataArray.push(dataValue);
+    } 
+  
+    const bf = new ByteUtil();
+
+    let dataLength = 0;
+    for(let i = 0; i < dataArray.length; i++){
+      dataLength += 16;
+      dataLength += 2;
+      dataLength += dataArray[i].length;
+    }
+    
+    const length = 18 + dataLength;
+
+    const profileName = Converter.toUTF8Array(name);
+    const profilePassword = Converter.toUTF8Array(password);
+
+    //프로파일 고정값
+    const neoStudioProfileName = "neonote2"
+    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
+    const neoNoteProfileName = "neolab"
+    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
+    const passwordNeo = new Uint8Array(neoNoteProfilePassword);
+    
+    bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
+    
+    bf.PutShort(length)
+      .PutArray(nameNeo, 8)
+      .Put(ProfileType.WriteProfileValue)
+      .PutArray(passwordNeo, 8)
+      .Put(dataArray.length);
+
+    for(let i = 0; i < keyArray.length; i++){
+      bf.PutArray(keyArray[i], 16)
+        .PutShort(dataArray[i].length)
+        .PutArray(dataArray[i], dataArray[i].length);
+    }
+
+    bf.Put(CONST.PK_ETX, false);
+    // NLog.log("ReqProfileWriteValue", bf);
+    return this.Send(bf);    
+   }
+
+  /**
+   * 펜에 설정된 프로파일 내 데이터 정보를 요청하기 위한 버퍼를 만들고 전송하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @param {Array} keys 
+   * @returns 
+   */
+  ReqProfileReadValue = (name: string, keys: string[]) => {
+    const bf = new ByteUtil();
+    const length = 10 + keys.length * 16
+
+    const profileName = Converter.toUTF8Array(name);
+    
+    //프로파일 고정값
+    const neoStudioProfileName = "neonote2"
+    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
+    const neoNoteProfileName = "neolab"
+    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
+    const passwordNeo = new Uint8Array(neoNoteProfilePassword);
+    
+    bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
+    
+    bf.PutShort(length)
+      .PutArray(nameNeo, 8)
+      .Put(ProfileType.ReadProfileValue)
+      .Put(keys.length);
+
+    for(let i = 0; i < keys.length; i++){
+      const keyValue = Converter.toUTF8Array(keys[i]);
+      bf.PutArray(keyValue, 16)
+    }
+
+    bf.Put(CONST.PK_ETX, false);
+    // NLog.log("ReqProfileReadValue", bf);
+    return this.Send(bf);    
+  }
+
+  /**
+   * 펜에 설정된 프로파일 내 데이터 제거를 요청하기 위한 버퍼를 만들고 전송하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @param {string} password 
+   * @param {Array} keys 
+   * @returns 
+   */
+  ReqProfileDeleteValue = (name: string, password: string, keys: string[]) => {
+    const bf = new ByteUtil();
+    const length = 18 + keys.length * 16
+
+    const profileName = Converter.toUTF8Array(name);
+    const profilePassword = Converter.toUTF8Array(password);
+    
+    //프로파일 고정값
+    const neoStudioProfileName = "neonote2"
+    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
+    const neoNoteProfileName = "neolab"
+    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
+    const passwordNeo = new Uint8Array(neoNoteProfilePassword);
+
+    bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
+    
+    bf.PutShort(length)
+      .PutArray(nameNeo, 8)
+      .Put(ProfileType.DeleteProfileValue)
+      .PutArray(passwordNeo, 8)
+      .Put(keys.length);
+      
+    for(let i = 0; i < keys.length; i++){
+      const keyValue = Converter.toUTF8Array(keys[i]);
+      bf.PutArray(keyValue, 16)
+    }
+
+    bf.Put(CONST.PK_ETX, false);
+    // NLog.log("ReqProfileDeleteValue", bf);
+    return this.Send(bf);    
   }
 
   OnDisconnected(){

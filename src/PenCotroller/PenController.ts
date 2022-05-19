@@ -347,7 +347,90 @@ export default class PenController {
       () => this.mClientV2.SuspendSwUpgrade()
     );
   }
-  // Skip pen profile
+  
+  /**
+   * 펜에 프로파일 생성을 요청하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @param {string} password 
+   */
+  RequestProfileCreate = (name: string, password: string) => {
+    this.Request(
+      () => this.mClientV1.ReqProfileCreate(name, password),
+      () => this.mClientV2.ReqProfileCreate(name, password)
+    )
+  }
+
+  /**
+   * 펜에 설정된 프로파일 제거를 요청하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @param {string} password 
+   */
+  RequestProfileDelete = (name: string, password: string) => {
+    this.Request(
+      () => this.mClientV1.ReqProfileDelete(name, password),
+      () => this.mClientV2.ReqProfileDelete(name, password)
+    )
+  }
+
+  /**
+   * 펜에 설정된 프로파일 정보를 요청하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   */
+  RequestProfileInfo = (name: string) => {
+    this.Request(
+      () => this.mClientV1.ReqProfileInfo(name),
+      () => this.mClientV2.ReqProfileInfo(name)
+    )
+  }
+
+  /**
+   * 펜에 설정된 프로파일 내 데이터 작성을 요청하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @param {string} password 
+   * @param {Array} keys 
+   * @param {Array} data 
+   */
+  RequestProfileWriteValue = (name: string, password: string, data : { [key:string]:any }) => {
+    // this.ReqProfileWriteValue("test","test",{
+    //   "test": 123
+    // })
+
+    this.Request(
+      () => this.mClientV1.ReqProfileWriteValue(name, password, data),
+      () => this.mClientV2.ReqProfileWriteValue(name, password, data)
+    )
+  }
+
+  /**
+   * 펜에 설정된 프로파일 내 데이터 정보를 요청하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @param {Array} keys 
+   */
+  RequestProfileReadValue = (name: string, keys: string[]) => {
+    this.Request(
+      () => this.mClientV1.ReqProfileReadValue(name, keys),
+      () => this.mClientV2.ReqProfileReadValue(name, keys)
+    )
+  }
+
+  /**
+   * 펜에 설정된 프로파일 내 데이터 제거를 요청하는 함수
+   * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
+   * @param {string} name 
+   * @param {string} password 
+   * @param {Array} keys 
+   */
+  RequestProfileDeleteValue = (name: string, password: string, keys: string[]) => {
+    this.Request(
+      () => this.mClientV1.ReqProfileDeleteValue(name, password, keys),
+      () => this.mClientV2.ReqProfileDeleteValue(name, password, keys)
+    )
+  }
 
   OnConnected() {
     if (this.Protocol !== 1) {
