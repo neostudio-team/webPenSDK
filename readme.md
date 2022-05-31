@@ -430,7 +430,7 @@ Release Note
 - SettingInfo, VersionInfo type 정의에 따른 코드 수정
 - PenHelper 안에 정의된 any type 수정
 
-**2022. 05. 12.** (WONHO)
+**2022. 05. 13.** (WONHO, ver.0.5.2)
 -----
 ### New Features
 - **DotErrorInfo** type declaration
@@ -441,16 +441,29 @@ Release Note
 - hover를 제외한 모든 Dot는 DotFilter 거치도록 수정
 - Packet Escape 로직 수정
 
-**2022. 05. 16.** (WONHO)
+**2022. 05. 16.** (WONHO, ver.0.5.3)
 -----
 ### Updates
 - SupportedProtocolVersion 수정
 
-**2022. 05. 17.** (WONHO)
+**2022. 05. 17.** (WONHO, ver.0.5.4)
 -----
 ### New Features
 - **PEN_CONNECTION_SUCCESS** MessageType declaration
 - **ONLINE_PEN_HOVER_EVENT** - v2.18 용 펜 hover 이벤트 로직 추가
-- Dot Event 시 비정상 TimeStamp 시 Error 처리
 ### Updates
 - SupportedProtocolVersion 수정
+
+**2022. 05. 18.** (WONHO, ver.0.5.5)
+-----
+### Updates
+- SDK 내에서 자동으로 setHover 안하도록 수정
+
+**2022. 05. 31.** (WONHO, ver.0.5.6)
+-----
+### New Features
+- **Profile Feature** - 펜 프로파일의 생성, 삭제, 조회 및 프로파일 항목의 생성, 삭제, 조회 로직 추가
+- **Firmware Feature** - 펌웨어 업데이트 로직 추가
+- **PenDisk Init** - 펜 디스크 초기화 요청 추가
+### Updates
+- 과밀한 통신 상태에서 블루투스 쓰기 진행 시 중첩연결에 따른 에러 방지 위한 코드 추가
