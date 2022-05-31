@@ -242,6 +242,11 @@ class PenHelper {
         NLog.log('write success CMD: ', '0x' + data[1].toString(16), data[1]);
       }).catch((err: any) => {
         NLog.log('write Error', err);
+        if(err instanceof DOMException){
+          setTimeout(() => {
+            write.writeValue(data);
+          }, 500)
+        }
       });
     })
     
