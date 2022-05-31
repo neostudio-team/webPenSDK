@@ -192,7 +192,8 @@ export const SettingType = {
   BtLocalName: 12,
   FscSensitivity: 13,
   DataTransmissionType: 14,
-  BeepAndLight: 16
+  BeepAndLight: 16,
+  InitDisk: 17
 };
 
 export const PenTipType = {
@@ -218,4 +219,11 @@ export const ProfileType = {
   WriteProfileValue: 0x11,
   ReadProfileValue: 0x12,
   DeleteProfileValue: 0x13
+}
+
+export const FirmwareStatusType = {
+  STATUS_START: 0,
+  STATUS_CONTINUE: 1,
+  STATUS_END: 2,
+  STATUS_ERROR: 3
 }

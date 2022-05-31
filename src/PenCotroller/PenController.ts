@@ -248,6 +248,16 @@ export default class PenController {
   }
 
   /**
+   * 펜 설정 중 펜의 디스크를 초기화 요청하는 함수
+   */
+  RequestInitPenDisk() {
+    this.Request(
+      () => this.mClientV1.ReqInitPenDisk(),
+      () => this.mClientV2.ReqInitPenDisk()
+    );
+  }
+
+  /**
    * 펜의 실시간 필기 데이터에 대한 전송을 요청하는 함수
    * @param {array} sections 
    * @param {array} owners 
@@ -331,20 +341,31 @@ export default class PenController {
   }
 
   // Firmware Update
-  //TODO: Firmware
-  RequestFirmwareInstallation(file: any, version = null) {
+  /**
+   * 펜에 설치된 펌웨어를 업그레이드하기 위해 펜에게 질의하는 함수
+   * @param {File} file 
+   * @param {string} version 
+   * @param {boolean} isCompressed 
+   */
+  RequestFirmwareInstallation(file: File, version: string, isCompressed: boolean) {
     this.Request(
       () => this.mClientV1.ReqPenSwUpgrade(file),
       () => {
-        this.mClientV2.ReqPenSwUpgrade(file, version);
+        this.mClientV2.ReqPenSwUpgrade(file, version, isCompressed);
       }
     );
   }
-  //TODO: Firmware
-  SuspendFirmwareInstallation() {
+
+  /**
+   * 펜에 펌웨어 데이터를 업로드하는 함수
+   * @param {number} offset 
+   * @param {Uint8Array} data 
+   * @param {number} status 
+   */
+  RequestFirmwareUpload(offset: number, data: Uint8Array, status: number) {
     this.Request(
-      () => this.mClientV1.SuspendSwUpgrade(),
-      () => this.mClientV2.SuspendSwUpgrade()
+      () => this.mClientV1.ReqPenSwUpload(),
+      () => this.mClientV2.ReqPenSwUpload(offset, data, status)
     );
   }
   

@@ -3,8 +3,9 @@ import * as Converter from '../Util/Converter'
 import * as NLog from '../Util/NLog'
 import CMD from "./CMD";
 import CONST from "./Const";
+import zlib from "zlib";
 
-import { ProfileType, SettingType} from "../API/PenMessageType";
+import { FirmwareStatusType, ProfileType, SettingType} from "../API/PenMessageType";
 import { PenController } from "..";
 
 type DefaultConfig = {
@@ -26,6 +27,12 @@ export default class PenRequestV2 {
       PEN_PROFILE_SUPPORT_PROTOCOL_VERSION: 2.18,
       DEFAULT_PASSWORD: "0000"
     });
+
+    this.state = {
+      isFwCompress: false,
+      fwPacketSize: 0,
+      fwFile: null,
+    }
   }
 
   //
@@ -205,12 +212,17 @@ export default class PenRequestV2 {
           .Put(stype)
           .Put(0x00);
         break;
+      case SettingType.InitDisk:
+        bf.PutShort(5)
+          .Put(stype)
+          .PutInt(0x4F1C0B42);
+        break;
       default:
         NLog.log("undefined setting type");
     }
 
     bf.Put(CONST.PK_ETX, false);
-
+    // NLog.log("RequestChangeSetting", bf)
     return this.Send(bf);
   }
 
@@ -354,6 +366,14 @@ export default class PenRequestV2 {
    */
   ReqBeepAndLight() {
     return this.RequestChangeSetting(SettingType.BeepAndLight, null);
+  }
+
+  /**
+   * 펜 설정 중 펜의 디스크를 초기화하기 위한 함수
+   * @returns 
+   */
+  ReqInitPenDisk() {
+    return this.RequestChangeSetting(SettingType.InitDisk, null);
   }
 
   /**
@@ -514,13 +534,101 @@ export default class PenRequestV2 {
     return this.Send(bf);
   }
 
-  //TODO: Firmware
-  ReqPenSwUpgrade(file: any, version: any) {
-    // console.log("TODO: firmware Update")//
+  /**
+   * 펜에 설치된 펌웨어를 업그레이드하기 위해 펜에게 질의하기 위한 버퍼를 만들고 전송하는 함수
+   * @param {File} file 
+   * @param {string} version 
+   * @param {boolean} isCompressed 
+   * @returns 
+   */
+  async ReqPenSwUpgrade(file: File, version: string, isCompressed: boolean) {
+    const bf = new ByteUtil();
+
+    const deviceName = this.penController.info.DeviceName;
+  
+    const fwdeviceName = Converter.toUTF8Array(deviceName);
+    const fwVersion = Converter.toUTF8Array(version);
+
+    const fileSize = file.size;
+
+    const fwBf = new ByteUtil();
+
+    const fwBuf = await this.ReadFileAsync(file) as ArrayBuffer;
+    const fwBufView = new Uint8Array(fwBuf);
+    fwBf.PutArray(fwBufView, fwBufView.length);
+
+    let packetSize = 256;
+    if(deviceName === "NSP-D100" || deviceName === "NSP-D101" || deviceName === "NSP-C200" || deviceName === "NWP-F121" || deviceName === "NWP-F121C"){
+			packetSize = 64;
+		}
+
+    let isCompress = 0;
+    if(isCompressed){
+      if(deviceName === "NEP-E100"  || deviceName === "NEP-E101"  || deviceName === "NSP-D100"  || deviceName === "NSP-D101"  || deviceName === "NSP-C200"|| deviceName === "NPP-P201"){
+        isCompress = 0;
+      }else{
+        isCompress = 1;
+      }
+    }
+    this.state.isFwCompress = !!isCompress;
+    this.state.fwPacketSize = packetSize;
+    this.state.fwFile = fwBf;
+
+    bf.Put(CONST.PK_STX, false).Put(CMD.FIRMWARE_UPLOAD_REQUEST)
+
+    bf.PutShort(42)
+      .PutArray(fwdeviceName, 16)
+      .PutArray(fwVersion, 16)
+      .PutInt(fileSize)
+      .PutInt(packetSize)
+      .Put(isCompress)  //패킷 압축 여부, 1이면 압축, 0이면 압축 X, response로 4가 뜰 경우, 압축지원하지않음.
+      .Put(fwBf.GetCheckSumBF()) //압축 안된 파일의 전체 checkSum
+
+    bf.Put(CONST.PK_ETX, false);
+    NLog.log("ReqPenSwUpgrade", bf);
+    return this.Send(bf);
   }
 
-  SuspendSwUpgrade() {
-    // console.log("TODO: firmware SuspendSwUpgrade")//
+  /**
+   * 펜에서 승인한 펌웨어 업그레이드에 따라 알맞는 펌웨어 데이터를 업로드 하기 위한 버퍼를 만들고 전송하는 함수
+   * @param {number} offset 
+   * @param {Uint8Array} data 
+   * @param {number} status 
+   * @returns 
+   */
+  async ReqPenSwUpload(offset: number, data: Uint8Array, status: number) {
+    const bf = new ByteUtil();
+    
+    bf.Put(CONST.PK_STX, false).Put(CMD.FIRMWARE_PACKET_RESPONSE);
+
+    if(status === FirmwareStatusType.STATUS_ERROR){
+      bf.Put(1)
+    }else{
+      const beforeCompressSize = data.length;
+      let afterCompressSize = 0;
+      let compressData: any;
+
+      if(this.state.isFwCompress){
+        compressData = await this.Compress(data);
+        afterCompressSize = compressData.length;
+      }else{
+        compressData = data;
+        afterCompressSize = 0;
+      }
+
+      bf.Put(0)   //ErrorCode ( 0 = 정상 )
+        .PutShort(14 + compressData.length)
+        .Put(0)   //전송여부 0 : 1            //STATUS_END 이면 1로 바꾸는 것이 좋을까?
+        .PutInt(offset)
+        .Put(bf.GetCheckSumData(data))
+        .PutInt(beforeCompressSize)
+        .PutInt(afterCompressSize)
+        .PutArray(compressData, compressData.length); //파일
+    }
+
+    bf.Put(CONST.PK_ETX, false);
+    // NLog.log("ReqPenSwUpload", bf);
+    return this.Send(bf);
   }
 
   /**
@@ -765,6 +873,49 @@ export default class PenRequestV2 {
   OnDisconnected(){
     // console.log("TODO: Disconnect ")//
 
+  }
+
+
+  /**
+   * 데이터를 zlib으로 압축하는 함수
+   * @param {Uint8Array} data
+   * @returns 
+   */
+  Compress = async (data: Uint8Array) => {
+    const input = new Uint8Array(data);
+    let compressData = new Uint8Array();
+
+    return new Promise((resolve, reject) => {
+      zlib.deflate(input, {level: 9}, async (err, res) => {
+        if (!err) {
+          const zipU8 = new Uint8Array(res);
+          compressData = zipU8;
+          resolve(compressData);
+        } else {
+          NLog.log("zip error", err);
+          reject(err);
+        }
+      });
+    })
+  }
+
+  /**
+   * 펌웨어 업데이트 파일 등을 읽을 때 비동기처리를 위한 함수
+   * @param file 
+   * @returns 
+   */
+ ReadFileAsync = async (file:File) => {
+    return new Promise((resolve, reject) => {
+      let reader = new FileReader();
+  
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+  
+      reader.onerror = reject;
+  
+      reader.readAsArrayBuffer(file);
+    })
   }
 
   // MARK: Util

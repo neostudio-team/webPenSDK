@@ -172,6 +172,31 @@ export default class ByteUtil {
     return String.fromCharCode(...arr).trim()
   }
 
+  /**
+   * 버퍼에서 원하는 위치, 바이트 크기만큼의 값을 반환받는 함수
+   * @param {number} offset 
+   * @param {number} size 
+   * @returns 
+   */
+  GetBytesWithOffset(offset: number, size: number){
+    let packetSize = 0;
+    if(offset + size > this.mBuffer.length){
+      packetSize = this.mBuffer.length - offset; 
+    }else{
+      packetSize = size;
+    }
+
+    let result = this.mBuffer.slice(offset, offset + packetSize);
+
+    const u8 = new Uint8Array(result);
+    return u8;
+  }
+
+  /**
+   * 원하는 크기만큼의 버퍼의 검사합을 반환받는 함수
+   * @param {number} length 
+   * @returns 
+   */
   GetCheckSum(length: number) {
     let bytes = this.mBuffer.slice(this.mPosRead, this.mPosRead + length);
     let CheckSum = 0;
@@ -180,6 +205,31 @@ export default class ByteUtil {
       CheckSum += bytes[i] & 0xff;
     }
 
+    return CheckSum & 0xff;
+  }
+
+  /**
+   * 버퍼 전체의 검사합을 반환받는 함수
+   * @returns 
+   */
+  GetCheckSumBF(){
+    let CheckSum = 0;
+    for(let i = 0; i < this.mBuffer.length; i++){
+      CheckSum +=  this.mBuffer[i] & 0xff;
+    }
+    return CheckSum & 0xff;
+  }
+
+  /**
+   * 원하는 버퍼의 검사합을 반환받는 함수
+   * @param {Uint8Array} data 
+   * @returns 
+   */
+  GetCheckSumData(data: Uint8Array){
+    let CheckSum = 0;
+    for( let i = 0; i < data.length; i++){
+      CheckSum += data[i] & 0xFF;
+    }
     return CheckSum & 0xff;
   }
 

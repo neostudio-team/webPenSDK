@@ -9,7 +9,7 @@ import * as Res from "../Model/Response";
 import zlib from "zlib";
 
 
-import PenMessageType, { SettingType, PenTipType, ErrorType } from "../API/PenMessageType";
+import PenMessageType, { SettingType, PenTipType, ErrorType, FirmwareStatusType } from "../API/PenMessageType";
 import PenController from "./PenController";
 import DotFilter from "../Util/DotFilter";
 import { VersionInfo, SettingInfo } from "../Util/type";
@@ -258,11 +258,13 @@ export default class PenClientParserV2 {
 
       // MARK: CMD Firmware Response
       case CMD.FIRMWARE_UPLOAD_RESPONSE:
-        if (packet.Result !== 0 || packet.GetByte() !== 0) {
+        const status = packet.GetByte() // 0: 전송받음 / 1: firmwareVersion 동일 / 2: 펜 디스크 공간 부족 / 3: 실패 / 4: 압축지원 안함
+        if (packet.Result !== 0 || status !== 0) {
           this.IsUploading = false;
-          this.penController.onMessage!( this.penController, PenMessageType.PEN_FW_UPGRADE_SUCCESS, {
-            Result: false
-          });
+          this.penController.onMessage!( this.penController, PenMessageType.PEN_FW_UPGRADE_FAILURE, status)
+        }else if(status === 0){
+          // NLog.log( "ResPenFWUpgrade status : " + status );
+          this.penController.onMessage!( this.penController, PenMessageType.PEN_FW_UPGRADE_STATUS, 0)
         }
         break;
 
@@ -273,7 +275,7 @@ export default class PenClientParserV2 {
             offset: packet.GetInt()
           }
 
-          this.ResponseChunkRequest(firmwareRes.offset, firmwareRes.status !== 3);
+          this.ResponseChunkRequest(firmwareRes.offset, firmwareRes.status);
         }
         break;
 
@@ -906,7 +908,7 @@ export default class PenClientParserV2 {
         let cmd = this.mBuffer.GetByte();
 
         // event command is 0x6X and PDS 0x73
-        let result_size = cmd >> 4 !== 0x6 && cmd !== 0x73 && cmd !== 0x24 ? 1 : 0;
+        let result_size = cmd >> 4 !== 0x6 && cmd !== 0x73 && cmd !== 0x24 && cmd !== 0x32 ? 1 : 0;
         let result = result_size > 0 ? this.mBuffer.GetByte() : -1;
 
         let length = this.mBuffer.GetShort();
@@ -936,9 +938,59 @@ export default class PenClientParserV2 {
     }
   }
 
-  // TODO: 
-  ResponseChunkRequest(offset: number, isEnd: boolean) {
-    // console.log("TODO")
+  /**
+   * 펌웨어 업데이트를 위해 펜에서 전달된 상태와 위치값으로 펌웨어 데이터를 처리하여 Request로 전달하는 함수
+   * @param {number} offset 
+   * @param {number} status - status: 0 = 시작 / 1 = 중간 / 2 = 끝 / 3 = Error
+   */
+  ResponseChunkRequest(offset: number, status: number) {
+    const fwBf = this.penController.mClientV2.state.fwFile as ByteUtil;
+    const packetSize = this.penController.mClientV2.state.fwPacketSize;
+
+    const data = fwBf.GetBytesWithOffset(offset, packetSize);
+
+    if(status === FirmwareStatusType.STATUS_START || status === FirmwareStatusType.STATUS_CONTINUE || status === FirmwareStatusType.STATUS_END){
+      this.IsUploading = true;
+      NLog.log( "[FW] received pen upgrade status : "+ status );
+    }else if (status === FirmwareStatusType.STATUS_ERROR){
+      this.IsUploading = false;
+      this.penController.onMessage!(this.penController, PenMessageType.PEN_FW_UPGRADE_FAILURE, null);
+      NLog.log( "[FW] received pen upgrade status : FW Error !!");
+      this.penController.RequestFirmwareUpload(offset, data, status)
+      return;
+    }else{
+      this.IsUploading = false;
+      this.penController.onMessage!(this.penController, PenMessageType.PEN_FW_UPGRADE_FAILURE, null);
+      NLog.log( "[FW] received pen upgrade status : Unknown" );
+      return;
+    }
+
+    // while(this.IsUploading){
+      if(status === FirmwareStatusType.STATUS_END){
+        if(data !== null){
+          this.penController.RequestFirmwareUpload(offset, data, status)
+        }
+      this.penController.onMessage!(this.penController, PenMessageType.PEN_FW_UPGRADE_STATUS, 100);
+      this.penController.onMessage!(this.penController, PenMessageType.PEN_FW_UPGRADE_SUCCESS, null);
+        
+        this.IsUploading = false;
+        return;
+      }else{
+        this.penController.RequestFirmwareUpload(offset, data, status)
+      }
+
+      let maximum = fwBf.Size;
+      if(maximum % packetSize == 0){
+        maximum = maximum / packetSize
+      }else{
+        maximum = (maximum / packetSize) + 1;
+      }
+      const index = offset / packetSize;
+      NLog.log( "[FW] send progress => Maximum : " + maximum + ", Current : " + index );
+
+      const percent = ( index * 100 ) / maximum;
+      this.penController.onMessage!(this.penController, PenMessageType.PEN_FW_UPGRADE_STATUS, percent);
+    // }
   }
 
   /**
