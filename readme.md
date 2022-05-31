@@ -97,7 +97,7 @@ handleMessage = (controller: any, type: any, args: any) => { ... }
 | 100 (0x64) | EVENT_POWER_OFF | 전원 OFF 이벤트 | - |
 | 34 (0x22) | PEN_FW_UPGRADE_STATUS | 펜 펌웨어 업그레이드 상태 | - |
 | 35 (0x23) | PEN_FW_UPGRADE_SUCCESS | 펜 펌웨어 업그레이드 성공 | - |
-| 36 (0x24) | PEN_FW_UPGRADE_FAILURE | 펜 펌웨어 업드레이드 실패 | - |
+| 36 (0x24) | PEN_FW_UPGRADE_FAILURE | 펜 펌웨어 업드레이드 실패 | 1=동일버전/2=공간부족/3=실패/4=압축지원X |
 | 37 (0x25) | PEN_FW_UPGRADE_SUSPEND | 펜 펌웨어 업그레이드 중단 | - |
 | 48 (0x30) | OFFLINE_DATA_NOTE_LIST | 오프라인 데이터 노트 리스트 | - |
 | 49 (0x31) | OFFLINE_DATA_PAGE_LIST | 오프라인 데이터 페이지 리스트 | - |
@@ -295,7 +295,7 @@ useEffect(() => {
 
 ### **PenController**
 > RequestVersionInfo, SetPassword, InputPassword, RequestPenStatus, SetRtcTime, SetAutoPowerOffTime, SetPenCapPowerOnOffEnable,
-SetAutoPowerOnEnable, SetBeepSoundEnable, SetHoverEnable, SetOfflineDataEnable, SetColor, RequestAvailableNotes, RequestOfflineNoteList, RequestOfflinePageList, RequestOfflineData, RequestOfflineDelete
+SetAutoPowerOnEnable, SetBeepSoundEnable, SetHoverEnable, SetOfflineDataEnable, SetColor, RequestAvailableNotes, RequestOfflineNoteList, RequestOfflinePageList, RequestOfflineData, RequestOfflineDelete, RequestFirmwareInstallation, RequestFirmwareUpload, RequestProfileInfo.., RequestProfileReadValue..
 
 | Methods | Parameters |Description |
 | --- | --- |--- |
@@ -316,6 +316,14 @@ SetAutoPowerOnEnable, SetBeepSoundEnable, SetHoverEnable, SetOfflineDataEnable, 
 | RequestOfflinePageList | section: number, owner: number, <br/> note: number | 펜에 저장된 오프라인 필기 데이터의 페이지 정보(page)를 요청  <br/> ( SOB 가 일치하는 한 노트의 page ) |
 | RequestOfflineData | section: number, owner: number, <br/>note: number,  deleteOnFinished: boolean,<br/> pages: number[ ] | 펜에 저장된 오프라인 필기 데이터를 요청 <br/> ( P 가 빈 배열일 경우 노트 내 모든 page 요청 ) <br/> ( deleteOnFinished 가 true일 경우 전송 완료된 데이터 삭제 )|
 | RequestOfflineDelete | section: number, owner: number, <br/> notes: number[ ] | 펜에 저장된 오프라인 필기 데이터에 대한 삭제를 요청 |
+| RequestFirmwareInstallation | file: file, version: string, <br/> isCompressed: boolean | 펜에 설치된 펌웨어를 업그레이드하기 위한 질의 |
+| RequestFirmwareUpload | offset: number, data: Uint8Array, <br/> status: number | 펜에 펌웨어 데이터를 업로드 | 
+| RequestProfileCreate | name: string, password: string | 펜에 프로파일 생성을 요청 |
+| ReqeustProfileDelete | name: string, password: string | 펜에 설정된 프로파일 제거 요청 |
+| RequestProfileInfo | name: string | 펜에 설정된 프로파일 정보 요청 |
+| RequestProfileWriteValue | name: string, passsword: string, <br/> data: { [key: string]: any } | 펜에 설정된 프로파일 내 데이터 작성 요청 |
+| RequestProfileReadValue | name: string, keys: string[ ] | 펜에 설정된 프로파일 내 데이터 정보 요청 |
+| RequestProfileDeleteValue | name: string, password: string, <br/> keys: string [ ] | 펜에 설정된 프로파일 내 데이터 제거 요청 |
 
 ## 전체적인 Flow
 ### Library Set
