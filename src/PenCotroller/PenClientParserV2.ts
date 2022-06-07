@@ -381,7 +381,7 @@ export default class PenClientParserV2 {
       let udot = this.state.mPrevDot.Clone();
       udot.dotType = Dot.DotTypes.PEN_UP;
       let imageInfo = null;
-      if (!this.state.IsStartWithPaperInfo) {
+      if (this.state.IsStartWithPaperInfo) {
         imageInfo = {
           DotCount: dotCount,
           Total: totalImageCount,
