@@ -14,7 +14,7 @@
   "scripts": {
     "start": "node examples/server.js",
     "build:webpack": "rm -rf dist && webpack",
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc && cp -r src/API/nproj/ dist/API/nproj/",
     "test": "jest",
     "clean": "rm -rf dist & rm -rf node_modules & rm package-lock.json & rm yarn.lock",
     "prepare": "yarn build",
@@ -36,15 +36,17 @@
     "@babel/plugin-proposal-class-properties": "^7.13.0",
     "@babel/preset-env": "^7.13.10",
     "@types/jest": "^26.0.23",
+    "@types/jquery": "^3.5.14",
     "babel-loader": "^8.2.2",
-    "jest": "^27.0.4",
-    "webpack": "^5.24.4",
     "firebase": "^9.6.11",
-    "jszip": "^3.9.1"
+    "jest": "^27.0.4",
+    "jszip": "^3.9.1",
+    "webpack": "^5.24.4"
   },
   "dependencies": {
     "@types/web-bluetooth": "0.0.14",
     "clean-webpack-plugin": "^3.0.0",
+    "jquery": "^3.6.0",
     "optimize-css-assets-webpack-plugin": "^5.0.4",
     "terser-webpack-plugin": "^5.1.1",
     "typescript": "^4.2.3",

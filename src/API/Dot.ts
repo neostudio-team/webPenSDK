@@ -1,3 +1,4 @@
+import { Paper } from "../Util/type";
 import PageInfo from "./PageInfo";
 
 const DotTypes = Object.freeze({
@@ -5,7 +6,8 @@ const DotTypes = Object.freeze({
   PEN_MOVE: 1,
   PEN_UP: 2,
   PEN_HOVER: 3,
-  PEN_ERROR: 4
+  PEN_INFO: 4,
+  PEN_ERROR: 5,
 });
 
 type Angle = {
@@ -20,7 +22,8 @@ class Dot {
   y: number
   f: number
   dotType: number
-  timestamp: number
+  timeDiff: number
+  timeStamp: number
   penTipType: number
   color: number
   angle: Angle
@@ -36,22 +39,24 @@ class Dot {
     };
     this.f = 0;
     this.color = 0x000000ff;
-    this.timestamp = 0;
+    this.timeDiff = 0;
+    this.timeStamp = 0;
     this.dotType = Dot.DotTypes.PEN_DOWN;
     this.penTipType = 0; // 0: Normal, 1: Eraser
   }
 
-  static MakeDot(paper: any, x: number, y: number, force: number, type: number, penTipType: number, color: number, angel = {tx:0, ty: 0, twist: 0}) {
+  static MakeDot(paper: Paper, x: number, y: number, force: number, type: number, penTipType: number, color: number, angel = {tx:0, ty: 0, twist: 0}) {
     let builder =  new DotBuilder()
 
     const xx = parseFloat(x.toFixed(2))
     const yy = parseFloat(y.toFixed(2))
     builder
-      .owner(paper.Owner)
-      .section(paper.Section)
-      .note(paper.Note)
-      .page(paper.Page)
-      .timestamp(paper.Time)
+      .owner(paper.owner)
+      .section(paper.section)
+      .note(paper.note)
+      .page(paper.page)
+      .timeDiff(paper.TimeDiff)
+      .timeStamp(paper.Time)
       .coord(xx, yy )
       .force(force)
       .dotType(type)
@@ -67,7 +72,8 @@ class Dot {
     newDot.x = this.x;
     newDot.y = this.y;
     newDot.f = this.f;
-    newDot.timestamp = this.timestamp;
+    newDot.timeDiff = this.timeDiff;
+    newDot.timeStamp = this.timeStamp;
     newDot.dotType = this.dotType;
     newDot.penTipType = this.penTipType
     newDot.color = this.color;
@@ -108,8 +114,13 @@ class DotBuilder {
     return this;
   }
 
-  timestamp(timestamp: number) {
-    this.mDot.timestamp = timestamp;
+  timeDiff(timeDiff: number) {
+    this.mDot.timeDiff = timeDiff;
+    return this;
+  }
+
+  timeStamp(timeStamp: number) {
+    this.mDot.timeStamp = timeStamp;
     return this;
   }
 

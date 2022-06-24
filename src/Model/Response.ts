@@ -67,7 +67,7 @@ export function SettingInfo(packet: Packet) {
     Locked: lockyn,
     ResetCount: pwdMaxRetryCount,
     RetryCount: pwdRetryCount,
-    Timestamp: time,
+    TimeStamp: time,
     AutoShutdownTime: autoPowerOffTime,
     MaxForce: maxForce,
     Battery: batteryLeft,

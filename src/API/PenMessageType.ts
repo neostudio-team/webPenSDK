@@ -163,6 +163,12 @@ const PenMessageType = {
   EVENT_DOT_ERROR: 0x68,
 
   /**
+   Pens Checking PUI
+   - data: Command
+   */
+  EVENT_DOT_PUI: 0x69,
+
+  /**
    Pens Log Info(for touch and play)
    - data: LogInfoStruct
    */
@@ -178,7 +184,7 @@ const PenMessageType = {
 export default PenMessageType;
 
 export const SettingType = {
-  Timestamp: 1,
+  TimeStamp: 1,
   AutoPowerOffTime: 2,
   PenCapOff: 3,
   AutoPowerOn: 4,

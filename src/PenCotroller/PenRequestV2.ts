@@ -148,7 +148,7 @@ export default class PenRequestV2 {
     bf.Put(CONST.PK_STX, false).Put(CMD.SETTING_CHANGE_REQUEST);
 
     switch (stype) {
-      case SettingType.Timestamp:
+      case SettingType.TimeStamp:
         bf.PutShort(9)
           .Put(stype)
           .PutLong(value);
@@ -234,7 +234,7 @@ export default class PenRequestV2 {
   ReqSetupTime() {
     let timetick = Date.now();
     // NLog.log("Setup Time", timetick, new Date(timetick));
-    return this.RequestChangeSetting(SettingType.Timestamp, timetick);
+    return this.RequestChangeSetting(SettingType.TimeStamp, timetick);
   }
 
   /**
@@ -482,7 +482,7 @@ export default class PenRequestV2 {
    * @param {array} pages - 빈 배열일 경우 노트 내 모든 page를 요청
    * @returns 
    */
-  ReqOfflineData(section: number, owner: number, note: number, deleteOnFinished = true, pages = []) {
+  ReqOfflineData(section: number, owner: number, note: number, deleteOnFinished = true, pages: number[] = []) {
     let length = 14 + pages.length * 4;
     let bf = new ByteUtil();
     // NLog.log("ReqOfflineData", length)
@@ -496,7 +496,7 @@ export default class PenRequestV2 {
       .PutInt(pages == null ? 0 : pages.length);
 
     if (pages.length > 0) {
-      pages.forEach(page => {
+      pages.forEach((page: number) => {
         bf.PutInt(page);
       });
     }

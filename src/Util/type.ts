@@ -31,7 +31,7 @@ type Dot = {
   f: number;
   pageInfo: PageInfo;
   penTipType: number;
-  timestamp: number;
+  timeStamp: number;
   x: number;
   y: number;
 }
@@ -50,6 +50,15 @@ type Options = {
   filters: any;
 }
 
+type Paper = {
+  section: number;
+  owner: number;
+  note: number;
+  page: number;
+  Time?: number;
+  TimeDiff?: number;
+}
+
 type VersionInfo = {
   DeviceName: string;
   FirmwareVersion: string;
@@ -64,7 +73,7 @@ type SettingInfo = {
   Locked: boolean;
   ResetCount: number;
   RetryCount: number;
-  Timestamp: number;
+  TimeStamp: number;
   AutoShutdownTime: number;
   MaxForce: number;
   Battery: number;
@@ -80,7 +89,7 @@ type SettingInfo = {
 type DotErrorInfo = {
   ErrorType: number,
   Dot?: Dot,
-  Timestamp: number,
+  TimeStamp: number,
   ExtraData?: string,
   ImageProcessErrorInfo?: any
 }
@@ -96,5 +105,6 @@ export type {
   Options,
   VersionInfo,
   SettingInfo,
-  DotErrorInfo
+  DotErrorInfo,
+  Paper
 };

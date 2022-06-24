@@ -40,9 +40,12 @@ export default class DotFilter {
       return;
     }
 
-    // Start Dot is put in the first dot.
-    if (mdot.dotType == DotTypes.PEN_DOWN) {
+    if(mdot.dotType == DotTypes.PEN_ERROR || mdot.dotType == DotTypes.PEN_INFO){
+      this.sendDot(mdot);
+    } else if (mdot.dotType == DotTypes.PEN_DOWN) {
+      // Start Dot is put in the first dot.
       this.dot1 = mdot;
+      this.sendDot(mdot);
     } else if (mdot.dotType == DotTypes.PEN_MOVE) {
       // Just put it in the middle of the first
       if (this.secondCheck) {

@@ -309,7 +309,7 @@ export default class PenController {
    * @param {array} pages - 빈 배열일 경우 노트 내 모든 page를 요청 
    * @returns 
    */
-  RequestOfflineData(section: number, owner: number, note: number, deleteOnFinished:boolean = true, pages = [] ) {
+  RequestOfflineData(section: number, owner: number, note: number, deleteOnFinished:boolean = true, pages:any = [] ) {
     return this.Request(
       () => this.mClientV1.ReqOfflineData(),
       () => {

@@ -7,18 +7,17 @@ import CMD from "./CMD";
 import CONST from "./Const";
 import * as Res from "../Model/Response";
 import zlib from "zlib";
-
-
 import PenMessageType, { SettingType, PenTipType, ErrorType, FirmwareStatusType } from "../API/PenMessageType";
 import PenController from "./PenController";
 import DotFilter from "../Util/DotFilter";
-import { VersionInfo, SettingInfo } from "../Util/type";
+import { VersionInfo, SettingInfo, Paper } from "../Util/type";
+import { isPUI } from "../API/PageInfo";
 
 export default class PenClientParserV2 {
   penController: PenController
   penVersionInfo: VersionInfo
   penSettingInfo: SettingInfo
-  current: any
+  current: Paper
   state: any
   mBuffer: any
   IsEscape: boolean
@@ -32,26 +31,28 @@ export default class PenClientParserV2 {
     this.penSettingInfo = {} as SettingInfo; // ref) Response.SettingInfo
 
     this.current = {
-      Section: -1,
-      Owner: -1,
-      Note: -1,
-      Page: -1,
-      Time: -1
+      section: -1,
+      owner: -1,
+      note: -1,
+      page: -1,
+      Time: -1,
+      TimeDiff: 0,
     };
 
     this.state = {
       first: true,
       mPenTipType: 0,
       mPenTipColor: -1,
-      IsStartWithDown: false,
+      isStartWithDown: false,
       mDotCount: -1,
       reCheckPassword: false,
       newPassword: null,
       mPrevDot: null,
-      IsBeforeMiddle: false,
-      IsStartWithPaperInfo: false,
+      isBeforeMiddle: false,
+      isStartWithPaperInfo: false,
       SessionTs: -1,
-      EventCount: -1
+      EventCount: -1,
+      isPUI: false,
     };
 
     this.mBuffer = null;
@@ -321,7 +322,7 @@ export default class PenClientParserV2 {
         this.penController.onErrorDetected({
           ErrorType: ErrorType.InvalidEventCount,
           Dot: errorDot,
-          Timestamp: this.state.SessionTs,
+          TimeStamp: this.state.SessionTs,
           ExtraData: extraData
         });
       } else if (ecount < this.state.EventCount) {
@@ -329,7 +330,7 @@ export default class PenClientParserV2 {
         this.penController.onErrorDetected({
           ErrorType: ErrorType.InvalidEventCount,
           Dot: errorDot,
-          Timestamp: this.state.SessionTs,
+          TimeStamp: this.state.SessionTs,
           ExtraData: extraData
         });
       }
@@ -344,20 +345,27 @@ export default class PenClientParserV2 {
    * @param {Packet} pk 
    */
   NewPenDown(pk: Packet) {
-    if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
+    if (this.state.isStartWithDown && this.state.isBeforeMiddle && this.state.mPrevDot !== null) {
       this.MakeUpDot();
     }
     let ecount = pk.GetByte();
     this.CheckEventCount(ecount);
-    this.state.IsStartWithDown = true;
+    this.state.isStartWithDown = true;
     this.current.Time = pk.GetLong();
     this.state.SessionTs = this.current.Time;
-    this.state.IsBeforeMiddle = false;
-    this.state.IsStartWithPaperInfo = false;
+    this.state.isBeforeMiddle = false;
+    this.state.isStartWithPaperInfo = false;
+    this.state.isPUI = false;
     this.state.mDotCount = 0;
     this.state.mPenTipType = pk.GetByte() === 0x00 ? PenTipType.Normal : PenTipType.Eraser;
     this.state.mPenTipColor = pk.GetInt();
     this.state.mPrevDot = null;
+
+    const x = -1;
+    const y = -1;
+    const f = 0
+    const Ddot = Dot.MakeDot(this.current, x, y, f, Dot.DotTypes.PEN_DOWN, this.state.mPenTipType, this.state.mPenTipColor, {tx:0, ty: 0, twist: 0});
+    this.ProcessDot(Ddot);
   }
 
   /**
@@ -369,19 +377,19 @@ export default class PenClientParserV2 {
   NewPenUp(pk: Packet) {
     let ecount = pk.GetByte();
     this.CheckEventCount(ecount);
-    let timestamp = pk.GetLong();
-    new Date(timestamp);
+    let timeStamp = pk.GetLong();
+    new Date(timeStamp);
     // NLog.log("ONLINE_NEW_PEN_UP_EVENT timestamp", new Date(timestamp));
     let dotCount = pk.GetShort();
     let totalImageCount = pk.GetShort();
     let procImageCount = pk.GetShort();
     let succImageCount = pk.GetShort();
     let sendImageCount = pk.GetShort();
-    if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
+    if (this.state.isStartWithDown && this.state.isBeforeMiddle && this.state.mPrevDot !== null) {
       let udot = this.state.mPrevDot.Clone();
       udot.dotType = Dot.DotTypes.PEN_UP;
       let imageInfo = null;
-      if (this.state.IsStartWithPaperInfo) {
+      if (this.state.isStartWithPaperInfo) {
         imageInfo = {
           DotCount: dotCount,
           Total: totalImageCount,
@@ -391,24 +399,26 @@ export default class PenClientParserV2 {
         };
       }
       this.ProcessDot(udot);
-    } else if (!this.state.IsStartWithDown && !this.state.IsBeforeMiddle) {
+    } else if (!this.state.isStartWithDown && !this.state.isBeforeMiddle) {
       // 즉 다운업(무브없이) 혹은 업만 들어올 경우 UP dot을 보내지 않음
       this.penController.onErrorDetected({
         ErrorType: ErrorType.MissingPenDownPenMove,
-        Timestamp: -1
+        TimeStamp: -1
       });
-    } else if (!this.state.IsBeforeMiddle) {
+    } else if (!this.state.isBeforeMiddle) {
       // 무브없이 다운-업만 들어올 경우 UP dot을 보내지 않음
       this.penController.onErrorDetected({
         ErrorType: ErrorType.MissingPenMove,
-        Timestamp: this.state.SessionTs
+        TimeStamp: this.state.SessionTs
       });
     }
     this.current.Time = -1;
+    this.current.TimeDiff = 0;
     this.state.SessionTs = -1;
-    this.state.IsStartWithDown = false;
-    this.state.IsBeforeMiddle = false;
-    this.state.IsStartWithPaperInfo = false;
+    this.state.isStartWithDown = false;
+    this.state.isBeforeMiddle = false;
+    this.state.isStartWithPaperInfo = false;
+    this.state.isPUI = false;
     this.state.mDotCount = 0;
     this.state.mPrevDot = null;
   }
@@ -422,34 +432,35 @@ export default class PenClientParserV2 {
   PenUpDown(pk: Packet) {
     let IsDown = pk.GetByte() === 0x00;
     if (IsDown) {
-      if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
+      if (this.state.isStartWithDown && this.state.isBeforeMiddle && this.state.mPrevDot !== null) {
         this.MakeUpDot();
       }
-      this.state.IsStartWithDown = true;
+      this.state.isStartWithDown = true;
       this.current.Time = pk.GetLong();
       this.state.SessionTs = this.current.Time;
     } else {
-      if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
+      if (this.state.isStartWithDown && this.state.isBeforeMiddle && this.state.mPrevDot !== null) {
         this.MakeUpDot(false);
-      } else if (!this.state.IsStartWithDown && !this.state.IsBeforeMiddle) {
+      } else if (!this.state.isStartWithDown && !this.state.isBeforeMiddle) {
         // 즉 다운업(무브없이) 혹은 업만 들어올 경우 UP dot을 보내지 않음
         this.penController.onErrorDetected({
           ErrorType: ErrorType.MissingPenDownPenMove,
-          Timestamp: -1
+          TimeStamp: -1
         });
-      } else if (!this.state.IsBeforeMiddle) {
+      } else if (!this.state.isBeforeMiddle) {
         // 무브없이 다운-업만 들어올 경우 UP dot을 보내지 않음
         this.penController.onErrorDetected({
           ErrorType: ErrorType.MissingPenMove,
-          Timestamp: this.state.SessionTs
+          TimeStamp: this.state.SessionTs
         });
       }
-      this.state.IsStartWithDown = false;
+      this.state.isStartWithDown = false;
       this.current.Time = -1;
+      this.current.TimeDiff = 0;
       this.state.SessionTs = -1;
     }
-    this.state.IsBeforeMiddle = false;
-    this.state.IsStartWithPaperInfo = false;
+    this.state.isBeforeMiddle = false;
+    this.state.isStartWithPaperInfo = false;
     this.state.mDotCount = 0;
     this.state.mPenTipType = pk.GetByte() === 0x00 ? PenTipType.Normal : PenTipType.Eraser;
     this.state.mPenTipColor = pk.GetInt();
@@ -469,6 +480,7 @@ export default class PenClientParserV2 {
     }
     let timeadd = pk.GetByte();
     this.current.Time += timeadd;
+    this.current.TimeDiff = timeadd;
     let force = pk.GetShort();
     let brightness = pk.GetByte();
     let exposureTime = pk.GetByte();
@@ -478,7 +490,7 @@ export default class PenClientParserV2 {
     let classType = pk.GetByte();
     let errorCount = pk.GetByte();
     let newInfo = {
-      Timestamp: this.current.Time,
+      TimeStamp: this.current.Time,
       force,
       brightness,
       exposureTime,
@@ -496,7 +508,7 @@ export default class PenClientParserV2 {
     this.penController.onErrorDetected({
       ErrorType: ErrorType.ImageProcessingError,
       Dot: errorDot,
-      Timestamp: this.state.SessionTs,
+      TimeStamp: this.state.SessionTs,
       ImageProcessErrorInfo: newInfo
     });
   }
@@ -516,20 +528,34 @@ export default class PenClientParserV2 {
     }
 
     // 미들도트 중에 페이지가 바뀐다면 강제로 펜업을 만들어 준다.
-    if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
+    if (this.state.isStartWithDown && this.state.isBeforeMiddle && this.state.mPrevDot !== null) {
       this.MakeUpDot(false);
     }
 
     let rb = pk.GetBytes(4);
 
-    this.current.Section = rb[3] & 0xff;
-    this.current.Owner = Converter.byteArrayToInt(new Uint8Array([rb[0], rb[1], rb[2], 0x00]));
-    this.current.Note = pk.GetInt();
-    this.current.Page = pk.GetInt();
+    const section = rb[3] & 0xff;
+    const owner = Converter.byteArrayToInt(new Uint8Array([rb[0], rb[1], rb[2], 0x00]));
+    const book = pk.GetInt();
+    const page = pk.GetInt();
+    this.current.section = section;
+    this.current.owner = owner;
+    this.current.note = book;
+    this.current.page = page;
 
     this.state.mDotCount = 0;
 
-    this.state.IsStartWithPaperInfo = true;
+    this.state.isStartWithPaperInfo = true;
+    
+    if(!isPUI({section: section, owner: owner, book: book, page: page})){
+      const x = -1;
+      const y = -1;
+      const f = 0
+      const Ddot = Dot.MakeDot(this.current, x, y, f, Dot.DotTypes.PEN_INFO, this.state.mPenTipType, this.state.mPenTipColor, {tx:0, ty: 0, twist: 0});
+      this.ProcessDot(Ddot);
+    }else{
+      this.state.isPUI = true;
+    }
   }
 
   // MARK: Parse Dot
@@ -549,7 +575,8 @@ export default class PenClientParserV2 {
 
     let timeadd = pk.GetByte();
     this.current.Time += timeadd;
-    let force = parseFloat((pk.GetShort() / this.penSettingInfo.MaxForce).toFixed(4));
+    this.current.TimeDiff = timeadd;
+    let force = pk.GetShort();
     let x = pk.GetShort();
     let y = pk.GetShort();
     let fx = pk.GetByte();
@@ -566,12 +593,30 @@ export default class PenClientParserV2 {
     };
     let dot = null;
 
-    if (!this.penSettingInfo.HoverMode && !this.state.IsStartWithDown) {
-      if (!this.state.IsStartWithPaperInfo) {
+    if(this.state.isPUI){
+      if(this.state.mDotCount === 0){
+        const pui2 = PUIController.getInstance();
+        const cmd2 = pui2.getPuiCommand(this.current, x, y).then(cmddd => {
+          console.log("cmd2");
+          this.penController.onMessage!(this.penController, PenMessageType.EVENT_DOT_PUI, {command: cmddd})
+          cmddd.forEach(cmd3 => {
+            console.log("foreach");
+            console.log(cmd3);
+          })
+        }
+        );
+        console.log("cmd1");
+        this.penController.onMessage!(this.penController, PenMessageType.EVENT_DOT_PUI, {command: cmd, cmd2})
+        return;
+      }
+    }
+
+    if (!this.penSettingInfo.HoverMode && !this.state.isStartWithDown) {
+      if (!this.state.isStartWithPaperInfo) {
         //펜 다운 없이 페이퍼 정보 없고 무브가 오는 현상(다운 - 무브 - 업 - 다운X - 무브)
         this.penController.onErrorDetected({
           ErrorType: ErrorType.MissingPenDown,
-          Timestamp: -1
+          TimeStamp: -1
         });
       } else {
         this.current.Time = Date.now();
@@ -584,31 +629,32 @@ export default class PenClientParserV2 {
         this.penController.onErrorDetected({
           ErrorType: ErrorType.MissingPenDown,
           Dot: errorDot,
-          Timestamp: this.state.SessionTs
+          TimeStamp: this.state.SessionTs
         });
 
-        this.state.IsStartWithDown = true;
-        this.state.IsStartWithPaperInfo = true;
+        this.state.isStartWithDown = true;
+        this.state.isStartWithPaperInfo = true;
       }
     }
 
-    if (this.penSettingInfo.HoverMode && !this.state.IsStartWithDown) {
+    if (this.penSettingInfo.HoverMode && !this.state.isStartWithDown) {
       dot = Dot.MakeDot(this.current, x, y, force, Dot.DotTypes.PEN_HOVER,  this.state.mPenTipType, this.state.mPenTipColor, angel);
-    } else if (this.state.IsStartWithDown) {
+    } else if (this.state.isStartWithDown) {
       if (this.current.Time < 10000) {
         this.UpDotTimerCallback();
         this.penController.onErrorDetected({
           ErrorType: ErrorType.InvalidTime,
-          Timestamp: this.state.SessionTs
+          TimeStamp: this.state.SessionTs
         })
       }
-      if (this.state.IsStartWithPaperInfo) {
+      if (this.state.isStartWithPaperInfo) {
         dot = Dot.MakeDot(
           this.current,
           x,
           y,
           force,
-          this.state.mDotCount === 0 ? Dot.DotTypes.PEN_DOWN : Dot.DotTypes.PEN_MOVE,
+          // this.state.mDotCount === 0 ? Dot.DotTypes.PEN_DOWN : Dot.DotTypes.PEN_MOVE,
+          Dot.DotTypes.PEN_MOVE,
           this.state.mPenTipType,
           this.state.mPenTipColor,
           angel
@@ -617,7 +663,7 @@ export default class PenClientParserV2 {
         //펜 다운 이후 페이지 체인지 없이 도트가 들어왔을 경우
         this.penController.onErrorDetected({
           ErrorType: ErrorType.MissingPageChange,
-          Timestamp: this.state.SessionTs
+          TimeStamp: this.state.SessionTs
         });
       }
     }
@@ -626,7 +672,7 @@ export default class PenClientParserV2 {
       this.ProcessDot(dot);
     }
 
-    this.state.IsBeforeMiddle = true;
+    this.state.isBeforeMiddle = true;
     this.state.mPrevDot = dot;
     this.state.mDotCount++;
   }
@@ -640,6 +686,7 @@ export default class PenClientParserV2 {
   PenHoverEvent = (pk: Packet) => {
     const timeadd = pk.GetByte();
     this.current.Time += timeadd;
+    this.current.TimeDiff = timeadd;
     let x = pk.GetShort();
     let y = pk.GetShort();
     const fx = pk.GetByte();
@@ -648,7 +695,7 @@ export default class PenClientParserV2 {
     y += fy * 0.01;
     let dot = null;
 
-    if (this.penSettingInfo.HoverMode && !this.state.IsStartWithDown) {
+    if (this.penSettingInfo.HoverMode && !this.state.isStartWithDown) {
       dot = Dot.MakeDot(this.current, x, y, 0, Dot.DotTypes.PEN_HOVER,  this.state.mPenTipType, this.state.mPenTipColor, {tx:0, ty: 0, twist: 0});
     }
 
@@ -661,13 +708,14 @@ export default class PenClientParserV2 {
    * 펜의 블루투스 연결이 끊어졌을 경우, 펜 이벤트의 설정 값들을 초기화하는 함수
    */
   OnDisconnected() {
-    if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
+    if (this.state.isStartWithDown && this.state.isBeforeMiddle && this.state.mPrevDot !== null) {
       this.MakeUpDot();
       this.current.Time = -1;
+      this.current.TimeDiff = 0;
       this.state.SessionTs = -1;
-      this.state.IsStartWithDown = false;
-      this.state.IsBeforeMiddle = false;
-      this.state.IsStartWithPaperInfo = false;
+      this.state.isStartWithDown = false;
+      this.state.isBeforeMiddle = false;
+      this.state.isStartWithPaperInfo = false;
       this.state.mDotCount = 0;
       this.state.mPrevDot = null;
     }
@@ -677,13 +725,14 @@ export default class PenClientParserV2 {
    * 펜 다운 후 도트 들어올 때 정상적인 시간 값이 아닐 경우, 펜 이벤트 설정 값들을 초기화하는 함수
    */
   UpDotTimerCallback() {
-    if (this.state.IsStartWithDown && this.state.IsBeforeMiddle && this.state.mPrevDot !== null) {
+    if (this.state.isStartWithDown && this.state.isBeforeMiddle && this.state.mPrevDot !== null) {
       this.MakeUpDot();
       this.current.Time = -1;
+      this.current.TimeDiff = 0;
       this.state.SessionTs = -1;
-      this.state.IsStartWithDown = false;
-      this.state.IsBeforeMiddle = false;
-      this.state.IsStartWithPaperInfo = false;
+      this.state.isStartWithDown = false;
+      this.state.isBeforeMiddle = false;
+      this.state.isStartWithPaperInfo = false;
       this.state.mDotCount = 0;
       this.state.mPrevDot = null;
     }
@@ -700,7 +749,7 @@ export default class PenClientParserV2 {
       this.penController.onErrorDetected({
         ErrorType: ErrorType.MissingPenUp,
         Dot: errorDot,
-        Timestamp: this.state.SessionTs
+        TimeStamp: this.state.SessionTs
       });
     }
 
@@ -722,8 +771,8 @@ export default class PenClientParserV2 {
     const aftersize = packet.GetShort();
     const transPosition = packet.GetByte(); // 0: start, 1: middle, 2: end
     const rb = packet.GetBytes(4);
-    const [Section, Owner] = GetSectionOwner(rb);
-    const Note = packet.GetInt();
+    const [section, owner] = GetSectionOwner(rb);
+    const note = packet.GetInt();
     const strokeCount = packet.GetShort();
     const data = packet.GetBytes(null);
     const Paper = {
@@ -732,9 +781,9 @@ export default class PenClientParserV2 {
       beforsize,
       aftersize,
       transPosition,
-      Section,
-      Owner,
-      Note,
+      section,
+      owner,
+      note,
       strokeCount,
       dataSize: data.length
     };
@@ -789,7 +838,7 @@ export default class PenClientParserV2 {
       let penTipType = packet.GetByte(); // penTipType
       let penTipColor = packet.GetInt();
       let dotCount = packet.GetShort();
-      paper.Page = page;
+      paper.page = page;
       paper.Time = downTime;
       let Dots = [];
       for (let j = 0; j < dotCount; j++) {
@@ -876,7 +925,7 @@ export default class PenClientParserV2 {
     bf.Put(CONST.PK_STX, false)
       .Put(CMD.SETTING_CHANGE_REQUEST)
       .PutShort(9)
-      .Put(SettingType.Timestamp)
+      .Put(SettingType.TimeStamp)
       .PutLong(timetick)
       .Put(CONST.PK_ETX, false);
 
@@ -1026,7 +1075,7 @@ export default class PenClientParserV2 {
       this.penController.onDot(this.penController, dot);
       NLog.log("ParseDot ] X:", dot.x, " Y:", dot.y, " f:", dot.f, " DotType:", dot.dotType, " SOBP: ", dot.pageInfo);
     }else{
-      NLog.log("Need onDot Callback")
+      // NLog.log("Need onDot Callback")
     }
   }
 
