@@ -475,3 +475,10 @@ Release Note
 - **PenDisk Init** - 펜 디스크 초기화 요청 추가
 ### Updates
 - 과밀한 통신 상태에서 블루투스 쓰기 진행 시 중첩연결에 따른 에러 방지 위한 코드 추가
+
+**2022. 06. 27.** (WONHO, ver.0.5.7)
+-----
+### New Features
+- **PUI Feature** - 펜으로 스마트클래스킷 (부기보드) PUI 클릭 시, 메시지 출력 로직 추가
+### Updates
+- viewSDK와의 연결을 위해 param 등 수정
