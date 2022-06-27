@@ -110,6 +110,7 @@ handleMessage = (controller: any, type: any, args: any) => { ... }
 | 193 (0xc1) | PEN_PROFILE | 펜의 프로필 | - |
 | 115 (0x73) | RES_PDS | 펜 PDS | - |
 | 104 (0x68) | EVENT_DOT_ERROR | 펜 Dot 이벤트 에러 | - |
+| 105 (0x69) | EVENT_DOT_PUI | 펜 Dot PUI 정보 | - |
 | 244 (0xf4) | RES_LOG_INFO | 펜 로그 정보 | - |
 | 245 (0xf5) | RES_LOG_DATA | 펜 로그 데이터 | - |
 
