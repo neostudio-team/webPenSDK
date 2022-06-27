@@ -12,6 +12,7 @@ import PenController from "./PenController";
 import DotFilter from "../Util/DotFilter";
 import { VersionInfo, SettingInfo, Paper } from "../Util/type";
 import { isPUI } from "../API/PageInfo";
+import PUIController from "../API/PUIController";
 
 export default class PenClientParserV2 {
   penController: PenController
@@ -53,6 +54,7 @@ export default class PenClientParserV2 {
       SessionTs: -1,
       EventCount: -1,
       isPUI: false,
+      cmdCheck: false
     };
 
     this.mBuffer = null;
@@ -555,6 +557,7 @@ export default class PenClientParserV2 {
       this.ProcessDot(Ddot);
     }else{
       this.state.isPUI = true;
+      this.state.cmdCheck = true;
     }
   }
 
@@ -594,19 +597,12 @@ export default class PenClientParserV2 {
     let dot = null;
 
     if(this.state.isPUI){
-      if(this.state.mDotCount === 0){
-        const pui2 = PUIController.getInstance();
-        const cmd2 = pui2.getPuiCommand(this.current, x, y).then(cmddd => {
-          console.log("cmd2");
-          this.penController.onMessage!(this.penController, PenMessageType.EVENT_DOT_PUI, {command: cmddd})
-          cmddd.forEach(cmd3 => {
-            console.log("foreach");
-            console.log(cmd3);
-          })
-        }
-        );
-        console.log("cmd1");
-        this.penController.onMessage!(this.penController, PenMessageType.EVENT_DOT_PUI, {command: cmd, cmd2})
+      if(this.state.mDotCount === 0 && this.state.cmdCheck){
+        const pui = PUIController.getInstance();
+        const command = pui.getPuiCommand(this.current, x, y).then(cmd =>
+          this.penController.onMessage!(this.penController, PenMessageType.EVENT_DOT_PUI, {command: cmd})
+        )
+        this.state.cmdCheck = false;
         return;
       }
     }

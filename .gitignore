@@ -116,3 +116,5 @@ dist
 
 example/.firebase/
 example/build/
+package-lock.json
+yarn.lock

@@ -120,14 +120,9 @@ export default class PUIController {
 
   public getPuiCommand = async (sobp: Paper,  x: number, y: number) => {
     await this._ready;
-
-    const commands = [] as string[];
     const command = this.getPuiCommand_sync(sobp, { x: x, y: y });
-    if (command) {
-      if (!commands.includes(command)) commands.push(command);
-    }
 
-    return commands;
+    return command;
   }
 
 
