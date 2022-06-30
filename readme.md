@@ -481,5 +481,3 @@ Release Note
 -----
 ### New Features
 - **PUI Feature** - 펜으로 스마트클래스킷 (부기보드) PUI 클릭 시, 메시지 출력 로직 추가
-### Updates
-- viewSDK와의 연결을 위해 param 등 수정
