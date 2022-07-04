@@ -1,11 +1,13 @@
 import $ from 'jquery';
 import { Paper } from '../Util/type';
 import PageInfo from './PageInfo';
-import GenericPuiNproj from "./nproj/note_3_1013_1.nproj";
+// import GenericPuiNproj from "./nproj/note_3_1013_1.nproj";
+import { symbolBox } from './symbolBox';
 
 const PU_TO_NU = 0.148809523809524;
 
-const predefinedPuiGroup = [GenericPuiNproj];
+const predefinedPuiGroup: any[] = [];
+// const predefinedPuiGroup = [GenericPuiNproj];
 
 let _puiInstance: PUIController = null;
 
@@ -84,13 +86,13 @@ function insideEllipse(point: { x: number, y: number }, el: { x: number, y: numb
 
 export default class PUIController {
 
-  private _pageSymbols: { [sobp_str: string]: PuiSymbolType[] } = {};
+  private _pageSymbols: { [sobp_str: string]: PuiSymbolType[] } = {...symbolBox};
 
 
   private _ready: Promise<void>;
 
   constructor() {
-    this._ready = this.readPredefinedSymbols();
+    // this._ready = this.readPredefinedSymbols();
   }
   
   static getInstance() {
