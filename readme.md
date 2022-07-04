@@ -481,3 +481,8 @@ Release Note
 -----
 ### New Features
 - **PUI Feature** - 펜으로 스마트클래스킷 (부기보드) PUI 클릭 시, 메시지 출력 로직 추가
+
+**2022. 06. 27.** (WONHO, ver.0.6.6)
+-----
+### New Features
+- **PUI Feature** - PUI 좌표 하드코딩으로 수정
