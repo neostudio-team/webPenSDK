@@ -1,13 +1,15 @@
 import $ from 'jquery';
 import { Paper } from '../Util/type';
 import PageInfo from './PageInfo';
-// import GenericPuiNproj from "./nproj/note_3_1013_1.nproj";
+import GenericPuiNproj from "./nproj/note_3_1013_1.json";
+import GridaPuiNproj from "./nproj/3_1013_1116_Grida.json";
+import PaperTubePuiNproj from "./nproj/papertube_controller_171117.json";
+import SmartClassKitPuiProj from "./nproj/SmartClassKit_Controller.json";
 import { symbolBox } from './symbolBox';
 
 const PU_TO_NU = 0.148809523809524;
 
-const predefinedPuiGroup: any[] = [];
-// const predefinedPuiGroup = [GenericPuiNproj];
+const predefinedPuiGroup = [GenericPuiNproj, GridaPuiNproj, PaperTubePuiNproj, SmartClassKitPuiProj];
 
 let _puiInstance: PUIController = null;
 
@@ -86,13 +88,13 @@ function insideEllipse(point: { x: number, y: number }, el: { x: number, y: numb
 
 export default class PUIController {
 
-  private _pageSymbols: { [sobp_str: string]: PuiSymbolType[] } = {...symbolBox};
+  private _pageSymbols: { [sobp_str: string]: PuiSymbolType[] } = {};
 
 
   private _ready: Promise<void>;
 
   constructor() {
-    // this._ready = this.readPredefinedSymbols();
+    this._ready = this.readPredefinedSymbolsByJSON();
   }
   
   static getInstance() {
@@ -103,21 +105,32 @@ export default class PUIController {
     return _puiInstance;
   }
 
-  private readPredefinedSymbols = async () => {
+  // private readPredefinedSymbolsByXML = async () => {
 
-    for (const url of predefinedPuiGroup) {
-      // nproj 파일에서 symbol을 받는다.
-      const symbols = await this.getPuiXML(url);
+  //   for (const url of predefinedPuiGroup) {
+  //     // nproj 파일에서 symbol을 받는다.
+  //     const symbols = await this.getPuiXML(url);
 
-      // 해당 페이지에 symbol을 넣고,
+  //     // 해당 페이지에 symbol을 넣고,
+  //     for (const s of symbols) {
+  //       const idStr = makeNPageIdStr(s.sobp);
+  //       if (!this._pageSymbols[idStr]) this._pageSymbols[idStr] = [];
+  //       this._pageSymbols[idStr].push(s);
+
+  //       // if (!commands.includes(s.command)) commands.push(s.command);
+  //     }
+  //   }  
+  // }
+  private readPredefinedSymbolsByJSON = async () => {
+    for (const json of predefinedPuiGroup) {
+      const symbols = await this.getPuiJSON(json);
+
       for (const s of symbols) {
         const idStr = makeNPageIdStr(s.sobp);
         if (!this._pageSymbols[idStr]) this._pageSymbols[idStr] = [];
         this._pageSymbols[idStr].push(s);
-
-        // if (!commands.includes(s.command)) commands.push(s.command);
       }
-    }  
+    }
   }
 
   public getPuiCommand = async (sobp: Paper,  x: number, y: number) => {
@@ -197,6 +210,83 @@ export default class PUIController {
       const height = parseFloat($(sym).attr("height"));
 
       const command: string = $(sym).find("command").attr("param");
+
+      const page = pageDelta + startPage;
+      const sobp = { section, owner, book, page };
+
+      switch (type) {
+        case "Rectangle": {
+          const puiSymbol: PuiSymbolType = {
+            type,
+            command,
+            sobp,
+            rect_nu: {
+              left: x * PU_TO_NU,
+              top: y * PU_TO_NU,
+              width: width * PU_TO_NU,
+              height: height * PU_TO_NU,
+            },
+          };
+          symbols.push(puiSymbol);
+          break;
+        }
+
+        case "Ellipse": {
+          const puiSymbol: PuiSymbolType = {
+            type,
+            command,
+            sobp,
+            ellipse_nu: {
+              x: x * PU_TO_NU,
+              y: y * PU_TO_NU,
+              width: width * PU_TO_NU,
+              height: height * PU_TO_NU,
+            },
+          };
+          symbols.push(puiSymbol);
+          break;
+        }
+
+        default: {
+          throw new Error(`symbol type(${type} is not "Rectangle" nor "Ellipse"`);
+        }
+      }
+    });
+
+    return symbols;
+  }
+
+  private getPuiJSON = async (json: PuiJSON) => {
+    const symbols: PuiSymbolType[] = [];
+
+    const nprojJson = json.nproj;
+
+    // book 정보
+    const bookJson = nprojJson.book;
+    const section = parseInt(bookJson[0].section.toString());
+    const owner = parseInt(bookJson[0].owner.toString());
+    const book = parseInt(bookJson[0].code.toString());
+    const startPage = parseInt(bookJson[0].start_page[0]._);
+
+    // page 정보
+    const pageJson = nprojJson.pages;
+    const numPages = parseInt(pageJson[0].$.count);
+
+    // symbol 정보
+    const symbolsJson = nprojJson.symbols;
+    const symbolJson = symbolsJson[0].symbol;
+
+    symbolJson.forEach(function (sym) {
+      // console.log(sym.outerHTML);
+
+      const pageDelta = parseInt(sym.$.page);
+      const type: string = sym.$.type; // 여기서는 Rectangle만 취급한다.
+      const x = parseFloat(sym.$.x);
+      const y = parseFloat(sym.$.y);
+      const width = parseFloat(sym.$.width);
+      const height = parseFloat(sym.$.height);
+
+      const command: string = sym.command[0].$.param;
 
       const page = pageDelta + startPage;
       const sobp = { section, owner, book, page };
