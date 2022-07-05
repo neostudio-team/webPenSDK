@@ -1,6 +1,6 @@
 {
   "name": "web_pen_sdk",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "description": "Neosmartpen typescript library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,11 +14,12 @@
   "scripts": {
     "start": "node examples/server.js",
     "build:webpack": "rm -rf dist && webpack",
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc && npm run convertNPROJ && cp -r ./src/API/nproj ./dist/API/nproj",
     "test": "jest",
     "clean": "rm -rf dist & rm -rf node_modules & rm package-lock.json & rm yarn.lock",
     "prepare": "yarn build",
-    "deploy": "yarn publish"
+    "deploy": "yarn publish",
+    "convertNPROJ": "node ./src/Util/converterNPROJ.js"
   },
   "repository": {
     "type": "git",
@@ -39,12 +40,9 @@
     "@types/jquery": "^3.5.14",
     "babel-loader": "^8.2.2",
     "copy-webpack-plugin": "^11.0.0",
-    "file-loader": "^6.2.0",
     "jest": "^27.0.4",
-    "raw-loader": "^4.0.2",
-    "ts-loader": "^9.3.1",
     "webpack": "^5.24.4",
-    "xml-loader": "^1.2.1"
+    "xml2js": "^0.4.23"
   },
   "dependencies": {
     "@types/web-bluetooth": "0.0.14",
