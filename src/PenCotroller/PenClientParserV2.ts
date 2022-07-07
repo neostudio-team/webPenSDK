@@ -549,16 +549,15 @@ export default class PenClientParserV2 {
 
     this.state.isStartWithPaperInfo = true;
     
-    if(!isPUI({section: section, owner: owner, book: book, page: page})){
-      const x = -1;
-      const y = -1;
-      const f = 0
-      const Ddot = Dot.MakeDot(this.current, x, y, f, Dot.DotTypes.PEN_INFO, this.state.mPenTipType, this.state.mPenTipColor, {tx:0, ty: 0, twist: 0});
-      this.ProcessDot(Ddot);
-    }else{
+    if(isPUI({section: section, owner: owner, book: book, page: page})){
       this.state.isPUI = true;
       this.state.cmdCheck = true;
     }
+    const x = -1;
+    const y = -1;
+    const f = 0
+    const Ddot = Dot.MakeDot(this.current, x, y, f, Dot.DotTypes.PEN_INFO, this.state.mPenTipType, this.state.mPenTipColor, {tx:0, ty: 0, twist: 0});
+    this.ProcessDot(Ddot);
   }
 
   // MARK: Parse Dot
