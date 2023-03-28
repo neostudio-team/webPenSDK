@@ -404,7 +404,7 @@ const path = new Path(screenDot.x, screenDot.y);
 <br />
 
 ## 🐾 Sample Page
-> https://github.com/MHCHOI3/web-sdk-sample2
+> https://github.com/neostudio-team/WebSDKSample
 
 ## 📑 web_pen_sdk 공식문서
 > ### [Google Docs](https://docs.google.com/document/d/12ZSPQ-CVEOq4yxvNn2jcI9L_SZ01zJkMvbWBVfJCHWQ/edit?usp=sharing)
