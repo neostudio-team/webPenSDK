@@ -11,15 +11,31 @@ import PenMessageType, { SettingType, PenTipType, ErrorType, FirmwareStatusType 
 import PenController from "./PenController";
 import DotFilter from "../Util/DotFilter";
 import { VersionInfo, SettingInfo, Paper } from "../Util/type";
-import { isPUI } from "../API/PageInfo";
-import PUIController from "../API/PUIController";
+import PUIController, { isPUI, isPUIOnPage } from "../API/PUIController";
+
+type IPenState = {
+  first: boolean;
+  mPenTipType: number;
+  mPenTipColor: number;
+  isStartWithDown: boolean;
+  mDotCount: number;
+  reCheckPassword: boolean;
+  newPassword: string | null;
+  mPrevDot: any;
+  isBeforeMiddle: boolean;
+  isStartWithPaperInfo: boolean;
+  SessionTs: number;
+  EventCount: number;
+  isPUI: boolean;
+  cmdCheck: boolean;
+};
 
 export default class PenClientParserV2 {
   penController: PenController;
   penVersionInfo: VersionInfo;
   penSettingInfo: SettingInfo;
   current: Paper;
-  state: any;
+  state: IPenState;
   mBuffer: any;
   IsEscape: boolean;
   offline: any;
@@ -622,14 +638,19 @@ export default class PenClientParserV2 {
     };
     let dot = null;
 
+    if (this.state.mDotCount === 0 && this.current && isPUIOnPage(this.current, x, y)) {
+      this.state.isPUI = true;
+      this.state.cmdCheck = true;
+    }
+
     if (this.state.isPUI) {
       if (this.state.mDotCount === 0 && this.state.cmdCheck) {
         const pui = PUIController.getInstance();
-        const command = pui
-          .getPuiCommand(this.current, x, y)
-          .then((cmd) =>
-            this.penController.onMessage!(this.penController, PenMessageType.EVENT_DOT_PUI, { command: cmd })
-          );
+        const command = pui.getPuiCommand(this.current, x, y).then((cmd) => {
+          if (cmd) {
+            this.penController.onMessage!(this.penController, PenMessageType.EVENT_DOT_PUI, { command: cmd });
+          }
+        });
         this.state.cmdCheck = false;
         return;
       }

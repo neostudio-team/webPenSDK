@@ -4,6 +4,7 @@ import * as NLog from "../Util/NLog";
 
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import JSZip from "jszip";
+import PUIController from "./PUIController";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAY7MrI37TvkDerHsShcvOsueDpi4TGihw",
@@ -23,6 +24,20 @@ const POINT_72DPI_SIZE_IN_INCH = 1 / 72;
 const point72ToNcode = (p: number) => {
   const ratio = NCODE_SIZE_IN_INCH / POINT_72DPI_SIZE_IN_INCH;
   return p / ratio;
+};
+
+/**
+ * Set Note Page PUI in PUIController
+ */
+const setNrojInPuiController = async (pageInfo: PageInfo) => {
+  const sobStr = `${pageInfo.section}_${pageInfo.owner}_${pageInfo.book}.nproj`;
+
+  const fbApp = initializeApp(firebaseConfig);
+  const storage = getStorage(fbApp);
+
+  const url = await getDownloadURL(ref(storage, `nproj/${sobStr}`));
+
+  PUIController.getInstance().fetchOnlyPageSymbols(url, pageInfo);
 };
 
 /**
@@ -124,6 +139,7 @@ const getNoteImage = async (pageInfo: PageInfo, setImageBlobUrl: any) => {
 const api = {
   extractMarginInfo,
   getNoteImage,
+  setNrojInPuiController,
 };
 
 export default api;
