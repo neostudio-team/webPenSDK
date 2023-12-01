@@ -1,9 +1,9 @@
 export default class SDKError {
-  message: string
-  name: string
-  constructor(msg: string){
+  message: string;
+  name: string;
+  constructor(msg: string) {
     this.message = msg;
-    this.name="SDKError";
+    this.name = "SDKError";
   }
   toString() {
     return this.name + ": " + this.message;
@@ -24,11 +24,10 @@ export default class SDKError {
 //   this.name="ArgumentOutOfRangeException";
 // }
 
-
 // ArgumentOutOfRangeException.prototype.toString = function () {
 //   return this.name + ': "' + this.message + '"';
 // }
 
 // export {SDKError, ArgumentNullException, ArgumentOutOfRangeException}
 
-export {SDKError}
+export { SDKError };

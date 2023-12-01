@@ -10,7 +10,7 @@ const PenMessageType = {
    - data: PenPasswordStruct?
    */
   PEN_PASSWORD_REQUEST: 0x02,
-  
+
   /**
    Pens when the pen disconnected, the events that occur
    - data: nil
@@ -199,12 +199,12 @@ export const SettingType = {
   FscSensitivity: 13,
   DataTransmissionType: 14,
   BeepAndLight: 16,
-  InitDisk: 17
+  InitDisk: 17,
 };
 
 export const PenTipType = {
   Normal: 0,
-  Eraser: 1
+  Eraser: 1,
 };
 
 export const ErrorType = {
@@ -215,7 +215,7 @@ export const ErrorType = {
   ImageProcessingError: 5,
   InvalidEventCount: 6,
   MissingPageChange: 7,
-  MissingPenMove: 8
+  MissingPenMove: 8,
 };
 
 export const ProfileType = {
@@ -224,12 +224,12 @@ export const ProfileType = {
   InfoProfile: 0x03,
   WriteProfileValue: 0x11,
   ReadProfileValue: 0x12,
-  DeleteProfileValue: 0x13
-}
+  DeleteProfileValue: 0x13,
+};
 
 export const FirmwareStatusType = {
   STATUS_START: 0,
   STATUS_CONTINUE: 1,
   STATUS_END: 2,
-  STATUS_ERROR: 3
-}
+  STATUS_ERROR: 3,
+};

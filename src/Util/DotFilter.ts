@@ -40,7 +40,7 @@ export default class DotFilter {
       return;
     }
 
-    if(mdot.dotType == DotTypes.PEN_ERROR || mdot.dotType == DotTypes.PEN_INFO){
+    if (mdot.dotType == DotTypes.PEN_ERROR || mdot.dotType == DotTypes.PEN_INFO) {
       this.sendDot(mdot);
     } else if (mdot.dotType == DotTypes.PEN_DOWN) {
       // Start Dot is put in the first dot.

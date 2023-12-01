@@ -73,13 +73,13 @@ const CMD = {
   /**오프라인 데이터의 필기 정보를 전송하는 커맨드, PEN->APP */
   OFFLINE_PACKET_REQUEST: 0x24,
   /**오프라인 데이터의 필기 정보 전송에 대한 결과값을 반환하는 커맨드, APP->PEN */
-  OFFLINE_PACKET_RESPONSE: 0xa4,  
+  OFFLINE_PACKET_RESPONSE: 0xa4,
 
   /**오프라인 데이터의 삭제를 요청하는 커맨드, note 단위 삭제 */
   OFFLINE_DATA_DELETE_REQUEST: 0x25,
   /**오프라인 데이터 삭제 요청에 대한 응답을 반환하는 커맨드 */
   OFFLINE_DATA_DELETE_RESPONSE: 0xa5,
-  
+
   /**펌웨어 업데이트를 요청하는 커맨드 */
   FIRMWARE_UPLOAD_REQUEST: 0x31,
   /**펌웨어 업데이트 요청에 대한 응답을 반환하는 커맨드 */
@@ -95,12 +95,11 @@ const CMD = {
   PEN_PROFILE_RESPONSE: 0xc1,
 
   // Only Touch and play
-  RES_PDS : 0x73,
-  REQ_LOG_INFO : 0x74,
-  RES_LOG_INFO : 0xF4,
-  REQ_LOG_DATA : 0x75,
-  RES_LOG_DATA : 0xF5,
+  RES_PDS: 0x73,
+  REQ_LOG_INFO: 0x74,
+  RES_LOG_INFO: 0xf4,
+  REQ_LOG_DATA: 0x75,
+  RES_LOG_DATA: 0xf5,
+};
 
-}
-
-export default CMD
+export default CMD;

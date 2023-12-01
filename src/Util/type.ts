@@ -10,19 +10,19 @@ type PageInfo2 = {
   owner: number;
   note: number;
   page: number;
-}
+};
 
 type PaperSize = {
   Xmin: number;
   Xmax: number;
   Ymin: number;
   Ymax: number;
-}
+};
 
 type PaperBase = {
   Xmin: number;
   Ymin: number;
-}
+};
 
 type Dot = {
   angle: object;
@@ -34,21 +34,21 @@ type Dot = {
   timeStamp: number;
   x: number;
   y: number;
-}
+};
 
 type ScreenDot = {
   x: number;
   y: number;
-}
+};
 
 type View = {
   width: number;
   height: number;
-}
+};
 
 type Options = {
   filters: any;
-}
+};
 
 type Paper = {
   section: number;
@@ -57,7 +57,7 @@ type Paper = {
   page: number;
   Time?: number;
   TimeDiff?: number;
-}
+};
 
 type VersionInfo = {
   DeviceName: string;
@@ -67,7 +67,7 @@ type VersionInfo = {
   DeviceType: number;
   MacAddress: string;
   PressureSensorType: number;
-}
+};
 
 type SettingInfo = {
   Locked: boolean;
@@ -84,17 +84,17 @@ type SettingInfo = {
   HoverMode: boolean;
   Beep: boolean;
   PenSensitivity: number;
-}
+};
 
 type DotErrorInfo = {
-  ErrorType: number,
-  Dot?: Dot,
-  TimeStamp: number,
-  ExtraData?: string,
-  ImageProcessErrorInfo?: any
-}
+  ErrorType: number;
+  Dot?: Dot;
+  TimeStamp: number;
+  ExtraData?: string;
+  ImageProcessErrorInfo?: any;
+};
 
-export type { 
+export type {
   PageInfo,
   PageInfo2,
   PaperSize,
@@ -106,5 +106,5 @@ export type {
   VersionInfo,
   SettingInfo,
   DotErrorInfo,
-  Paper
+  Paper,
 };

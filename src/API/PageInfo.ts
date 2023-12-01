@@ -1,11 +1,9 @@
-
 type IPageSOBP = {
-  section: number,
-  book: number,
-  owner: number,
-  page: number
-}
-
+  section: number;
+  book: number;
+  owner: number;
+  page: number;
+};
 
 export default class PageInfo {
   section: number;
@@ -21,7 +19,7 @@ export default class PageInfo {
 }
 
 export function isPUI(pageInfo: IPageSOBP): boolean {
-  const { owner, book, page, } = pageInfo;
+  const { owner, book, page } = pageInfo;
   if (owner === 27 && book === 161 && page === 1) {
     return true;
   }
@@ -34,4 +32,3 @@ export function isPUI(pageInfo: IPageSOBP): boolean {
 
   return false;
 }
-

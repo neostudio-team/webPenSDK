@@ -1,11 +1,10 @@
-
 var debug = true;
 function log(...arg: any) {
-  if (debug) console.log(...arg)
+  if (debug) console.log(...arg);
 }
 
-function setDebug(bool : boolean){
+function setDebug(bool: boolean) {
   debug = bool;
 }
 
-export {log, debug, setDebug}
+export { log, debug, setDebug };

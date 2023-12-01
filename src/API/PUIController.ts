@@ -1,11 +1,11 @@
-import $ from 'jquery';
-import { Paper } from '../Util/type';
-import PageInfo from './PageInfo';
+import $ from "jquery";
+import { Paper } from "../Util/type";
+import PageInfo from "./PageInfo";
 import GenericPuiNproj from "./nproj/note_3_1013_1.json";
 import GridaPuiNproj from "./nproj/3_1013_1116_Grida.json";
 import PaperTubePuiNproj from "./nproj/papertube_controller_171117.json";
 import SmartClassKitPuiProj from "./nproj/SmartClassKit_Controller.json";
-import { symbolBox } from './symbolBox';
+import { symbolBox } from "./symbolBox";
 
 const PU_TO_NU = 0.148809523809524;
 
@@ -14,48 +14,43 @@ const predefinedPuiGroup = [GenericPuiNproj, GridaPuiNproj, PaperTubePuiNproj, S
 let _puiInstance: PUIController = null;
 
 type PuiSymbolType = {
-  sobp: PageInfo,
-  command: string,
+  sobp: PageInfo;
+  command: string;
 
-  type: "Rectangle" | "Ellipse" | "Polygon", 
+  type: "Rectangle" | "Ellipse" | "Polygon";
   rect_nu?: {
-    left: number,
-    top: number,
-    width: number,
-    height: number,
-  },
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
   ellipse_nu?: {
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-  }
-  polygon?: { x: number, y: number }[],
-
-}
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  polygon?: { x: number; y: number }[];
+};
 
 function makeNPageIdStr(pageInfo: PageInfo, separator = ".") {
   if (pageInfo) {
     const { section, owner, book, page } = pageInfo;
 
-    if (page !== undefined)
-      return `${section}${separator}${owner}${separator}${book}${separator}${page}`;
+    if (page !== undefined) return `${section}${separator}${owner}${separator}${book}${separator}${page}`;
 
-    if (book !== undefined)
-      return `${section}${separator}${owner}${separator}${book}`;
+    if (book !== undefined) return `${section}${separator}${owner}${separator}${book}`;
 
-    if (owner !== undefined)
-      return `${section}${separator}${owner}`;
+    if (owner !== undefined) return `${section}${separator}${owner}`;
 
-    if (section !== undefined)
-      return `${section}`;
+    if (section !== undefined) return `${section}`;
 
     return `${section}${separator}${owner}${separator}${book}${separator}${page}`;
   }
   return `${pageInfo}`;
 }
 
-function insidePolygon(point: { x: number, y: number }, vs: { x: number, y: number }[]) {
+function insidePolygon(point: { x: number; y: number }, vs: { x: number; y: number }[]) {
   // ray-casting algorithm based on
   // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html/pnpoly.html
 
@@ -66,37 +61,34 @@ function insidePolygon(point: { x: number, y: number }, vs: { x: number, y: numb
     const { x: xi, y: yi } = vs[i];
     const { x: xj, y: yj } = vs[j];
 
-    const intersect = ((yi > y) != (yj > y))
-      && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    const intersect = yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
     if (intersect) inside = !inside;
   }
 
   return inside;
 }
 
-function insideRectangle(point: { x: number, y: number }, rc: { left: number, top: number, width: number, height: number }) {
-  return (point.x >= rc.left) && (point.x <= rc.left + rc.width) &&
-    (point.y >= rc.top) && (point.y <= rc.top + rc.height);
+function insideRectangle(
+  point: { x: number; y: number },
+  rc: { left: number; top: number; width: number; height: number }
+) {
+  return point.x >= rc.left && point.x <= rc.left + rc.width && point.y >= rc.top && point.y <= rc.top + rc.height;
 }
 
-function insideEllipse(point: { x: number, y: number }, el: { x: number, y: number, width: number, height: number }) {
-  const p = Math.pow((point.x - el.x), 2) / Math.pow(el.width, 2) + Math.pow((point.y - el.y), 2) / Math.pow(el.height, 2);
+function insideEllipse(point: { x: number; y: number }, el: { x: number; y: number; width: number; height: number }) {
+  const p = Math.pow(point.x - el.x, 2) / Math.pow(el.width, 2) + Math.pow(point.y - el.y, 2) / Math.pow(el.height, 2);
   return p <= 1;
 }
 
-
-
 export default class PUIController {
-
   private _pageSymbols: { [sobp_str: string]: PuiSymbolType[] } = {};
-
 
   private _ready: Promise<void>;
 
   constructor() {
     this._ready = this.readPredefinedSymbolsByJSON();
   }
-  
+
   static getInstance() {
     if (!_puiInstance) {
       _puiInstance = new PUIController();
@@ -106,7 +98,6 @@ export default class PUIController {
   }
 
   // private readPredefinedSymbolsByXML = async () => {
-
   //   for (const url of predefinedPuiGroup) {
   //     // nproj 파일에서 symbol을 받는다.
   //     const symbols = await this.getPuiXML(url);
@@ -119,8 +110,8 @@ export default class PUIController {
 
   //       // if (!commands.includes(s.command)) commands.push(s.command);
   //     }
-  //   }  
-  // }
+  //   }
+  // };
   private readPredefinedSymbolsByJSON = async () => {
     for (const json of predefinedPuiGroup) {
       const symbols = await this.getPuiJSON(json);
@@ -131,32 +122,29 @@ export default class PUIController {
         this._pageSymbols[idStr].push(s);
       }
     }
-  }
+  };
 
-  public getPuiCommand = async (sobp: Paper,  x: number, y: number) => {
+  public getPuiCommand = async (sobp: Paper, x: number, y: number) => {
     await this._ready;
     const command = this.getPuiCommand_sync(sobp, { x: x, y: y });
 
     return command;
-  }
+  };
 
-
-  private getPuiCommand_sync = (sobp: Paper, point_nu: { x: number, y: number }) => {
-    const pageInfo = {section: sobp.section, owner: sobp.owner, book: sobp.note, page: sobp.page}
+  private getPuiCommand_sync = (sobp: Paper, point_nu: { x: number; y: number }) => {
+    const pageInfo = { section: sobp.section, owner: sobp.owner, book: sobp.note, page: sobp.page };
     const pageSymbols = this._pageSymbols[makeNPageIdStr(pageInfo)];
     if (!pageSymbols) return undefined;
 
     for (const s of pageSymbols) {
       switch (s.type) {
         case "Rectangle": {
-          if (insideRectangle(point_nu, s.rect_nu))
-            return s.command;
+          if (insideRectangle(point_nu, s.rect_nu)) return s.command;
           break;
         }
 
         case "Ellipse": {
-          if (insideEllipse(point_nu, s.ellipse_nu))
-            return s.command;
+          if (insideEllipse(point_nu, s.ellipse_nu)) return s.command;
           break;
         }
 
@@ -171,7 +159,7 @@ export default class PUIController {
     }
 
     return undefined;
-  }
+  };
 
   get ready() {
     return this._ready;
@@ -254,7 +242,7 @@ export default class PUIController {
     });
 
     return symbols;
-  }
+  };
 
   private getPuiJSON = async (json: PuiJSON) => {
     const symbols: PuiSymbolType[] = [];
@@ -331,5 +319,5 @@ export default class PUIController {
     });
 
     return symbols;
-  }
+  };
 }

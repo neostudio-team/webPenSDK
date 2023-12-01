@@ -15,7 +15,7 @@ const CONST = {
   PK_HEADER_SIZE: 3,
 
   DEF_LIMIT: 1000,
-  DEF_GROWTH: 1000
-}
+  DEF_GROWTH: 1000,
+};
 
-export default CONST
+export default CONST;

@@ -11,31 +11,31 @@ const DotTypes = Object.freeze({
 });
 
 type Angle = {
-  tx: number,
-  ty: number,
-  twist: number
-}
+  tx: number;
+  ty: number;
+  twist: number;
+};
 
 class Dot {
-  pageInfo: PageInfo
-  x: number
-  y: number
-  f: number
-  dotType: number
-  timeDiff: number
-  timeStamp: number
-  penTipType: number
-  color: number
-  angle: Angle
+  pageInfo: PageInfo;
+  x: number;
+  y: number;
+  f: number;
+  dotType: number;
+  timeDiff: number;
+  timeStamp: number;
+  penTipType: number;
+  color: number;
+  angle: Angle;
 
-  constructor(){
-    this.pageInfo = new PageInfo(0,0,0,0)
+  constructor() {
+    this.pageInfo = new PageInfo(0, 0, 0, 0);
     this.x = 0;
     this.y = 0;
     this.angle = {
       tx: 0,
       ty: 0,
-      twist: 0
+      twist: 0,
     };
     this.f = 0;
     this.color = 0x000000ff;
@@ -45,11 +45,20 @@ class Dot {
     this.penTipType = 0; // 0: Normal, 1: Eraser
   }
 
-  static MakeDot(paper: Paper, x: number, y: number, force: number, type: number, penTipType: number, color: number, angel = {tx:0, ty: 0, twist: 0}) {
-    let builder =  new DotBuilder()
+  static MakeDot(
+    paper: Paper,
+    x: number,
+    y: number,
+    force: number,
+    type: number,
+    penTipType: number,
+    color: number,
+    angel = { tx: 0, ty: 0, twist: 0 }
+  ) {
+    let builder = new DotBuilder();
 
-    const xx = parseFloat(x.toFixed(2))
-    const yy = parseFloat(y.toFixed(2))
+    const xx = parseFloat(x.toFixed(2));
+    const yy = parseFloat(y.toFixed(2));
     builder
       .owner(paper.owner)
       .section(paper.section)
@@ -57,7 +66,7 @@ class Dot {
       .page(paper.page)
       .timeDiff(paper.TimeDiff)
       .timeStamp(paper.Time)
-      .coord(xx, yy )
+      .coord(xx, yy)
       .force(force)
       .dotType(type)
       .penTipType(penTipType)
@@ -68,14 +77,14 @@ class Dot {
 
   Clone() {
     let newDot = new Dot();
-    newDot.pageInfo = this.pageInfo
+    newDot.pageInfo = this.pageInfo;
     newDot.x = this.x;
     newDot.y = this.y;
     newDot.f = this.f;
     newDot.timeDiff = this.timeDiff;
     newDot.timeStamp = this.timeStamp;
     newDot.dotType = this.dotType;
-    newDot.penTipType = this.penTipType
+    newDot.penTipType = this.penTipType;
     newDot.color = this.color;
     newDot.angle = this.angle;
     return newDot;
@@ -86,12 +95,11 @@ class Dot {
   }
 }
 
-
 class DotBuilder {
-  mDot: Dot
+  mDot: Dot;
 
-  constructor(){
-    this.mDot = new Dot()
+  constructor() {
+    this.mDot = new Dot();
   }
 
   section(section: number) {
@@ -125,8 +133,8 @@ class DotBuilder {
   }
 
   coord(x: number, y: number) {
-    this.mDot.x = x
-    this.mDot.y = y
+    this.mDot.x = x;
+    this.mDot.y = y;
     return this;
   }
 
@@ -149,7 +157,7 @@ class DotBuilder {
   }
 
   force(force: number) {
-    this.mDot.f = force
+    this.mDot.f = force;
     return this;
   }
 
@@ -159,8 +167,8 @@ class DotBuilder {
   }
 
   penTipType(penTipType: number) {
-    this.mDot.penTipType = penTipType
-    return this
+    this.mDot.penTipType = penTipType;
+    return this;
   }
 
   color(color: number) {

@@ -1,38 +1,37 @@
-import ByteUtil, {GetSectionOwnerByte} from "../Util/ByteUtil";
-import * as Converter from '../Util/Converter'
-import * as NLog from '../Util/NLog'
+import ByteUtil, { GetSectionOwnerByte } from "../Util/ByteUtil";
+import * as Converter from "../Util/Converter";
+import * as NLog from "../Util/NLog";
 import CMD from "./CMD";
 import CONST from "./Const";
 import zlib from "zlib";
 
-import { FirmwareStatusType, ProfileType, SettingType} from "../API/PenMessageType";
+import { FirmwareStatusType, ProfileType, SettingType } from "../API/PenMessageType";
 import { PenController } from "..";
 
 type DefaultConfig = {
-  SupportedProtocolVersion: string
-  PEN_PROFILE_SUPPORT_PROTOCOL_VERSION: number
-  DEFAULT_PASSWORD: string
-}
+  SupportedProtocolVersion: string;
+  PEN_PROFILE_SUPPORT_PROTOCOL_VERSION: number;
+  DEFAULT_PASSWORD: string;
+};
 
 export default class PenRequestV2 {
-
-  penController: PenController
-  defaultConfig: DefaultConfig
-  state: any
+  penController: PenController;
+  defaultConfig: DefaultConfig;
+  state: any;
 
   constructor(penController: PenController) {
     this.penController = penController;
     this.defaultConfig = Object.freeze({
       SupportedProtocolVersion: "2.18",
       PEN_PROFILE_SUPPORT_PROTOCOL_VERSION: 2.18,
-      DEFAULT_PASSWORD: "0000"
+      DEFAULT_PASSWORD: "0000",
     });
 
     this.state = {
       isFwCompress: false,
       fwPacketSize: 0,
       fwFile: null,
-    }
+    };
   }
 
   //
@@ -74,16 +73,16 @@ export default class PenRequestV2 {
   //
   /**
    * 펜에 설정된 비밀번호를 변경 요청하기 위한 버퍼를 만들고 펜에 전송하는 함수
-   * @param {string} oldPassword 
-   * @param {string} newPassword 
-   * @returns 
+   * @param {string} oldPassword
+   * @param {string} newPassword
+   * @returns
    */
   ReqSetUpPassword(oldPassword: string, newPassword = "") {
     if (!oldPassword) return false;
     NLog.log("ReqSetUpPassword", oldPassword, newPassword);
     // if (oldPassword === this.defaultConfig.DEFAULT_PASSWORD) return false;
     if (newPassword === this.defaultConfig.DEFAULT_PASSWORD) return false;
-    
+
     let oPassByte = Converter.toUTF8Array(oldPassword);
     let nPassByte = Converter.toUTF8Array(newPassword);
 
@@ -102,8 +101,8 @@ export default class PenRequestV2 {
 
   /**
    * 펜에 비밀번호 버퍼를 만들고 전송하는 함수
-   * @param {string} password 
-   * @returns 
+   * @param {string} password
+   * @returns
    */
   ReqInputPassword(password: string) {
     if (!password) return false;
@@ -112,26 +111,19 @@ export default class PenRequestV2 {
     let bStrByte = Converter.toUTF8Array(password);
 
     let bf = new ByteUtil();
-    bf.Put(CONST.PK_STX, false)
-      .Put(CMD.PASSWORD_REQUEST)
-      .PutShort(16)
-      .PutArray(bStrByte, 16)
-      .Put(CONST.PK_ETX, false);
+    bf.Put(CONST.PK_STX, false).Put(CMD.PASSWORD_REQUEST).PutShort(16).PutArray(bStrByte, 16).Put(CONST.PK_ETX, false);
 
     return this.Send(bf);
   }
 
   /**
    * 펜에 대한 각종 설정 확인을 요청하기 위한 버퍼를 만들고 전송하는 함수
-   * @returns 
+   * @returns
    */
   ReqPenStatus() {
     let bf = new ByteUtil();
 
-    bf.Put(CONST.PK_STX, false)
-      .Put(CMD.SETTING_INFO_REQUEST)
-      .PutShort(0)
-      .Put(CONST.PK_ETX, false);
+    bf.Put(CONST.PK_STX, false).Put(CMD.SETTING_INFO_REQUEST).PutShort(0).Put(CONST.PK_ETX, false);
 
     return this.Send(bf);
   }
@@ -139,8 +131,8 @@ export default class PenRequestV2 {
   /**
    * 펜에 대한 각종 설정 변경을 요청하기 위한 버퍼를 만들고 전송하는 함수
    * @param {number} stype - SettingType, 변경하고자 하는 설정
-   * @param {any} value 
-   * @returns 
+   * @param {any} value
+   * @returns
    */
   RequestChangeSetting(stype: number, value: any) {
     let bf = new ByteUtil();
@@ -149,23 +141,17 @@ export default class PenRequestV2 {
 
     switch (stype) {
       case SettingType.TimeStamp:
-        bf.PutShort(9)
-          .Put(stype)
-          .PutLong(value);
+        bf.PutShort(9).Put(stype).PutLong(value);
         break;
 
       case SettingType.AutoPowerOffTime:
-        bf.PutShort(3)
-          .Put(stype)
-          .PutShort(value);
+        bf.PutShort(3).Put(stype).PutShort(value);
         break;
 
       case SettingType.LedColor:
         let b = Converter.intToByteArray(value);
         let nBytes = new Uint8Array([b[3], b[2], b[1], b[0]]);
-        bf.PutShort(5)
-          .Put(stype)
-          .PutArray(nBytes, 4);
+        bf.PutShort(5).Put(stype).PutArray(nBytes, 4);
 
         //bf.PutShort(5).Put((byte)stype).PutInt((int)value);
         break;
@@ -181,41 +167,26 @@ export default class PenRequestV2 {
           .Put(value ? 1 : 0);
         break;
       case SettingType.Sensitivity:
-        bf.PutShort(2)
-          .Put(stype)
-          .Put(value);
+        bf.PutShort(2).Put(stype).Put(value);
         break;
       case SettingType.UsbMode:
-        bf.PutShort(2)
-          .Put(stype)
-          .Put(value);
+        bf.PutShort(2).Put(stype).Put(value);
         break;
       case SettingType.BtLocalName:
         let StrByte = Converter.toUTF8Array(value);
-        bf.PutShort(18)
-          .Put(stype)
-          .Put(16)
-          .PutArray(StrByte, 16);
+        bf.PutShort(18).Put(stype).Put(16).PutArray(StrByte, 16);
         break;
       case SettingType.FscSensitivity:
-        bf.PutShort(2)
-          .Put(stype)
-          .PutShort(value);
+        bf.PutShort(2).Put(stype).PutShort(value);
         break;
       case SettingType.DataTransmissionType:
-        bf.PutShort(2)
-          .Put(stype)
-          .Put(value);
+        bf.PutShort(2).Put(stype).Put(value);
         break;
       case SettingType.BeepAndLight:
-        bf.PutShort(2)
-          .Put(stype)
-          .Put(0x00);
+        bf.PutShort(2).Put(stype).Put(0x00);
         break;
       case SettingType.InitDisk:
-        bf.PutShort(5)
-          .Put(stype)
-          .PutInt(0x4F1C0B42);
+        bf.PutShort(5).Put(stype).PutInt(0x4f1c0b42);
         break;
       default:
         NLog.log("undefined setting type");
@@ -227,9 +198,9 @@ export default class PenRequestV2 {
   }
 
   /**
-   * 펜 설정 중 시각을 변경하기 위한 함수 
+   * 펜 설정 중 시각을 변경하기 위한 함수
    * - 1970년 1월 1일부터 millisecond tick (지금은 현재 시각으로 변경)
-   * @returns 
+   * @returns
    */
   ReqSetupTime() {
     let timetick = Date.now();
@@ -240,8 +211,8 @@ export default class PenRequestV2 {
   /**
    * 펜 설정 중 자동종료 시간을 변경하기 위한 함수
    * 분 단위 (v2.17 = 5 ~ 3600 // v2.18 = 1 ~ 3600)
-   * @param {number} minute 
-   * @returns 
+   * @param {number} minute
+   * @returns
    */
   ReqSetupPenAutoShutdownTime(minute: number) {
     return this.RequestChangeSetting(SettingType.AutoPowerOffTime, minute);
@@ -250,7 +221,7 @@ export default class PenRequestV2 {
   /**
    * 펜 설정 중 펜 뚜껑을 닫을 경우 전원이 꺼지는 기능을 on / off 로 변경하기 위한 함수
    * @param {boolean} enable - on / off
-   * @returns 
+   * @returns
    */
   ReqSetupPenCapPower(enable: boolean) {
     return this.RequestChangeSetting(SettingType.PenCapOff, enable);
@@ -259,7 +230,7 @@ export default class PenRequestV2 {
   /**
    * 펜 설정 중 펜 뚜껑 혹은 펜 필기 시 자동으로 전원이 켜지는 기능을 on / off 로 변경하기 위한 함수
    * @param {boolean} enable - on / off
-   * @returns 
+   * @returns
    */
   ReqSetupPenAutoPowerOn(enable: boolean) {
     return this.RequestChangeSetting(SettingType.AutoPowerOn, enable);
@@ -268,7 +239,7 @@ export default class PenRequestV2 {
   /**
    * 펜 설정 중 비프음 기능을 on / off 로 변경하기 위한 함수
    * @param {boolean} enable - on / off
-   * @returns 
+   * @returns
    */
   ReqSetupPenBeep(enable: boolean) {
     return this.RequestChangeSetting(SettingType.Beep, enable);
@@ -278,7 +249,7 @@ export default class PenRequestV2 {
    * 펜 설정 중 호버 모드 기능을 on / off 로 변경하기 위한 함수
    * - 호버기능 : 펜의 위치를 penDown 전에 미리 가늠해 볼 수 있도록 시각적인 dot를 표시하는 기능
    * @param {boolean} enable - on / off
-   * @returns 
+   * @returns
    */
   ReqSetupHoverMode(enable: boolean) {
     return this.RequestChangeSetting(SettingType.Hover, enable);
@@ -287,7 +258,7 @@ export default class PenRequestV2 {
   /**
    * 펜 설정 중 오프라인 저장 기능을 on / off 로 변경하기 위한 함수
    * @param {boolean} enable - on / off
-   * @returns 
+   * @returns
    */
   ReqSetupOfflineData(enable: boolean) {
     return this.RequestChangeSetting(SettingType.OfflineData, enable);
@@ -296,7 +267,7 @@ export default class PenRequestV2 {
   /**
    * 펜 설정 중 펜 LED 색을 변경하기 위한 함수
    * @param {number} color - argb
-   * @returns 
+   * @returns
    */
   ReqSetupPenColor(color: number) {
     return this.RequestChangeSetting(SettingType.LedColor, color);
@@ -306,7 +277,7 @@ export default class PenRequestV2 {
    * 펜 설정 중 펜의 필압 민감도를 변경하기 위한 함수
    * - FSR 필압 센서가 달린 모델에서만 이용
    * @param {number} step - 0 ~ 4 ( 0이 가장 민감 )
-   * @returns 
+   * @returns
    */
   ReqSetupPenSensitivity(step: number) {
     return this.RequestChangeSetting(SettingType.Sensitivity, step);
@@ -315,7 +286,7 @@ export default class PenRequestV2 {
   /**
    * 펜 설정 중 USB 모드 설정을 변경하기 위한 함수
    * @param {number} mode - 0 or 1
-   * @returns 
+   * @returns
    */
   ReqSetupUsbMode(mode: number) {
     return this.RequestChangeSetting(SettingType.UsbMode, mode);
@@ -324,7 +295,7 @@ export default class PenRequestV2 {
   /**
    * 펜 설정 중 다운 샘플링 기능을 on / off 로 변경하기 위한 함수
    * @param {boolean} enable - on / off
-   * @returns 
+   * @returns
    */
   ReqSetupDownSampling(enable: boolean) {
     return this.RequestChangeSetting(SettingType.DownSampling, enable);
@@ -332,8 +303,8 @@ export default class PenRequestV2 {
 
   /**
    * 펜 설정 중 블루투스 로컬 네임을 변경하기 위한 함수
-   * @param {string} btLocalName 
-   * @returns 
+   * @param {string} btLocalName
+   * @returns
    */
   ReqSetupBtLocalName(btLocalName: string) {
     return this.RequestChangeSetting(SettingType.BtLocalName, btLocalName);
@@ -343,7 +314,7 @@ export default class PenRequestV2 {
    * 펜 설정 중 펜의 필압 민감도를 변경하기 위한 함수
    * - FSC 필압 센서가 달린 모델에서만 이용
    * @param {number} step - 0 ~ 4 ( 0이 가장 민감 )
-   * @returns 
+   * @returns
    */
   ReqSetupPenFscSensitivity(step: number) {
     return this.RequestChangeSetting(SettingType.FscSensitivity, step);
@@ -353,7 +324,7 @@ export default class PenRequestV2 {
    * 펜 설정 중 펜의 데이터 전송 방식을 변경하기 위한 함수
    * - 현재 사용하지 않음
    * @param {number} type - 0 or 1
-   * @returns 
+   * @returns
    */
   ReqSetupDataTransmissionType(type: number) {
     return this.RequestChangeSetting(SettingType.DataTransmissionType, type);
@@ -362,7 +333,7 @@ export default class PenRequestV2 {
   /**
    * 펜 설정 중 펜의 비프음과 LED를 변경하기 위한 함수
    * F90 펜 전용
-   * @returns 
+   * @returns
    */
   ReqBeepAndLight() {
     return this.RequestChangeSetting(SettingType.BeepAndLight, null);
@@ -370,7 +341,7 @@ export default class PenRequestV2 {
 
   /**
    * 펜 설정 중 펜의 디스크를 초기화하기 위한 함수
-   * @returns 
+   * @returns
    */
   ReqInitPenDisk() {
     return this.RequestChangeSetting(SettingType.InitDisk, null);
@@ -378,7 +349,7 @@ export default class PenRequestV2 {
 
   /**
    * 현재 지원 가능한 펜인지 버전을 비교해 확인하는 함수
-   * @returns 
+   * @returns
    */
   IsSupportPenProfile() {
     let temp = this.penController.mParserV2.penVersionInfo.ProtocolVersion.split(".");
@@ -398,7 +369,7 @@ export default class PenRequestV2 {
    * @param {(array | null)} noteIds - null일 경우 노트를 구분하지 않는다.
    * @returns {boolean}
    */
-  ReqAddUsingNotes(sectionIds: number[] , ownerIds: number[] , noteIds: number[] | null) {
+  ReqAddUsingNotes(sectionIds: number[], ownerIds: number[], noteIds: number[] | null) {
     let bf = new ByteUtil();
     bf.Put(CONST.PK_STX, false).Put(CMD.ONLINE_DATA_REQUEST);
 
@@ -415,9 +386,7 @@ export default class PenRequestV2 {
         bf.PutArray(GetSectionOwnerByte(section, ownerIds[index]), 4).PutInt(0xffffffff);
       });
     } else {
-      bf.PutShort(2)
-        .Put(0xff)
-        .Put(0xff);
+      bf.PutShort(2).Put(0xff).Put(0xff);
     }
 
     bf.Put(CONST.PK_ETX, false);
@@ -431,10 +400,10 @@ export default class PenRequestV2 {
    * 펜에 저장된 오프라인 필기 데이터의 종이 정보(note)를 요청하기 위한 버퍼를 만들고 전송하는 함수
    * - section, owner 모두 0일 경우 저장된 모든 note ID 리스트 (최대 64개)를 요청한다.
    * @param {number} section
-   * @param {number} owner 
-   * @returns 
+   * @param {number} owner
+   * @returns
    */
-  ReqOfflineNoteList(section:number = 0, owner:number = 0) {
+  ReqOfflineNoteList(section: number = 0, owner: number = 0) {
     let pInfo = new Uint8Array([0xff, 0xff, 0xff, 0xff]);
 
     if (section > 0 && owner > 0) {
@@ -454,10 +423,10 @@ export default class PenRequestV2 {
   /**
    * 펜에 저장된 오프라인 필기 데이터의 종이 정보(page)를 요청하기 위한 버퍼를 만들고 전송하는 함수
    * - section, owner, note 와 일치하는 하나의 노트의 page ID 리스트 (최대 128개)를 요청한다.
-   * @param {number} section 
-   * @param {number} owner 
-   * @param {number} note 
-   * @returns 
+   * @param {number} section
+   * @param {number} owner
+   * @param {number} note
+   * @returns
    */
   ReqOfflinePageList(section: number, owner: number, note: number) {
     // NLog.log("ReqOfflinePageList", section, owner, note)
@@ -475,12 +444,12 @@ export default class PenRequestV2 {
 
   /**
    * 펜에 저장된 오프라인 필기 데이터를 한 note ID 혹은 다수의 page ID로 요청하기 위한 버퍼를 만들고 전송하는 함수
-   * @param {number} section 
-   * @param {number} owner 
-   * @param {number} note 
+   * @param {number} section
+   * @param {number} owner
+   * @param {number} note
    * @param {boolean} deleteOnFinished - true일 경우 전송한 데이터 삭제, false일 경우 전송한 데이터 삭제 안함
    * @param {array} pages - 빈 배열일 경우 노트 내 모든 page를 요청
-   * @returns 
+   * @returns
    */
   ReqOfflineData(section: number, owner: number, note: number, deleteOnFinished = true, pages: number[] = []) {
     let length = 14 + pages.length * 4;
@@ -509,10 +478,10 @@ export default class PenRequestV2 {
   /**
    * 펜에 저장된 오프라인 필기 데이터에 대한 삭제를 요청하기 위한 버퍼를 만들고 전송하는 함수
    * - 노트 단위 삭제, 최대 64개
-   * @param {number} section 
-   * @param {number} owner 
-   * @param {array} notes 
-   * @returns 
+   * @param {number} section
+   * @param {number} owner
+   * @param {array} notes
+   * @returns
    */
   ReqOfflineDelete(section: number, owner: number, notes: number[]) {
     let bf = new ByteUtil();
@@ -521,11 +490,9 @@ export default class PenRequestV2 {
 
     let length = 5 + notes.length * 4;
 
-    bf.PutShort(length)
-      .PutArray(GetSectionOwnerByte(section, owner), 4)
-      .Put(notes.length);
+    bf.PutShort(length).PutArray(GetSectionOwnerByte(section, owner), 4).Put(notes.length);
 
-    notes.forEach(noteId => {
+    notes.forEach((noteId) => {
       bf.PutInt(noteId);
     });
 
@@ -536,16 +503,16 @@ export default class PenRequestV2 {
 
   /**
    * 펜에 설치된 펌웨어를 업그레이드하기 위해 펜에게 질의하기 위한 버퍼를 만들고 전송하는 함수
-   * @param {File} file 
-   * @param {string} version 
-   * @param {boolean} isCompressed 
-   * @returns 
+   * @param {File} file
+   * @param {string} version
+   * @param {boolean} isCompressed
+   * @returns
    */
   async ReqPenSwUpgrade(file: File, version: string, isCompressed: boolean) {
     const bf = new ByteUtil();
 
     const deviceName = this.penController.info.DeviceName;
-  
+
     const fwdeviceName = Converter.toUTF8Array(deviceName);
     const fwVersion = Converter.toUTF8Array(version);
 
@@ -553,20 +520,33 @@ export default class PenRequestV2 {
 
     const fwBf = new ByteUtil();
 
-    const fwBuf = await this.ReadFileAsync(file) as ArrayBuffer;
+    const fwBuf = (await this.ReadFileAsync(file)) as ArrayBuffer;
     const fwBufView = new Uint8Array(fwBuf);
     fwBf.PutArray(fwBufView, fwBufView.length);
 
     let packetSize = 256;
-    if(deviceName === "NSP-D100" || deviceName === "NSP-D101" || deviceName === "NSP-C200" || deviceName === "NWP-F121" || deviceName === "NWP-F121C"){
-			packetSize = 64;
-		}
+    if (
+      deviceName === "NSP-D100" ||
+      deviceName === "NSP-D101" ||
+      deviceName === "NSP-C200" ||
+      deviceName === "NWP-F121" ||
+      deviceName === "NWP-F121C"
+    ) {
+      packetSize = 64;
+    }
 
     let isCompress = 0;
-    if(isCompressed){
-      if(deviceName === "NEP-E100"  || deviceName === "NEP-E101"  || deviceName === "NSP-D100"  || deviceName === "NSP-D101"  || deviceName === "NSP-C200"|| deviceName === "NPP-P201"){
+    if (isCompressed) {
+      if (
+        deviceName === "NEP-E100" ||
+        deviceName === "NEP-E101" ||
+        deviceName === "NSP-D100" ||
+        deviceName === "NSP-D101" ||
+        deviceName === "NSP-C200" ||
+        deviceName === "NPP-P201"
+      ) {
         isCompress = 0;
-      }else{
+      } else {
         isCompress = 1;
       }
     }
@@ -574,15 +554,15 @@ export default class PenRequestV2 {
     this.state.fwPacketSize = packetSize;
     this.state.fwFile = fwBf;
 
-    bf.Put(CONST.PK_STX, false).Put(CMD.FIRMWARE_UPLOAD_REQUEST)
+    bf.Put(CONST.PK_STX, false).Put(CMD.FIRMWARE_UPLOAD_REQUEST);
 
     bf.PutShort(42)
       .PutArray(fwdeviceName, 16)
       .PutArray(fwVersion, 16)
       .PutInt(fileSize)
       .PutInt(packetSize)
-      .Put(isCompress)  //패킷 압축 여부, 1이면 압축, 0이면 압축 X, response로 4가 뜰 경우, 압축지원하지않음.
-      .Put(fwBf.GetCheckSumBF()) //압축 안된 파일의 전체 checkSum
+      .Put(isCompress) //패킷 압축 여부, 1이면 압축, 0이면 압축 X, response로 4가 뜰 경우, 압축지원하지않음.
+      .Put(fwBf.GetCheckSumBF()); //압축 안된 파일의 전체 checkSum
 
     bf.Put(CONST.PK_ETX, false);
     NLog.log("ReqPenSwUpgrade", bf);
@@ -591,34 +571,34 @@ export default class PenRequestV2 {
 
   /**
    * 펜에서 승인한 펌웨어 업그레이드에 따라 알맞는 펌웨어 데이터를 업로드 하기 위한 버퍼를 만들고 전송하는 함수
-   * @param {number} offset 
-   * @param {Uint8Array} data 
-   * @param {number} status 
-   * @returns 
+   * @param {number} offset
+   * @param {Uint8Array} data
+   * @param {number} status
+   * @returns
    */
   async ReqPenSwUpload(offset: number, data: Uint8Array, status: number) {
     const bf = new ByteUtil();
-    
+
     bf.Put(CONST.PK_STX, false).Put(CMD.FIRMWARE_PACKET_RESPONSE);
 
-    if(status === FirmwareStatusType.STATUS_ERROR){
-      bf.Put(1)
-    }else{
+    if (status === FirmwareStatusType.STATUS_ERROR) {
+      bf.Put(1);
+    } else {
       const beforeCompressSize = data.length;
       let afterCompressSize = 0;
       let compressData: any;
 
-      if(this.state.isFwCompress){
+      if (this.state.isFwCompress) {
         compressData = await this.Compress(data);
         afterCompressSize = compressData.length;
-      }else{
+      } else {
         compressData = data;
         afterCompressSize = 0;
       }
 
-      bf.Put(0)   //ErrorCode ( 0 = 정상 )
+      bf.Put(0) //ErrorCode ( 0 = 정상 )
         .PutShort(14 + compressData.length)
-        .Put(0)   //전송여부 0 : 1            //STATUS_END 이면 1로 바꾸는 것이 좋을까?
+        .Put(0) //전송여부 0 : 1            //STATUS_END 이면 1로 바꾸는 것이 좋을까?
         .PutInt(offset)
         .Put(bf.GetCheckSumData(data))
         .PutInt(beforeCompressSize)
@@ -634,9 +614,9 @@ export default class PenRequestV2 {
   /**
    * 펜에 프로파일 생성을 요청하기 위한 버퍼를 만들고 전송하는 함수
    * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
-   * @param {string} name 
-   * @param {string} password 
-   * @returns 
+   * @param {string} name
+   * @param {string} password
+   * @returns
    */
   ReqProfileCreate = (name: string, password: string) => {
     const bf = new ByteUtil();
@@ -645,33 +625,33 @@ export default class PenRequestV2 {
     const profilePassword = Converter.toUTF8Array(password);
 
     //프로파일 고정값
-    const neoStudioProfileName = "neonote2"
-    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
-    const neoNoteProfileName = "neolab"
-    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const neoStudioProfileName = "neonote2";
+    const neoStudioProfilePassword = [0xd3, 0x69, 0xde, 0xcd, 0xb6, 0xa, 0x96, 0x1f];
+    const neoNoteProfileName = "neolab";
+    const neoNoteProfilePassword = [0x6b, 0xca, 0x6b, 0x50, 0x5d, 0xec, 0xa7, 0x8c];
     const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
     const passwordNeo = new Uint8Array(neoNoteProfilePassword);
 
     bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
-    
+
     bf.PutShort(21)
       .PutArray(nameNeo, 8)
       .Put(ProfileType.CreateProfile)
       .PutArray(passwordNeo, 8)
-      .PutShort(Math.pow(2,5)) //sector 크기
-      .PutShort(Math.pow(2,7)); //sector 개수
+      .PutShort(Math.pow(2, 5)) //sector 크기
+      .PutShort(Math.pow(2, 7)); //sector 개수
 
     bf.Put(CONST.PK_ETX, false);
     // NLog.log("ReqProfileCreate", bf);
-    return this.Send(bf);    
-  }
+    return this.Send(bf);
+  };
 
   /**
    * 펜에 설정된 프로파일 제거를 요청하기 위한 버퍼를 만들고 전송하는 함수
    * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
-   * @param {string} name 
-   * @param {string} password 
-   * @returns 
+   * @param {string} name
+   * @param {string} password
+   * @returns
    */
   ReqProfileDelete = (name: string, password: string) => {
     const bf = new ByteUtil();
@@ -680,213 +660,201 @@ export default class PenRequestV2 {
     const profilePassword = Converter.toUTF8Array(password);
 
     //프로파일 고정값
-    const neoStudioProfileName = "neonote2"
-    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
-    const neoNoteProfileName = "neolab"
-    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const neoStudioProfileName = "neonote2";
+    const neoStudioProfilePassword = [0xd3, 0x69, 0xde, 0xcd, 0xb6, 0xa, 0x96, 0x1f];
+    const neoNoteProfileName = "neolab";
+    const neoNoteProfilePassword = [0x6b, 0xca, 0x6b, 0x50, 0x5d, 0xec, 0xa7, 0x8c];
     const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
     const passwordNeo = new Uint8Array(neoNoteProfilePassword);
-    
+
     bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
-    
-    bf.PutShort(17)
-      .PutArray(nameNeo, 8)
-      .Put(ProfileType.DeleteProfile)
-      .PutArray(passwordNeo, 8);
+
+    bf.PutShort(17).PutArray(nameNeo, 8).Put(ProfileType.DeleteProfile).PutArray(passwordNeo, 8);
 
     bf.Put(CONST.PK_ETX, false);
     // NLog.log("ReqProfileDelete", bf);
-    return this.Send(bf);    
-  }
+    return this.Send(bf);
+  };
 
   /**
    * 펜에 설정된 프로파일 정보를 요청하기 위한 버퍼를 만들고 전송하는 함수
    * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
-   * @param {string} name 
-   * @returns 
+   * @param {string} name
+   * @returns
    */
   ReqProfileInfo = (name: string) => {
     const bf = new ByteUtil();
 
     const profileName = Converter.toUTF8Array(name);
-    
+
     //프로파일 고정값
-    const neoStudioProfileName = "neonote2"
-    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
-    const neoNoteProfileName = "neolab"
-    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const neoStudioProfileName = "neonote2";
+    const neoStudioProfilePassword = [0xd3, 0x69, 0xde, 0xcd, 0xb6, 0xa, 0x96, 0x1f];
+    const neoNoteProfileName = "neolab";
+    const neoNoteProfilePassword = [0x6b, 0xca, 0x6b, 0x50, 0x5d, 0xec, 0xa7, 0x8c];
     const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
     const passwordNeo = new Uint8Array(neoNoteProfilePassword);
-    
+
     bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
-    
-    bf.PutShort(9)
-      .PutArray(nameNeo, 8)
-      .Put(ProfileType.InfoProfile);
+
+    bf.PutShort(9).PutArray(nameNeo, 8).Put(ProfileType.InfoProfile);
 
     bf.Put(CONST.PK_ETX, false);
     // NLog.log("ReqProfileInfo", bf);
-    return this.Send(bf);    
-  }
+    return this.Send(bf);
+  };
 
   /**
    * 펜에 설정된 프로파일 내 데이터 작성을 요청하기 위한 버퍼를 만들고 전송하는 함수
    * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
-   * @param {string} name 
-   * @param {string} password 
-   * @param {Array} keys 
-   * @param {Array} data 
-   * @returns 
+   * @param {string} name
+   * @param {string} password
+   * @param {Array} keys
+   * @param {Array} data
+   * @returns
    */
-   ReqProfileWriteValue = (name: string, password: string, data : { [key:string]:any }) => {
+  ReqProfileWriteValue = (name: string, password: string, data: { [key: string]: any }) => {
     // this.ReqProfileWriteValue("test","test",{"test": 123})
-      
+
     const keyArray = [];
     const dataArray = [];
-    for(const key in data){
+    for (const key in data) {
       const keyValue = Converter.toUTF8Array(key);
       keyArray.push(keyValue);
       const dataValue = Converter.toUTF8Array(data[key]);
       dataArray.push(dataValue);
-    } 
-  
+    }
+
     const bf = new ByteUtil();
 
     let dataLength = 0;
-    for(let i = 0; i < dataArray.length; i++){
+    for (let i = 0; i < dataArray.length; i++) {
       dataLength += 16;
       dataLength += 2;
       dataLength += dataArray[i].length;
     }
-    
+
     const length = 18 + dataLength;
 
     const profileName = Converter.toUTF8Array(name);
     const profilePassword = Converter.toUTF8Array(password);
 
     //프로파일 고정값
-    const neoStudioProfileName = "neonote2"
-    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
-    const neoNoteProfileName = "neolab"
-    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const neoStudioProfileName = "neonote2";
+    const neoStudioProfilePassword = [0xd3, 0x69, 0xde, 0xcd, 0xb6, 0xa, 0x96, 0x1f];
+    const neoNoteProfileName = "neolab";
+    const neoNoteProfilePassword = [0x6b, 0xca, 0x6b, 0x50, 0x5d, 0xec, 0xa7, 0x8c];
     const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
     const passwordNeo = new Uint8Array(neoNoteProfilePassword);
-    
+
     bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
-    
+
     bf.PutShort(length)
       .PutArray(nameNeo, 8)
       .Put(ProfileType.WriteProfileValue)
       .PutArray(passwordNeo, 8)
       .Put(dataArray.length);
 
-    for(let i = 0; i < keyArray.length; i++){
-      bf.PutArray(keyArray[i], 16)
-        .PutShort(dataArray[i].length)
-        .PutArray(dataArray[i], dataArray[i].length);
+    for (let i = 0; i < keyArray.length; i++) {
+      bf.PutArray(keyArray[i], 16).PutShort(dataArray[i].length).PutArray(dataArray[i], dataArray[i].length);
     }
 
     bf.Put(CONST.PK_ETX, false);
     // NLog.log("ReqProfileWriteValue", bf);
-    return this.Send(bf);    
-   }
+    return this.Send(bf);
+  };
 
   /**
    * 펜에 설정된 프로파일 내 데이터 정보를 요청하기 위한 버퍼를 만들고 전송하는 함수
    * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
-   * @param {string} name 
-   * @param {Array} keys 
-   * @returns 
+   * @param {string} name
+   * @param {Array} keys
+   * @returns
    */
   ReqProfileReadValue = (name: string, keys: string[]) => {
     const bf = new ByteUtil();
-    const length = 10 + keys.length * 16
+    const length = 10 + keys.length * 16;
 
     const profileName = Converter.toUTF8Array(name);
-    
+
     //프로파일 고정값
-    const neoStudioProfileName = "neonote2"
-    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
-    const neoNoteProfileName = "neolab"
-    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const neoStudioProfileName = "neonote2";
+    const neoStudioProfilePassword = [0xd3, 0x69, 0xde, 0xcd, 0xb6, 0xa, 0x96, 0x1f];
+    const neoNoteProfileName = "neolab";
+    const neoNoteProfilePassword = [0x6b, 0xca, 0x6b, 0x50, 0x5d, 0xec, 0xa7, 0x8c];
     const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
     const passwordNeo = new Uint8Array(neoNoteProfilePassword);
-    
-    bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
-    
-    bf.PutShort(length)
-      .PutArray(nameNeo, 8)
-      .Put(ProfileType.ReadProfileValue)
-      .Put(keys.length);
 
-    for(let i = 0; i < keys.length; i++){
+    bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
+
+    bf.PutShort(length).PutArray(nameNeo, 8).Put(ProfileType.ReadProfileValue).Put(keys.length);
+
+    for (let i = 0; i < keys.length; i++) {
       const keyValue = Converter.toUTF8Array(keys[i]);
-      bf.PutArray(keyValue, 16)
+      bf.PutArray(keyValue, 16);
     }
 
     bf.Put(CONST.PK_ETX, false);
     // NLog.log("ReqProfileReadValue", bf);
-    return this.Send(bf);    
-  }
+    return this.Send(bf);
+  };
 
   /**
    * 펜에 설정된 프로파일 내 데이터 제거를 요청하기 위한 버퍼를 만들고 전송하는 함수
    * - 프로파일은 네오랩을 통해 인증받은 뒤에 사용가능하기에, 현재는 고정값을 이용
-   * @param {string} name 
-   * @param {string} password 
-   * @param {Array} keys 
-   * @returns 
+   * @param {string} name
+   * @param {string} password
+   * @param {Array} keys
+   * @returns
    */
   ReqProfileDeleteValue = (name: string, password: string, keys: string[]) => {
     const bf = new ByteUtil();
-    const length = 18 + keys.length * 16
+    const length = 18 + keys.length * 16;
 
     const profileName = Converter.toUTF8Array(name);
     const profilePassword = Converter.toUTF8Array(password);
-    
+
     //프로파일 고정값
-    const neoStudioProfileName = "neonote2"
-    const neoStudioProfilePassword = [0xD3, 0x69, 0xDE, 0xCD, 0xB6, 0xA, 0x96, 0x1F] 
-    const neoNoteProfileName = "neolab"
-    const neoNoteProfilePassword = [0x6B, 0xCA, 0x6B, 0x50, 0x5D, 0xEC, 0xA7, 0x8C]
+    const neoStudioProfileName = "neonote2";
+    const neoStudioProfilePassword = [0xd3, 0x69, 0xde, 0xcd, 0xb6, 0xa, 0x96, 0x1f];
+    const neoNoteProfileName = "neolab";
+    const neoNoteProfilePassword = [0x6b, 0xca, 0x6b, 0x50, 0x5d, 0xec, 0xa7, 0x8c];
     const nameNeo = Converter.toUTF8Array(neoNoteProfileName);
     const passwordNeo = new Uint8Array(neoNoteProfilePassword);
 
     bf.Put(CONST.PK_STX, false).Put(CMD.PEN_PROFILE_REQUEST);
-    
+
     bf.PutShort(length)
       .PutArray(nameNeo, 8)
       .Put(ProfileType.DeleteProfileValue)
       .PutArray(passwordNeo, 8)
       .Put(keys.length);
-      
-    for(let i = 0; i < keys.length; i++){
+
+    for (let i = 0; i < keys.length; i++) {
       const keyValue = Converter.toUTF8Array(keys[i]);
-      bf.PutArray(keyValue, 16)
+      bf.PutArray(keyValue, 16);
     }
 
     bf.Put(CONST.PK_ETX, false);
     // NLog.log("ReqProfileDeleteValue", bf);
-    return this.Send(bf);    
-  }
+    return this.Send(bf);
+  };
 
-  OnDisconnected(){
+  OnDisconnected() {
     // console.log("TODO: Disconnect ")//
-
   }
-
 
   /**
    * 데이터를 zlib으로 압축하는 함수
    * @param {Uint8Array} data
-   * @returns 
+   * @returns
    */
   Compress = async (data: Uint8Array) => {
     const input = new Uint8Array(data);
     let compressData = new Uint8Array();
 
     return new Promise((resolve, reject) => {
-      zlib.deflate(input, {level: 9}, async (err, res) => {
+      zlib.deflate(input, { level: 9 }, async (err, res) => {
         if (!err) {
           const zipU8 = new Uint8Array(res);
           compressData = zipU8;
@@ -896,39 +864,38 @@ export default class PenRequestV2 {
           reject(err);
         }
       });
-    })
-  }
+    });
+  };
 
   /**
    * 펌웨어 업데이트 파일 등을 읽을 때 비동기처리를 위한 함수
-   * @param file 
-   * @returns 
+   * @param file
+   * @returns
    */
- ReadFileAsync = async (file:File) => {
+  ReadFileAsync = async (file: File) => {
     return new Promise((resolve, reject) => {
       let reader = new FileReader();
-  
+
       reader.onload = () => {
         resolve(reader.result);
       };
-  
+
       reader.onerror = reject;
-  
+
       reader.readAsArrayBuffer(file);
-    })
-  }
+    });
+  };
 
   // MARK: Util
   /**
    * 만들어진 버퍼(펜에 요청을 위한 버퍼)를 펜 콘트롤러의 handleWrite로 전달하는 함수
    * - 해당 함수가 기능하기 위해서는 handleWrite를 구현해야 한다.
-   * @param {ByteUtil} bf 
-   * @returns 
+   * @param {ByteUtil} bf
+   * @returns
    */
   Send(bf: ByteUtil) {
-    const u8 = bf.ToU8Array()
+    const u8 = bf.ToU8Array();
     this.penController.handleWrite!(u8);
     return true;
   }
-  
 }

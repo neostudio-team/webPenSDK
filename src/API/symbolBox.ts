@@ -1,27 +1,26 @@
-import { PageInfo } from "../Util/type"
+import { PageInfo } from "../Util/type";
 
 type PuiSymbolType = {
-  sobp: PageInfo,
-  command: string,
+  sobp: PageInfo;
+  command: string;
 
-  type: "Rectangle" | "Ellipse" | "Polygon", 
+  type: "Rectangle" | "Ellipse" | "Polygon";
   rect_nu?: {
-    left: number,
-    top: number,
-    width: number,
-    height: number,
-  },
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
   ellipse_nu?: {
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-  }
-  polygon?: { x: number, y: number }[],
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  polygon?: { x: number; y: number }[];
+};
 
-}
-
-export const symbolBox: { [sobp_str: string]: PuiSymbolType[] }  = {
+export const symbolBox: { [sobp_str: string]: PuiSymbolType[] } = {
   "3.1013.1.1": [
     {
       type: "Rectangle",
@@ -5202,4 +5201,4 @@ export const symbolBox: { [sobp_str: string]: PuiSymbolType[] }  = {
       },
     },
   ],
-}
+};
