@@ -1,6 +1,6 @@
 {
   "name": "web_pen_sdk",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "description": "Neosmartpen typescript library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,7 +26,7 @@
     "url": "git+https://github.com/neostudio-io/webPenSDK.git"
   },
   "keywords": [],
-  "author": "Minhee Lee",
+  "author": "Wonho Seo",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/neostudio-io/webPenSDK/issues"
