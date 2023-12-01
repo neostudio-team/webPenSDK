@@ -491,3 +491,8 @@ Release Note
 -----
 ### New Features
 - **PUI Feature** - PUI 좌표 nproj를 json으로 컨버팅해서 사용하도록 수정
+
+**2023. 12. 01.** (WONHO, ver.0.6.8)
+-----
+### New Features
+- **PUI Feature** - PUI nproj 로 롤백, 노트 페이지 의 PUI도 지원하도록 추가
