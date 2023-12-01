@@ -14,6 +14,7 @@ const PEN_CHARACTERISTICS_WRITE_UUID_128 = "8bc8cc7d-88ca-56b0-af9a-9bf514d0d61a
 
 class PenHelper {
   pens: PenController[];
+  connectingQueue: string[];
   dotCallback: any;
   pageCallback: any;
   messageCallback: any;
@@ -26,6 +27,7 @@ class PenHelper {
 
   constructor() {
     this.pens = []; // PenController Array
+    this.connectingQueue = []; // device.id array
     this.dotCallback = null; // Dot Event Callback function
     this.pageCallback = null;
     this.messageCallback = null; // Pen Event Callback function
@@ -42,6 +44,18 @@ class PenHelper {
    */
   isConnected = () => {
     return this.writecharacteristic ? true : false;
+  };
+
+  isConnectedOrConnecting = (device: BluetoothDevice) => {
+    return this.pens.some((pen) => pen.device.id === device.id) || this.connectingQueue.includes(device.id);
+  };
+
+  addDeviceToConnectingQueue = (device: BluetoothDevice) => {
+    this.connectingQueue.push(device.id);
+  };
+
+  removeDeviceFromConnectingQueue = (device: BluetoothDevice) => {
+    this.connectingQueue = this.connectingQueue.filter((id) => id !== device.id);
   };
 
   debugMode = (bool: boolean) => {
@@ -142,7 +156,7 @@ class PenHelper {
       NLog.log("> Id:               " + device.id);
       NLog.log("> Connected:        " + device.gatt?.connected);
       NLog.log("> SDKVersion:       " + SDKversion);
-      this.connectDevice(device);
+      await this.connectDevice(device);
     } catch (err) {
       NLog.log("err", err);
     }
@@ -173,14 +187,22 @@ class PenHelper {
   connectDevice = async (device: BluetoothDevice) => {
     if (!device) return;
 
-    NLog.log("Connect start", device);
-    try {
-      const server = (await device.gatt?.connect()) as BluetoothRemoteGATTServer;
-      NLog.log("service", server);
-      this.serviceBinding_16(server, device);
-      this.serviceBinding_128(server, device);
-    } catch (err) {
-      NLog.log("err conect", err);
+    if (!this.isConnectedOrConnecting(device)) {
+      NLog.log("Connect start", device);
+      try {
+        this.addDeviceToConnectingQueue(device);
+
+        const server = (await device.gatt?.connect()) as BluetoothRemoteGATTServer;
+        NLog.log("service", server);
+        this.serviceBinding_16(server, device);
+        this.serviceBinding_128(server, device);
+      } catch (err) {
+        NLog.log("err conect", err);
+      } finally {
+        this.removeDeviceFromConnectingQueue(device);
+      }
+    } else {
+      NLog.log("Already connected or connecting");
     }
   };
 
