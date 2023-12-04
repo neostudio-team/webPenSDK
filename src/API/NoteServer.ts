@@ -29,7 +29,7 @@ const point72ToNcode = (p: number) => {
 /**
  * Set Note Page PUI in PUIController
  */
-const setNrojInPuiController = async (pageInfo: PageInfo) => {
+const setNprojInPuiController = async (pageInfo: PageInfo) => {
   const sobStr = `${pageInfo.section}_${pageInfo.owner}_${pageInfo.book}.nproj`;
 
   const fbApp = initializeApp(firebaseConfig);
@@ -139,7 +139,7 @@ const getNoteImage = async (pageInfo: PageInfo, setImageBlobUrl: any) => {
 const api = {
   extractMarginInfo,
   getNoteImage,
-  setNrojInPuiController,
+  setNprojInPuiController,
 };
 
 export default api;
