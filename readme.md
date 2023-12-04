@@ -225,7 +225,6 @@ const strokeProcess = (dot: Dot) => {
 }
 ```
 
-### [Additional]
 ### 4. isSamePage
 서로 다른 ncode 페이지 정보(SOBP)를 바탕으로 같은 페이지인지 구별하기 위한 로직입니다. <br />
 SOBP는 페이지를 구별하기 위한 정보로서, Section/Owner/Book/Page의 줄임말입니다.
@@ -275,6 +274,20 @@ const getNoteImage = async (pageInfo: PageInfo, setImageBlobUrl: any) => {
 }
 ```
 
+### 3. setNprojInPuiController
+펜으로부터 받은 페이지 정보(SOBP)를 바탕으로 페이지에 있는 PUI 정보를 PUI Controller 에 저장하는 로직입니다.
+이렇게 등록된 PUI는 스마트펜이 입력될 경우 messageCallback 을 통해 반환됩니다.
+```ts
+/**
+ * This function is to set the PUI in Page based on pageInfo.
+ * 
+ * @param {PageInfo} pageInfo
+ */
+const setNprojInPuiController  = async (pageInfo: PageInfo) => {
+  ...
+}
+```
+
 ```ts
 // Usage with react hook
 
@@ -283,6 +296,7 @@ const [paperSize, setPaperSize] = useState<PaperSize>();
 
 useEffect(() => {
   async function getNoteImageUsingAPI(pageInfo) {
+    NoteServer.setNprojInPuiController(pageInfo);
     await NoteServer.getNoteImage(pageInfo, setImageBlobUrl);
     const paperSize: PaperSize = await NoteServer.extractMarginInfo(pageInfo);
     setPaperSize(paperSize);
@@ -399,6 +413,15 @@ const strokeProcess = (dot: Dot) => {
   /** Create path data using screenDot */
 const path = new Path(screenDot.x, screenDot.y);
 }
+```
+
+### Step6: 스마트펜으로 터치될 페이지 내의 PUI 아이콘의 정보들을 세팅합니다.
+```ts
+/**
+ * Set the information for the PUI icon on the page
+ * Async-await calls are optional, as they are not directly utilized on page changes
+ */ 
+(await) NoteServer.setNprojInPuiController(pageInfo)
 ```
 
 <br />
