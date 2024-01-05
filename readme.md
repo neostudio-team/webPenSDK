@@ -275,15 +275,16 @@ const getNoteImage = async (pageInfo: PageInfo, setImageBlobUrl: any) => {
 ```
 
 ### 3. setNprojInPuiController
-펜으로부터 받은 페이지 정보(SOBP)를 바탕으로 페이지에 있는 PUI 정보를 PUI Controller 에 저장하는 로직입니다.
+펜으로부터 받은 페이지 정보(SOBP)와 nproj 파일의 url을 바탕으로 페이지에 있는 PUI 정보를 PUI Controller 에 저장하는 로직입니다.
 이렇게 등록된 PUI는 스마트펜이 입력될 경우 messageCallback 을 통해 반환됩니다.
 ```ts
 /**
  * This function is to set the PUI in Page based on pageInfo.
  * 
+ * @param {string} url
  * @param {PageInfo} pageInfo
  */
-const setNprojInPuiController  = async (pageInfo: PageInfo) => {
+const setNprojInPuiController  = async (url: string, pageInfo: PageInfo) => {
   ...
 }
 ```
