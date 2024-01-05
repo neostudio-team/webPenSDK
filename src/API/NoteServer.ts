@@ -29,13 +29,13 @@ const point72ToNcode = (p: number) => {
 /**
  * Set Note Page PUI in PUIController
  */
-const setNprojInPuiController = async (pageInfo: PageInfo) => {
-  const sobStr = `${pageInfo.section}_${pageInfo.owner}_${pageInfo.book}.nproj`;
+const setNprojInPuiController = async (url: string, pageInfo: PageInfo) => {
+  // const sobStr = `${pageInfo.section}_${pageInfo.owner}_${pageInfo.book}.nproj`;
 
-  const fbApp = initializeApp(firebaseConfig);
-  const storage = getStorage(fbApp);
+  // const fbApp = initializeApp(firebaseConfig);
+  // const storage = getStorage(fbApp);
 
-  const url = await getDownloadURL(ref(storage, `nproj/${sobStr}`));
+  // const url = await getDownloadURL(ref(storage, `nproj/${sobStr}`));
 
   PUIController.getInstance().fetchOnlyPageSymbols(url, pageInfo);
 };
