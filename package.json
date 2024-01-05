@@ -1,6 +1,10 @@
 {
   "name": "web_pen_sdk",
+<<<<<<< Updated upstream
   "version": "0.7.0",
+=======
+  "version": "0.7.1",
+>>>>>>> Stashed changes
   "description": "Neosmartpen typescript library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

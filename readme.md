@@ -281,7 +281,11 @@ const getNoteImage = async (pageInfo: PageInfo, setImageBlobUrl: any) => {
 /**
  * This function is to set the PUI in Page based on pageInfo.
  * 
+<<<<<<< Updated upstream
  * @param {string} url
+=======
+ * @param {string || null} url
+>>>>>>> Stashed changes
  * @param {PageInfo} pageInfo
  */
 const setNprojInPuiController  = async (url: string, pageInfo: PageInfo) => {

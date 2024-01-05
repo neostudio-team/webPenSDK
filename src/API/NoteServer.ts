@@ -29,6 +29,7 @@ const point72ToNcode = (p: number) => {
 /**
  * Set Note Page PUI in PUIController
  */
+<<<<<<< Updated upstream
 const setNprojInPuiController = async (url: string, pageInfo: PageInfo) => {
   // const sobStr = `${pageInfo.section}_${pageInfo.owner}_${pageInfo.book}.nproj`;
 
@@ -38,6 +39,20 @@ const setNprojInPuiController = async (url: string, pageInfo: PageInfo) => {
   // const url = await getDownloadURL(ref(storage, `nproj/${sobStr}`));
 
   PUIController.getInstance().fetchOnlyPageSymbols(url, pageInfo);
+=======
+const setNprojInPuiController = async (url: string | null, pageInfo: PageInfo) => {
+  let nprojUrl = url;
+  if (!nprojUrl) {
+    const sobStr = `${pageInfo.section}_${pageInfo.owner}_${pageInfo.book}.nproj`;
+  
+    const fbApp = initializeApp(firebaseConfig);
+    const storage = getStorage(fbApp);
+  
+    nprojUrl = await getDownloadURL(ref(storage, `nproj/${sobStr}`));
+  }
+
+  PUIController.getInstance().fetchOnlyPageSymbols(nprojUrl, pageInfo);
+>>>>>>> Stashed changes
 };
 
 /**
