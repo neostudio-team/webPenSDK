@@ -244,17 +244,18 @@ isSamePage = (page1: PageInfo, page2: PageInfo) => {
 
 
 ### **NoteServer**
-> extractMarginInfo, getNoteImage
+> extractMarginInfo, getNoteImage, setNprojInPuiController
 ### 1. extractMarginInfo
-펜으로부터 받은 페이지 정보(SOBP)를 바탕으로 nproj로 부터 해당 ncode 페이지의 margin info를 추출하는 로직입니다.
+펜으로부터 받은 페이지 정보(SOBP)와 nproj 파일의 url을 바탕으로 해당 ncode 페이지의 margin info를 추출하는 로직입니다.
 ```ts
 /**
  * This function is to extract the margin info of the ncode page from nproj based on pageInfo.
  * 
+ * @param {string || null} url
  * @param {PageInfo} pageInfo
  * @returns {PaperSize}
  */
-const extractMarginInfo = async (pageInfo: PageInfo) => {
+const extractMarginInfo = async (url:string | null, pageInfo: PageInfo) => {
   ...
 }
 ```
@@ -284,7 +285,7 @@ const getNoteImage = async (pageInfo: PageInfo, setImageBlobUrl: any) => {
  * @param {string || null} url
  * @param {PageInfo} pageInfo
  */
-const setNprojInPuiController  = async (url: string, pageInfo: PageInfo) => {
+const setNprojInPuiController  = async (url: string | null, pageInfo: PageInfo) => {
   ...
 }
 ```
@@ -299,7 +300,7 @@ useEffect(() => {
   async function getNoteImageUsingAPI(pageInfo) {
     NoteServer.setNprojInPuiController(pageInfo);
     await NoteServer.getNoteImage(pageInfo, setImageBlobUrl);
-    const paperSize: PaperSize = await NoteServer.extractMarginInfo(pageInfo);
+    const paperSize: PaperSize = await NoteServer.extractMarginInfo(url, pageInfo);
     setPaperSize(paperSize);
   }
 
@@ -386,7 +387,7 @@ const strokeProcess = (dot: Dot) => {
 /** Use NoteServer.extractMarginInfo() function to get size information of the ncode paper. */
 const [paperSize, setPaperSize] = useState<PaperSize>();
 
-const paperSize: PaperSize = await NoteServer.extractMarginInfo(pageInfo);
+const paperSize: PaperSize = await NoteServer.extractMarginInfo(url, pageInfo);
 ```
 
 ### Step5: NoteServer.getNoteImage()를 사용하여 note의 image url을 받아옵니다.
