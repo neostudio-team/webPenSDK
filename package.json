@@ -1,6 +1,6 @@
 {
   "name": "web_pen_sdk",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Neosmartpen typescript library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,10 +26,11 @@
     "url": "git+https://github.com/neostudio-io/webPenSDK.git"
   },
   "keywords": [],
-  "author": "Wonho Seo",
+  "author": "Wonho Seo <swh1182@neolab.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/neostudio-io/webPenSDK/issues"
+    "url": "https://github.com/neostudio-io/webPenSDK/issues",
+    "email": "swh1182@neolab.net"
   },
   "homepage": "https://github.com/neostudio-io/webPenSDK#readme",
   "devDependencies": {
