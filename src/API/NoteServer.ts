@@ -32,12 +32,17 @@ const point72ToNcode = (p: number) => {
 const setNprojInPuiController = async (url: string | null, pageInfo: PageInfo) => {
   let nprojUrl = url;
   if (!nprojUrl) {
-    const sobStr = `${pageInfo.section}_${pageInfo.owner}_${pageInfo.book}.nproj`;
-  
-    const fbApp = initializeApp(firebaseConfig);
-    const storage = getStorage(fbApp);
-  
-    nprojUrl = await getDownloadURL(ref(storage, `nproj/${sobStr}`));
+    try {
+      const sobStr = `${pageInfo.section}_${pageInfo.owner}_${pageInfo.book}.nproj`;
+    
+      const fbApp = initializeApp(firebaseConfig);
+      const storage = getStorage(fbApp);
+    
+      nprojUrl = await getDownloadURL(ref(storage, `nproj/${sobStr}`));
+    } catch (err) {
+      NLog.log(err);
+      throw err;
+    }
   }
 
   PUIController.getInstance().fetchOnlyPageSymbols(nprojUrl, pageInfo);
@@ -47,64 +52,66 @@ const setNprojInPuiController = async (url: string | null, pageInfo: PageInfo) =
  * Calculate page margin info
  * -> define X(min/max), Y(min,max)
  */
-const extractMarginInfo = async (pageInfo: PageInfo) => {
+const extractMarginInfo = async (url: string | null, pageInfo: PageInfo) => {
   const sobStr = `${pageInfo.section}_${pageInfo.owner}_${pageInfo.book}.nproj`;
   const page = pageInfo.page;
+  
+  let nprojUrl = url;
+  if (!nprojUrl) {
+    try {
+      const fbApp = initializeApp(firebaseConfig);
+      const storage = getStorage(fbApp);
+    
+      nprojUrl = await getDownloadURL(ref(storage, `nproj/${sobStr}`));
+    } catch (err) {
+      NLog.log(err);
+      throw err;
+    }
+  }
 
-  const fbApp = initializeApp(firebaseConfig);
-  const storage = getStorage(fbApp);
+  try {
+    const res = await fetch(nprojUrl);
+    const nprojXml = await res.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(nprojXml, "text/xml");
 
-  return new Promise(async function (resolve, reject) {
-    await getDownloadURL(ref(storage, `nproj/${sobStr}`)).then(async (url: any) => {
-      const xhr: any = new XMLHttpRequest();
-      xhr.responseType = "xml";
-      xhr.onload = async (event: any) => {
-        const xml = xhr.response;
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(xml, "text/xml");
+    const section = doc.children[0].getElementsByTagName("section")[0]?.innerHTML;
+    const owner = doc.children[0].getElementsByTagName("owner")[0]?.innerHTML;
+    const book = doc.children[0].getElementsByTagName("code")[0]?.innerHTML;
+    const page_item = doc.children[0].getElementsByTagName("page_item")[page];
 
-        const section = doc.children[0].getElementsByTagName("section")[0]?.innerHTML;
-        const owner = doc.children[0].getElementsByTagName("owner")[0]?.innerHTML;
-        const book = doc.children[0].getElementsByTagName("code")[0]?.innerHTML;
-        const page_item = doc.children[0].getElementsByTagName("page_item")[page];
+    if (page_item === undefined) {
+      throw new Error("Page item is undefined");
+    }
 
-        if (page_item === undefined) {
-          return;
-        }
+    NLog.log(`Target SOBP: ${section}(section) ${owner}(owner) ${book}(book) ${page}(page)`);
 
-        NLog.log(`Target SOBP: ${section}(section) ${owner}(owner) ${book}(book) ${page}(page)`);
+    let x1, x2, y1, y2, crop_margin, l, t, r, b;
 
-        let x1, x2, y1, y2, crop_margin: any, l, t, r, b;
+    x1 = parseInt(page_item.getAttribute("x1"));
+    x2 = parseInt(page_item.getAttribute("x2"));
+    y1 = parseInt(page_item.getAttribute("y1"));
+    y2 = parseInt(page_item.getAttribute("y2"));
 
-        try {
-          x1 = parseInt(page_item.getAttribute("x1")!);
-          x2 = parseInt(page_item.getAttribute("x2")!);
-          y1 = parseInt(page_item.getAttribute("y1")!);
-          y2 = parseInt(page_item.getAttribute("y2")!);
+    crop_margin = page_item.getAttribute("crop_margin");
+    const margins = crop_margin.split(",");
+    l = parseFloat(margins[0]);
+    t = parseFloat(margins[1]);
+    r = parseFloat(margins[2]);
+    b = parseFloat(margins[3]);
 
-          crop_margin = page_item.getAttribute("crop_margin");
-          const margins = crop_margin.split(",");
-          l = parseFloat(margins[0]);
-          t = parseFloat(margins[1]);
-          r = parseFloat(margins[2]);
-          b = parseFloat(margins[3]);
-        } catch (err) {
-          NLog.log(err);
-          return;
-        }
+    const Xmin = point72ToNcode(x1) + point72ToNcode(l);
+    const Ymin = point72ToNcode(y1) + point72ToNcode(t);
+    const Xmax = point72ToNcode(x2) - point72ToNcode(r);
+    const Ymax = point72ToNcode(y2) - point72ToNcode(b);
 
-        const Xmin = point72ToNcode(x1) + point72ToNcode(l);
-        const Ymin = point72ToNcode(y1) + point72ToNcode(t);
-        const Xmax = point72ToNcode(x2) - point72ToNcode(r);
-        const Ymax = point72ToNcode(y2) - point72ToNcode(b);
-
-        resolve({ Xmin, Xmax, Ymin, Ymax });
-      };
-      xhr.open("GET", url);
-      xhr.send();
-    });
-  });
+    return { Xmin, Xmax, Ymin, Ymax };
+  } catch (err) {
+    NLog.log(err);
+    throw err;
+  }
 };
+
 
 /**
  * GET note image function
