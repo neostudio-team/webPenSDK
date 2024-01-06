@@ -521,3 +521,8 @@ Release Note
 -----
 ### New Features
 - **PUI Feature** - PUI nproj 로 롤백, 노트 페이지 의 PUI도 지원하도록 추가
+
+**2024. 01. 06.** (WONHO, ver.0.7.2)
+-----
+### New Features
+- **PUI Feature** - setNprojInPuiController, extractMarginInfo 매개변수로 url 추가
