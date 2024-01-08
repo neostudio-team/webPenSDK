@@ -44,7 +44,7 @@ const setNprojInPuiController = async (url: string | null, pageInfo: PageInfo) =
       throw err;
     }
   }
-
+  NLog.log("[NoteServer] In the PUIController, set nporj at the following url => " + nprojUrl);
   PUIController.getInstance().fetchOnlyPageSymbols(nprojUrl, pageInfo);
 };
 
@@ -68,6 +68,7 @@ const extractMarginInfo = async (url: string | null, pageInfo: PageInfo) => {
       throw err;
     }
   }
+  NLog.log("[NoteServer] Get the page margin from the following url => " + nprojUrl);
 
   try {
     const res = await fetch(nprojUrl);
@@ -78,7 +79,15 @@ const extractMarginInfo = async (url: string | null, pageInfo: PageInfo) => {
     const section = doc.children[0].getElementsByTagName("section")[0]?.innerHTML;
     const owner = doc.children[0].getElementsByTagName("owner")[0]?.innerHTML;
     const book = doc.children[0].getElementsByTagName("code")[0]?.innerHTML;
-    const page_item = doc.children[0].getElementsByTagName("page_item")[page];
+
+    let startPage = doc.children[0].getElementsByTagName("start_page")[0]?.innerHTML;
+    const segment_info = doc.children[0].getElementsByTagName("segment_info")
+    if (segment_info) {
+      const start_page_new = segment_info[0].getAttribute("ncode_start_page");
+      startPage = start_page_new;
+    }
+
+    const page_item = doc.children[0].getElementsByTagName("page_item")[page - parseInt(startPage)];
 
     if (page_item === undefined) {
       throw new Error("Page item is undefined");
