@@ -1,6 +1,6 @@
 {
   "name": "web_pen_sdk",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Neosmartpen typescript library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
